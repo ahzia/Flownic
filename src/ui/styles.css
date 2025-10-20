@@ -465,6 +465,33 @@
   padding: 20px;
 }
 
+.promptflow-workflows-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.promptflow-workflows-header h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.promptflow-workflows-footer {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid #e5e7eb;
+  text-align: center;
+}
+
+.promptflow-workflows-footer p {
+  margin: 0;
+  font-size: 14px;
+  color: #6b7280;
+}
+
 .promptflow-workflows h3,
 .promptflow-history h3,
 .promptflow-settings h3 {

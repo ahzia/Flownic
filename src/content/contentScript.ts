@@ -92,6 +92,11 @@ class ContentScriptHelpers implements HelpersAPI {
           sendResponse({ success: true, data: tableData })
           break
 
+        case 'OPEN_QUICKBAR':
+          this.openQuickbar()
+          sendResponse({ success: true })
+          break
+
         default:
           sendResponse({ success: false, error: `Unknown message type: ${type}` })
       }
@@ -528,6 +533,103 @@ class ContentScriptHelpers implements HelpersAPI {
     })
 
     return rows
+  }
+
+  openQuickbar(): void {
+    // Create and inject the quickbar overlay
+    const overlay = document.createElement('div')
+    overlay.id = 'promptflow-quickbar-overlay'
+    overlay.style.cssText = `
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 999999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    `
+
+    const quickbar = document.createElement('div')
+    quickbar.style.cssText = `
+      background: white;
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+      max-width: 600px;
+      width: 90%;
+      max-height: 80vh;
+      overflow-y: auto;
+    `
+
+    quickbar.innerHTML = `
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px;">
+        <h2 style="margin: 0; font-size: 20px; font-weight: 600; color: #111827;">🚀 PromptFlow Quickbar</h2>
+        <button id="close-quickbar" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #6b7280;">×</button>
+      </div>
+      <div style="margin-bottom: 20px;">
+        <input type="text" id="quickbar-input" placeholder="What would you like to do?" 
+               style="width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 16px;">
+      </div>
+      <div style="display: flex; gap: 12px; justify-content: flex-end;">
+        <button id="run-action" style="background: #3b82f6; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: 500;">Run Action</button>
+        <button id="preview-action" style="background: #6b7280; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: 500;">Preview</button>
+      </div>
+    `
+
+    overlay.appendChild(quickbar)
+    document.body.appendChild(overlay)
+
+    // Add event listeners
+    const closeBtn = quickbar.querySelector('#close-quickbar')
+    const runBtn = quickbar.querySelector('#run-action')
+    const previewBtn = quickbar.querySelector('#preview-action')
+    const input = quickbar.querySelector('#quickbar-input') as HTMLInputElement
+
+    const closeQuickbar = () => {
+      if (overlay.parentNode) {
+        overlay.parentNode.removeChild(overlay)
+      }
+    }
+
+    closeBtn?.addEventListener('click', closeQuickbar)
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) closeQuickbar()
+    })
+
+    runBtn?.addEventListener('click', () => {
+      const prompt = input?.value
+      if (prompt) {
+        // Send message to background script to run the prompt
+        chrome.runtime.sendMessage({
+          type: 'RUN_PROMPT',
+          data: { prompt, context: { usePageContent: true } }
+        })
+        closeQuickbar()
+      }
+    })
+
+    previewBtn?.addEventListener('click', () => {
+      const prompt = input?.value
+      if (prompt) {
+        // Show preview (placeholder for now)
+        alert(`Preview: "${prompt}"`)
+      }
+    })
+
+    // Focus the input
+    input?.focus()
+
+    // Close on Escape key
+    const handleKeydown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        closeQuickbar()
+        document.removeEventListener('keydown', handleKeydown)
+      }
+    }
+    document.addEventListener('keydown', handleKeydown)
   }
 }
 

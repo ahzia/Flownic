@@ -11,6 +11,7 @@ export default defineConfig({
         // UI components
         ui: resolve(__dirname, 'src/ui/index.html'),
         overlay: resolve(__dirname, 'src/ui/overlay.html'),
+        playground: resolve(__dirname, 'src/ui/playground.html'),
         
         // Background script
         background: resolve(__dirname, 'src/background/serviceWorker.ts'),
@@ -25,6 +26,7 @@ export default defineConfig({
         entryFileNames: (chunkInfo) => {
           if (chunkInfo.name === 'ui') return 'ui/index.js'
           if (chunkInfo.name === 'overlay') return 'ui/overlay.js'
+          if (chunkInfo.name === 'playground') return 'ui/playground.js'
           if (chunkInfo.name === 'background') return 'background/serviceWorker.js'
           if (chunkInfo.name === 'content') return 'content/contentScript.js'
           // if (chunkInfo.name === 'handlers') return 'handlers/[name].js'

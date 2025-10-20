@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react'
 import { createRoot } from 'react-dom/client'
 import { Settings, History, Workflow, Sparkles, Zap, Code } from 'lucide-react'
-import { WorkflowPlayground } from './WorkflowPlayground'
 import './styles.css'
 
 const PopupApp: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'workflows' | 'playground' | 'history' | 'settings'>('workflows')
+  const [activeTab, setActiveTab] = useState<'workflows' | 'history' | 'settings'>('workflows')
   const [isAIAvailable, setIsAIAvailable] = useState(false)
 
   useEffect(() => {
@@ -23,6 +22,10 @@ const PopupApp: React.FC = () => {
         window.close()
       }
     })
+  }
+
+  const openPlayground = () => {
+    chrome.tabs.create({ url: chrome.runtime.getURL('src/ui/playground.html') })
   }
 
   return (
@@ -65,13 +68,6 @@ const PopupApp: React.FC = () => {
           Workflows
         </button>
         <button
-          className={`promptflow-tab ${activeTab === 'playground' ? 'active' : ''}`}
-          onClick={() => setActiveTab('playground')}
-        >
-          <Code className="promptflow-icon" />
-          Playground
-        </button>
-        <button
           className={`promptflow-tab ${activeTab === 'history' ? 'active' : ''}`}
           onClick={() => setActiveTab('history')}
         >
@@ -91,7 +87,14 @@ const PopupApp: React.FC = () => {
       <div className="promptflow-tab-content">
         {activeTab === 'workflows' && (
           <div className="promptflow-workflows">
-            <h3>Built-in Workflows</h3>
+            <div className="promptflow-workflows-header">
+              <h3>Workflows</h3>
+              <button className="promptflow-btn promptflow-btn-primary" onClick={openPlayground}>
+                <Code className="promptflow-icon" />
+                Open Playground
+              </button>
+            </div>
+            
             <div className="promptflow-workflow-list">
               <div className="promptflow-workflow-item">
                 <div className="promptflow-workflow-name">Job Application</div>
@@ -106,12 +109,13 @@ const PopupApp: React.FC = () => {
                 <div className="promptflow-workflow-desc">Auto-summarize video content</div>
               </div>
             </div>
+            
+            <div className="promptflow-workflows-footer">
+              <p>Create custom workflows in the Playground</p>
+            </div>
           </div>
         )}
 
-        {activeTab === 'playground' && (
-          <WorkflowPlayground onClose={() => setActiveTab('workflows')} />
-        )}
 
         {activeTab === 'history' && (
           <div className="promptflow-history">
