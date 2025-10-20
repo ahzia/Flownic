@@ -1,0 +1,51 @@
+{
+  "manifest_version": 3,
+  "name": "PromptFlow",
+  "version": "0.1.0",
+  "description": "Offline-first AI prompt workflows for Chrome using built-in AI APIs",
+  "permissions": [
+    "storage",
+    "scripting",
+    "activeTab",
+    "clipboardWrite",
+    "contextMenus"
+  ],
+  "host_permissions": [],
+  "action": {
+    "default_popup": "src/ui/index.html",
+    "default_title": "PromptFlow - AI Workflows"
+  },
+  "background": {
+    "service_worker": "background/serviceWorker.js",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content/contentScript.js"],
+      "run_at": "document_idle",
+      "all_frames": false
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["chunks/*.js", "src/ui/overlay.html"],
+      "matches": ["<all_urls>"]
+    }
+  ],
+  "icons": {
+    "16": "icons/icon-16.png",
+    "32": "icons/icon-32.png",
+    "48": "icons/icon-48.png",
+    "128": "icons/icon-128.png"
+  },
+  "commands": {
+    "open-quickbar": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+K",
+        "mac": "Command+Shift+K"
+      },
+      "description": "Open PromptFlow Quickbar"
+    }
+  }
+}
