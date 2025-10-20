@@ -1,0 +1,1004 @@
+/* PromptFlow UI Styles */
+
+/* Reset and base styles */
+* {
+  box-sizing: border-box;
+}
+
+.promptflow-quickbar-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 10vh;
+  z-index: 10000;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.promptflow-quickbar {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+  width: 90%;
+  max-width: 600px;
+  max-height: 80vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Header */
+.promptflow-quickbar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid #e5e7eb;
+  background: #f9fafb;
+}
+
+.promptflow-quickbar-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 18px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.promptflow-quickbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Content */
+.promptflow-quickbar-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+}
+
+/* Templates */
+.promptflow-templates {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.promptflow-template {
+  background: #f3f4f6;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 12px;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.promptflow-template:hover {
+  background: #e5e7eb;
+  border-color: #d1d5db;
+}
+
+.promptflow-template-selected {
+  background: #dbeafe;
+  border-color: #3b82f6;
+  color: #1e40af;
+}
+
+.promptflow-template-name {
+  font-weight: 500;
+  font-size: 14px;
+}
+
+.promptflow-template-desc {
+  font-size: 12px;
+  color: #6b7280;
+  line-height: 1.3;
+}
+
+/* Query Form */
+.promptflow-query-form {
+  margin-bottom: 16px;
+}
+
+.promptflow-input-group {
+  display: flex;
+  align-items: center;
+  background: white;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 4px;
+  transition: border-color 0.2s ease;
+}
+
+.promptflow-input-group:focus-within {
+  border-color: #3b82f6;
+}
+
+.promptflow-input-icon {
+  width: 20px;
+  height: 20px;
+  color: #9ca3af;
+  margin: 0 12px;
+}
+
+.promptflow-input {
+  flex: 1;
+  border: none;
+  outline: none;
+  padding: 12px 0;
+  font-size: 16px;
+  background: transparent;
+}
+
+.promptflow-input::placeholder {
+  color: #9ca3af;
+}
+
+/* Buttons */
+.promptflow-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+  min-height: 36px;
+}
+
+.promptflow-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.promptflow-btn-primary {
+  background: #3b82f6;
+  color: white;
+}
+
+.promptflow-btn-primary:hover:not(:disabled) {
+  background: #2563eb;
+}
+
+.promptflow-btn-secondary {
+  background: #f3f4f6;
+  color: #374151;
+  border: 1px solid #d1d5db;
+}
+
+.promptflow-btn-secondary:hover:not(:disabled) {
+  background: #e5e7eb;
+}
+
+.promptflow-btn-ghost {
+  background: transparent;
+  color: #6b7280;
+  padding: 8px;
+}
+
+.promptflow-btn-ghost:hover:not(:disabled) {
+  background: #f3f4f6;
+  color: #374151;
+}
+
+.promptflow-btn-loading {
+  position: relative;
+}
+
+/* Spinner */
+.promptflow-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid transparent;
+  border-top: 2px solid currentColor;
+  border-radius: 50%;
+  animation: promptflow-spin 1s linear infinite;
+}
+
+@keyframes promptflow-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Icons */
+.promptflow-icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+/* Error */
+.promptflow-error {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 6px;
+  color: #dc2626;
+  font-size: 14px;
+  margin-bottom: 16px;
+}
+
+/* Preview */
+.promptflow-preview {
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.promptflow-preview-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.promptflow-preview-header h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.promptflow-confidence {
+  font-size: 12px;
+  color: #6b7280;
+  background: #e5e7eb;
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+.promptflow-actions {
+  margin-bottom: 16px;
+}
+
+.promptflow-action {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  padding: 12px;
+  margin-bottom: 8px;
+}
+
+.promptflow-action:last-child {
+  margin-bottom: 0;
+}
+
+.promptflow-action-op {
+  font-weight: 600;
+  color: #3b82f6;
+  margin-bottom: 4px;
+  font-size: 14px;
+}
+
+.promptflow-action-params {
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-size: 12px;
+  color: #374151;
+  background: #f9fafb;
+  padding: 8px;
+  border-radius: 4px;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.promptflow-preview-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+/* Context Info */
+.promptflow-context-info {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 20px;
+  background: #f9fafb;
+  border-top: 1px solid #e5e7eb;
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.promptflow-context-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.promptflow-context-label {
+  font-weight: 500;
+}
+
+.promptflow-context-value {
+  color: #374151;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .promptflow-quickbar {
+    width: 95%;
+    margin: 0 2.5%;
+  }
+  
+  .promptflow-templates {
+    grid-template-columns: 1fr;
+  }
+  
+  .promptflow-context-info {
+    flex-direction: column;
+    gap: 8px;
+    align-items: flex-start;
+  }
+}
+
+/* Popup specific styles */
+.promptflow-popup {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: white;
+}
+
+.promptflow-popup-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid #e5e7eb;
+  background: #f9fafb;
+}
+
+.promptflow-popup-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 18px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.promptflow-ai-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+}
+
+.promptflow-status-indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.promptflow-status-indicator.available {
+  background: #10b981;
+}
+
+.promptflow-status-indicator.unavailable {
+  background: #ef4444;
+}
+
+.promptflow-status-text {
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.promptflow-quick-actions {
+  padding: 20px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.promptflow-btn-large {
+  width: 100%;
+  padding: 16px;
+  font-size: 16px;
+  justify-content: space-between;
+}
+
+.promptflow-shortcut {
+  font-size: 12px;
+  opacity: 0.7;
+  font-weight: 400;
+}
+
+.promptflow-tabs {
+  display: flex;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.promptflow-tab {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 12px 8px;
+  border: none;
+  background: transparent;
+  color: #6b7280;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.promptflow-tab:hover {
+  background: #f3f4f6;
+  color: #374151;
+}
+
+.promptflow-tab.active {
+  background: #dbeafe;
+  color: #1e40af;
+  border-bottom: 2px solid #3b82f6;
+}
+
+.promptflow-tab-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+}
+
+.promptflow-workflows h3,
+.promptflow-history h3,
+.promptflow-settings h3 {
+  margin: 0 0 16px 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.promptflow-workflow-list,
+.promptflow-history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.promptflow-workflow-item,
+.promptflow-history-item {
+  padding: 12px;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.promptflow-workflow-item:hover,
+.promptflow-history-item:hover {
+  background: #f3f4f6;
+  border-color: #d1d5db;
+}
+
+.promptflow-workflow-name,
+.promptflow-history-action {
+  font-weight: 500;
+  color: #111827;
+  margin-bottom: 4px;
+}
+
+.promptflow-workflow-desc,
+.promptflow-history-time {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.promptflow-settings {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.promptflow-setting-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.promptflow-setting-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 14px;
+  color: #374151;
+}
+
+.promptflow-setting-label input[type="checkbox"] {
+  margin-right: 8px;
+}
+
+.promptflow-setting-label select {
+  padding: 4px 8px;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.promptflow-popup-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 20px;
+  border-top: 1px solid #e5e7eb;
+  background: #f9fafb;
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.promptflow-version {
+  font-weight: 500;
+}
+
+.promptflow-privacy {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Workflow Playground Styles */
+.promptflow-playground {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: white;
+}
+
+.promptflow-playground-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid #e5e7eb;
+  background: #f9fafb;
+}
+
+.promptflow-playground-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 18px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.promptflow-playground-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+}
+
+/* Workflow List */
+.promptflow-workflow-list-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.promptflow-workflow-list-header h3 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.promptflow-workflow-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 16px;
+}
+
+.promptflow-workflow-card {
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 16px;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.promptflow-workflow-card:hover {
+  background: #f3f4f6;
+  border-color: #d1d5db;
+}
+
+.promptflow-workflow-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.promptflow-workflow-card-header h4 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.promptflow-workflow-actions {
+  display: flex;
+  gap: 4px;
+}
+
+.promptflow-workflow-description {
+  margin: 0 0 12px 0;
+  font-size: 14px;
+  color: #6b7280;
+  line-height: 1.4;
+}
+
+.promptflow-workflow-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.promptflow-workflow-trigger,
+.promptflow-workflow-steps {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Empty State */
+.promptflow-empty-state {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 40px 20px;
+  color: #6b7280;
+}
+
+.promptflow-icon-large {
+  width: 48px;
+  height: 48px;
+  margin: 0 auto 16px;
+  opacity: 0.5;
+}
+
+.promptflow-empty-state h3 {
+  margin: 0 0 8px 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #374151;
+}
+
+.promptflow-empty-state p {
+  margin: 0 0 20px 0;
+  font-size: 14px;
+}
+
+/* Workflow Editor */
+.promptflow-workflow-editor {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.promptflow-editor-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+
+.promptflow-editor-header h3 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.promptflow-editor-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.promptflow-editor-content {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.promptflow-editor-section {
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 20px;
+}
+
+.promptflow-editor-section h4 {
+  margin: 0 0 16px 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #111827;
+}
+
+/* Form Elements */
+.promptflow-form-group {
+  margin-bottom: 16px;
+}
+
+.promptflow-form-group:last-child {
+  margin-bottom: 0;
+}
+
+.promptflow-form-group label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
+}
+
+.promptflow-textarea {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 14px;
+  font-family: inherit;
+  resize: vertical;
+  min-height: 80px;
+}
+
+.promptflow-textarea:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.promptflow-select {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 14px;
+  background: white;
+}
+
+.promptflow-select:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.promptflow-form-group small {
+  display: block;
+  margin-top: 4px;
+  font-size: 12px;
+  color: #6b7280;
+}
+
+/* Steps */
+.promptflow-steps-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.promptflow-steps-header h4 {
+  margin: 0;
+}
+
+.promptflow-step-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.promptflow-steps-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.promptflow-step {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  padding: 16px;
+}
+
+.promptflow-step-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.promptflow-step-number {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  background: #3b82f6;
+  color: white;
+  border-radius: 50%;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.promptflow-step-type {
+  padding: 4px 8px;
+  background: #dbeafe;
+  color: #1e40af;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: uppercase;
+}
+
+.promptflow-step-content {
+  margin-bottom: 12px;
+}
+
+.promptflow-prompt-preview {
+  background: #f3f4f6;
+  border: 1px solid #e5e7eb;
+  border-radius: 4px;
+  padding: 12px;
+  margin-top: 8px;
+}
+
+.promptflow-prompt-preview h5 {
+  margin: 0 0 8px 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: #374151;
+  text-transform: uppercase;
+}
+
+.promptflow-prompt-preview p {
+  margin: 0;
+  font-size: 13px;
+  color: #6b7280;
+  line-height: 1.4;
+}
+
+.promptflow-empty-steps {
+  text-align: center;
+  padding: 20px;
+  color: #6b7280;
+  font-style: italic;
+}
+
+/* Preview */
+.promptflow-preview-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.promptflow-preview-header h4 {
+  margin: 0;
+}
+
+.promptflow-workflow-preview {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  padding: 16px;
+}
+
+.promptflow-workflow-preview h5 {
+  margin: 0 0 8px 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.promptflow-workflow-preview p {
+  margin: 0 0 12px 0;
+  font-size: 14px;
+  color: #6b7280;
+}
+
+.promptflow-preview-trigger,
+.promptflow-preview-steps {
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+.promptflow-preview-step {
+  margin-left: 16px;
+  font-size: 13px;
+  color: #6b7280;
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .promptflow-quickbar {
+    background: #1f2937;
+    color: #f9fafb;
+  }
+  
+  .promptflow-quickbar-header {
+    background: #111827;
+    border-color: #374151;
+  }
+  
+  .promptflow-quickbar-title {
+    color: #f9fafb;
+  }
+  
+  .promptflow-template {
+    background: #374151;
+    border-color: #4b5563;
+    color: #f9fafb;
+  }
+  
+  .promptflow-template:hover {
+    background: #4b5563;
+  }
+  
+  .promptflow-template-selected {
+    background: #1e3a8a;
+    border-color: #3b82f6;
+    color: #dbeafe;
+  }
+  
+  .promptflow-input-group {
+    background: #374151;
+    border-color: #4b5563;
+  }
+  
+  .promptflow-input {
+    color: #f9fafb;
+  }
+  
+  .promptflow-input::placeholder {
+    color: #9ca3af;
+  }
+  
+  .promptflow-preview {
+    background: #111827;
+    border-color: #374151;
+  }
+  
+  .promptflow-action {
+    background: #374151;
+    border-color: #4b5563;
+  }
+  
+  .promptflow-action-params {
+    background: #1f2937;
+    color: #f9fafb;
+  }
+  
+  .promptflow-context-info {
+    background: #111827;
+    border-color: #374151;
+  }
+}
