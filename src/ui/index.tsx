@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react'
 import { createRoot } from 'react-dom/client'
 import { Settings, History, Workflow, Sparkles, Zap, Code } from 'lucide-react'
+import { ThemeSwitcher } from './ThemeSwitcher'
+import { themeManager } from './theme'
 import './styles.css'
 
 const PopupApp: React.FC = () => {
@@ -8,6 +10,9 @@ const PopupApp: React.FC = () => {
   const [isAIAvailable, setIsAIAvailable] = useState(false)
 
   useEffect(() => {
+    // Initialize theme
+    themeManager.initialize()
+    
     // Check if Chrome AI APIs are available
     chrome.runtime.sendMessage({ type: 'CHECK_AI_AVAILABILITY' }, (response) => {
       setIsAIAvailable(response?.available || false)
@@ -159,14 +164,7 @@ const PopupApp: React.FC = () => {
               </label>
             </div>
             <div className="promptflow-setting-group">
-              <label className="promptflow-setting-label">
-                <span>Theme</span>
-                <select defaultValue="auto">
-                  <option value="light">Light</option>
-                  <option value="dark">Dark</option>
-                  <option value="auto">Auto</option>
-                </select>
-              </label>
+              <ThemeSwitcher />
             </div>
           </div>
         )}

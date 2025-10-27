@@ -1,7 +1,12 @@
+/* Import theme variables */
+@import './theme.css';
+
 /* Playground App Styles */
 .playground-app {
   min-height: 100vh;
-  background: #f8fafc;
+  background: var(--color-background);
+  color: var(--color-text-primary);
+  transition: background-color var(--transition-normal), color var(--transition-normal);
 }
 
 /* Header Controls */
@@ -9,10 +14,10 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 1.5rem 2rem;
-  background: white;
-  border-bottom: 1px solid #e2e8f0;
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+  padding: var(--space-6) var(--space-8);
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border-primary);
+  box-shadow: var(--color-shadow-sm);
 }
 
 .playground-controls-left {
