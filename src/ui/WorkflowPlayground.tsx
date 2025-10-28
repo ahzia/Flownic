@@ -26,47 +26,7 @@ export const WorkflowPlayground: React.FC<WorkflowPlaygroundProps> = ({ onClose 
     steps: [] as WorkflowStep[]
   })
 
-  // Available handlers
-  const availableHandlers = [
-    { id: 'show_modal', name: 'Show Modal', description: 'Display content in a modal dialog' },
-    { id: 'insert_text', name: 'Insert Text', description: 'Fill form fields with text' },
-    { id: 'modify_css', name: 'Modify CSS', description: 'Inject or toggle CSS styles' },
-    { id: 'parse_table_to_csv', name: 'Parse Table to CSV', description: 'Extract table data and download as CSV' },
-    { id: 'download_file', name: 'Download File', description: 'Download content as a file' },
-    { id: 'save_capture', name: 'Save Capture', description: 'Store structured data for later use' }
-  ]
-
-  // Built-in prompt templates
-  const promptTemplates = [
-    {
-      id: 'summarize_content',
-      name: 'Summarize Content',
-      description: 'Extract key points from page content',
-      prompt: 'Summarize the main content of this webpage in 3-5 key points. Focus on the most important information and insights.',
-      context: { usePageContent: true, useSelectedText: false, useKB: false, useLastCapture: false }
-    },
-    {
-      id: 'extract_quotes',
-      name: 'Extract Quotes',
-      description: 'Find and extract notable quotes from the page',
-      prompt: 'Extract the most notable quotes from this webpage. Include the context and author if available.',
-      context: { usePageContent: true, useSelectedText: false, useKB: false, useLastCapture: false }
-    },
-    {
-      id: 'analyze_sentiment',
-      name: 'Analyze Sentiment',
-      description: 'Analyze the emotional tone of the content',
-      prompt: 'Analyze the sentiment and emotional tone of this webpage content. Provide insights on the overall mood and key emotional themes.',
-      context: { usePageContent: true, useSelectedText: false, useKB: false, useLastCapture: false }
-    },
-    {
-      id: 'extract_links',
-      name: 'Extract Links',
-      description: 'Find and categorize all links on the page',
-      prompt: 'Extract all links from this webpage and categorize them by type (internal, external, social media, etc.).',
-      context: { usePageContent: true, useSelectedText: false, useKB: false, useLastCapture: false }
-    }
-  ]
+  // Available handlers and prompt templates removed - will be replaced with task/handler system
 
   useEffect(() => {
     loadWorkflows()
@@ -99,9 +59,11 @@ export const WorkflowPlayground: React.FC<WorkflowPlaygroundProps> = ({ onClose 
         description: formData.description,
         steps: formData.steps,
         triggers: [trigger],
+        dataPoints: [],
         enabled: true,
         createdAt: selectedWorkflow?.createdAt || Date.now(),
-        updatedAt: Date.now()
+        updatedAt: Date.now(),
+        version: '1.0.0'
       }
 
       const response = await chrome.runtime.sendMessage({
@@ -137,12 +99,13 @@ export const WorkflowPlayground: React.FC<WorkflowPlaygroundProps> = ({ onClose 
     }
   }
 
-  const addStep = (type: 'prompt' | 'action') => {
+  const addStep = (type: 'task' | 'handler') => {
     const newStep: WorkflowStep = {
       id: `step_${Date.now()}`,
       type,
-      promptId: type === 'prompt' ? '' : undefined,
-      action: type === 'action' ? { op: 'SHOW_MODAL', params: {} } : undefined,
+      taskId: type === 'task' ? '' : undefined,
+      handlerId: type === 'handler' ? '' : undefined,
+      input: {},
       condition: '',
       delay: 0
     }
@@ -429,17 +392,17 @@ export const WorkflowPlayground: React.FC<WorkflowPlaygroundProps> = ({ onClose 
                   <div className="promptflow-step-actions">
                     <button
                       className="promptflow-btn promptflow-btn-secondary"
-                      onClick={() => addStep('prompt')}
+                      onClick={() => addStep('task')}
                     >
                       <Plus className="promptflow-icon" />
-                      Add Prompt
+                      Add Task
                     </button>
                     <button
                       className="promptflow-btn promptflow-btn-secondary"
-                      onClick={() => addStep('action')}
+                      onClick={() => addStep('handler')}
                     >
                       <Plus className="promptflow-icon" />
-                      Add Action
+                      Add Handler
                     </button>
                   </div>
                 </div>
@@ -458,49 +421,44 @@ export const WorkflowPlayground: React.FC<WorkflowPlaygroundProps> = ({ onClose 
                         </button>
                       </div>
 
-                      {step.type === 'prompt' && (
+                      {step.type === 'task' && (
                         <div className="promptflow-step-content">
                           <div className="promptflow-form-group">
-                            <label>Prompt Template</label>
+                            <label>Task Template</label>
                             <select
-                              value={step.promptId || ''}
-                              onChange={(e) => updateStep(step.id, { promptId: e.target.value })}
+                              value={step.taskId || ''}
+                              onChange={(e) => updateStep(step.id, { taskId: e.target.value })}
                               className="promptflow-select"
                             >
-                              <option value="">Select a template...</option>
-                              {promptTemplates.map(template => (
-                                <option key={template.id} value={template.id}>
-                                  {template.name} - {template.description}
-                                </option>
-                              ))}
+                              <option value="">Select a task...</option>
+                              <option value="translation">Translation</option>
+                              <option value="language_detection">Language Detection</option>
+                              <option value="custom_prompt">Custom Prompt</option>
                             </select>
                           </div>
-                          {step.promptId && (
-                            <div className="promptflow-prompt-preview">
-                              <h5>Preview:</h5>
-                              <p>{promptTemplates.find(t => t.id === step.promptId)?.prompt}</p>
+                          {step.taskId && (
+                            <div className="promptflow-task-preview">
+                              <h5>Task Selected:</h5>
+                              <p>{step.taskId}</p>
                             </div>
                           )}
                         </div>
                       )}
 
-                      {step.type === 'action' && (
+                      {step.type === 'handler' && (
                         <div className="promptflow-step-content">
                           <div className="promptflow-form-group">
-                            <label>Action</label>
+                            <label>Handler</label>
                             <select
-                              value={step.action?.op || ''}
-                              onChange={(e) => updateStep(step.id, {
-                                action: { op: e.target.value, params: {} }
-                              })}
+                              value={step.handlerId || ''}
+                              onChange={(e) => updateStep(step.id, { handlerId: e.target.value })}
                               className="promptflow-select"
                             >
-                              <option value="">Select an action...</option>
-                              {availableHandlers.map(handler => (
-                                <option key={handler.id} value={handler.id.toUpperCase()}>
-                                  {handler.name} - {handler.description}
-                                </option>
-                              ))}
+                              <option value="">Select a handler...</option>
+                              <option value="show_modal">Show Modal</option>
+                              <option value="insert_text">Insert Text</option>
+                              <option value="modify_css">Modify CSS</option>
+                              <option value="download_file">Download File</option>
                             </select>
                           </div>
                         </div>
@@ -553,7 +511,7 @@ export const WorkflowPlayground: React.FC<WorkflowPlaygroundProps> = ({ onClose 
                       <strong>Steps:</strong>
                       {formData.steps.map((step, index) => (
                         <div key={step.id} className="promptflow-preview-step">
-                          {index + 1}. {step.type} - {step.promptId || step.action?.op}
+                          {index + 1}. {step.type} - {step.taskId || step.handlerId}
                         </div>
                       ))}
                     </div>

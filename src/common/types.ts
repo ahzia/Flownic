@@ -103,18 +103,50 @@ export interface Workflow {
   description: string
   steps: WorkflowStep[]
   triggers: WorkflowTrigger[]
+  dataPoints: DataPoint[]
   enabled: boolean
   createdAt: number
   updatedAt: number
+  version: string
+  websiteConfig?: {
+    type: 'all' | 'specific' | 'exclude'
+    patterns: string
+  }
 }
 
 export interface WorkflowStep {
   id: string
-  type: 'prompt' | 'action'
-  promptId?: string
-  action?: Action
+  type: 'task' | 'handler'
+  taskId?: string
+  handlerId?: string
+  input: StepInput
+  output?: StepOutput
   condition?: string
   delay?: number
+  parallel?: boolean
+  retry?: RetryConfig
+}
+
+export interface StepInput {
+  [key: string]: DataPointReference | string | number | boolean
+}
+
+export interface DataPointReference {
+  type: 'data_point'
+  dataPointId: string
+  field?: string // For structured data points
+}
+
+export interface StepOutput {
+  dataPointId: string
+  type: string
+  value: unknown
+}
+
+export interface RetryConfig {
+  maxAttempts: number
+  delay: number
+  backoffMultiplier: number
 }
 
 export interface WorkflowTrigger {
@@ -177,4 +209,179 @@ export interface HistoryEntry {
   result: HandlerResult
   site: string
   reverted: boolean
+}
+
+// Task System Types
+export interface TaskInput {
+  [key: string]: DataPoint | string | number | boolean
+}
+
+export interface TaskOutput {
+  data: unknown
+  type: 'text' | 'html' | 'json' | 'structured'
+  metadata: {
+    confidence: number
+    processingTime: number
+    source: string
+  }
+}
+
+export interface DataPoint {
+  id: string
+  name: string
+  type: 'context' | 'task_output' | 'static'
+  value: unknown
+  source: string
+  timestamp: number
+}
+
+export interface TaskTemplate {
+  id: string
+  name: string
+  description: string
+  category: string
+  apiType: 'prompt' | 'translation' | 'summarizer' | 'proofreader' | 'writer' | 'rewriter' | 'language_detection'
+  inputSchema: Record<string, unknown>
+  outputSchema: Record<string, unknown>
+  uiConfig: {
+    inputFields: InputFieldConfig[]
+    outputPreview: OutputPreviewConfig
+  }
+  implementation: string
+}
+
+export interface InputFieldConfig {
+  name: string
+  label: string
+  type: 'text' | 'textarea' | 'select' | 'data_point_selector' | 'language_selector' | 'number' | 'boolean'
+  required: boolean
+  placeholder?: string
+  options?: SelectOption[]
+  dataPointTypes?: string[]
+  validation?: FieldValidationConfig
+}
+
+export interface SelectOption {
+  value: string
+  label: string
+  disabled?: boolean
+}
+
+export interface FieldValidationConfig {
+  minLength?: number
+  maxLength?: number
+  pattern?: string
+  custom?: (value: unknown) => string | null
+}
+
+export interface OutputPreviewConfig {
+  type: 'text' | 'html' | 'json' | 'structured'
+  template?: string
+  fields?: string[]
+}
+
+export interface ValidationResult {
+  valid: boolean
+  errors: string[]
+}
+
+export interface ExecutionContext {
+  startTime: number
+  dataPoints: Map<string, DataPoint>
+  aiAdapter: ChromeAIAPI
+  helpers: HelpersAPI
+}
+
+export interface WorkflowResult {
+  success: boolean
+  results: StepResult[]
+  dataPoints: DataPoint[]
+  error?: string
+}
+
+export interface StepResult {
+  stepId: string
+  success: boolean
+  output?: StepOutput
+  error?: string
+  duration: number
+}
+
+// Context Provider Types
+export interface ContentExtractionOptions {
+  includeHtml: boolean
+  includeText: boolean
+  selectors?: string[]
+  maxLength?: number
+}
+
+export interface ContextProvider {
+  readonly id: string
+  readonly name: string
+  readonly description: string
+  readonly outputType: string
+  
+  gather(): Promise<DataPoint>
+  validate(): boolean
+}
+
+// UI Component Types
+export interface TaskInputUI {
+  fields: InputFieldConfig[]
+  layout: 'vertical' | 'horizontal' | 'grid'
+  validation: ValidationConfig
+}
+
+export interface ValidationConfig {
+  validateOnChange: boolean
+  validateOnBlur: boolean
+  showErrors: boolean
+}
+
+export interface HandlerInputUI {
+  fields: InputFieldConfig[]
+  layout: 'vertical' | 'horizontal' | 'grid'
+  validation: ValidationConfig
+}
+
+export interface DataPointSelectorProps {
+  dataPoints: DataPoint[]
+  onSelect: (dataPointId: string, field?: string) => void
+  selectedValue?: DataPointReference
+  placeholder?: string
+  disabled?: boolean
+}
+
+export interface WorkflowBuilderProps {
+  workflow: Workflow
+  onUpdate: (workflow: Workflow) => void
+  availableTasks: TaskTemplate[]
+  availableHandlers: HandlerTemplate[]
+  dataPoints: DataPoint[]
+}
+
+export interface WorkflowStepEditorProps {
+  step: WorkflowStep
+  availableTasks: TaskTemplate[]
+  availableHandlers: HandlerTemplate[]
+  dataPoints: DataPoint[]
+  onUpdate: (step: WorkflowStep) => void
+  onDelete: () => void
+}
+
+export interface HandlerTemplate {
+  id: string
+  name: string
+  description: string
+  category: string
+  inputSchema: Record<string, unknown>
+  permissions: string[]
+  uiConfig: {
+    inputFields: InputFieldConfig[]
+  }
+  implementation: string
+}
+
+export interface HandlerInput {
+  [key: string]: DataPoint | string | number | boolean
 }

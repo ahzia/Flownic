@@ -1,7 +1,17 @@
-import Ajv from 'ajv'
+// Use a simpler validation approach that doesn't require code generation
+// AJV's code generation uses eval() which violates Chrome Extension CSP
 import { ActionPlan, Action, HandlerMeta, PromptTemplate, Workflow } from './types'
 
-const ajv = new Ajv({ allErrors: true })
+// Simple validation functions that don't use eval
+const validateType = (value: any, expectedType: string): boolean => {
+  if (expectedType === 'array') return Array.isArray(value)
+  if (expectedType === 'null') return value === null
+  return typeof value === expectedType
+}
+
+const validateRequired = (obj: any, required: string[]): boolean => {
+  return required.every(key => key in obj && obj[key] !== undefined)
+}
 
 // ActionPlan Schema
 export const actionPlanSchema = {
@@ -331,18 +341,38 @@ export const workflowSchema = {
   }
 }
 
-// Compiled validators
+// Simple validators that don't use code generation (CSP compliant)
+const createValidator = (schema: any) => {
+  return (data: any): boolean => {
+    if (!data || typeof data !== 'object') return false
+    if (schema.required && !validateRequired(data, schema.required)) return false
+    
+    // Basic property validation
+    if (schema.properties) {
+      for (const [key, propSchema] of Object.entries(schema.properties)) {
+        if (data[key] !== undefined) {
+          const prop = propSchema as any
+          if (prop.type && !validateType(data[key], prop.type)) return false
+        }
+      }
+    }
+    
+    return true
+  }
+}
+
+// Compiled validators (now CSP compliant)
 export const validators = {
-  actionPlan: ajv.compile(actionPlanSchema),
-  handlerMeta: ajv.compile(handlerMetaSchema),
-  promptTemplate: ajv.compile(promptTemplateSchema),
-  workflow: ajv.compile(workflowSchema),
+  actionPlan: createValidator(actionPlanSchema),
+  handlerMeta: createValidator(handlerMetaSchema),
+  promptTemplate: createValidator(promptTemplateSchema),
+  workflow: createValidator(workflowSchema),
   
   // Action validators
   actions: Object.fromEntries(
     Object.entries(actionSchemas).map(([op, schema]) => [
       op,
-      ajv.compile(schema)
+      createValidator(schema)
     ])
   )
 }

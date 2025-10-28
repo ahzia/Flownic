@@ -23,9 +23,12 @@
       "@content/*": ["src/content/*"],
       "@handlers/*": ["src/handlers/*"],
       "@common/*": ["src/common/*"],
+      "@core/*": ["src/core/*"],
+      "@tasks/*": ["src/tasks/*"],
+      "@context/*": ["src/context/*"],
       "@utils/*": ["src/utils/*"]
     }
   },
-  "include": ["src"],
+  "include": ["src", "src/common/chrome-ai-apis.d.ts"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }

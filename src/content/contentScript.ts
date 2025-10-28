@@ -8,6 +8,7 @@ class ContentScriptHelpers implements HelpersAPI {
 
   constructor() {
     this.setupMessageListener()
+    this.setupWorkflowTriggers()
   }
 
   private setupMessageListener(): void {
@@ -15,6 +16,154 @@ class ContentScriptHelpers implements HelpersAPI {
       this.handleMessage(message, sender, sendResponse)
       return true // Keep message channel open for async response
     })
+  }
+
+  private setupWorkflowTriggers(): void {
+    // Load enabled workflows and set up triggers
+    this.loadEnabledWorkflows()
+    
+    // Listen for page changes to re-setup triggers
+    const observer = new MutationObserver(() => {
+      this.loadEnabledWorkflows()
+    })
+    observer.observe(document.body, { childList: true, subtree: true })
+  }
+
+  private async loadEnabledWorkflows(): Promise<void> {
+    try {
+      // Check if extension context is still valid
+      if (!chrome.runtime?.id) {
+        console.warn('Extension context invalidated, skipping workflow load')
+        return
+      }
+
+      const response = await chrome.runtime.sendMessage({ type: 'GET_WORKFLOWS' })
+      if (response?.success) {
+        const workflows = response.data || []
+        const enabledWorkflows = workflows.filter((w: any) => w.enabled)
+        
+        // Check if current page matches workflow website patterns
+        const currentUrl = window.location.href
+        const matchingWorkflows = enabledWorkflows.filter((workflow: any) => {
+          return this.matchesWebsitePattern(currentUrl, workflow.websiteConfig)
+        })
+        
+        // Set up triggers for matching workflows
+        matchingWorkflows.forEach((workflow: any) => {
+          this.setupWorkflowTrigger(workflow)
+        })
+      }
+    } catch (error: any) {
+      // Handle extension context invalidated error gracefully
+      if (error.message?.includes('Extension context invalidated') || !chrome.runtime?.id) {
+        console.warn('Extension context invalidated, workflows will reload on next page load')
+        return
+      }
+      console.error('Error loading workflows:', error)
+    }
+  }
+
+  private matchesWebsitePattern(url: string, websiteConfig: any): boolean {
+    if (!websiteConfig || websiteConfig.type === 'all') {
+      return true
+    }
+    
+    const patterns = websiteConfig.patterns.split('\n').filter((p: string) => p.trim())
+    if (patterns.length === 0) {
+      return websiteConfig.type === 'all'
+    }
+    
+    const urlObj = new URL(url)
+    const hostname = urlObj.hostname
+    const pathname = urlObj.pathname
+    
+    for (const pattern of patterns) {
+      const trimmedPattern = pattern.trim()
+      if (this.matchesPattern(hostname + pathname, trimmedPattern)) {
+        return websiteConfig.type === 'specific'
+      }
+    }
+    
+    return websiteConfig.type === 'exclude'
+  }
+
+  private matchesPattern(url: string, pattern: string): boolean {
+    // Convert wildcard pattern to regex
+    const regexPattern = pattern
+      .replace(/\./g, '\\.')
+      .replace(/\*/g, '.*')
+    const regex = new RegExp(`^${regexPattern}$`, 'i')
+    return regex.test(url)
+  }
+
+  private setupWorkflowTrigger(workflow: any): void {
+    const trigger = workflow.triggers[0]
+    if (!trigger) return
+
+    switch (trigger.type) {
+      case 'onPageLoad':
+        // Already handled by page load
+        this.executeWorkflow(workflow)
+        break
+        
+      case 'onSelection':
+        this.setupSelectionTrigger(workflow, trigger)
+        break
+        
+      case 'manual':
+        this.setupManualTrigger(workflow, trigger)
+        break
+    }
+  }
+
+  private setupSelectionTrigger(workflow: any, trigger: any): void {
+    const handleSelection = () => {
+      const selection = window.getSelection()
+      if (selection && selection.toString().trim()) {
+        // Check if selection matches selector if specified
+        if (trigger.selector) {
+          const selectedElement = selection.anchorNode?.parentElement
+          if (selectedElement && !selectedElement.matches(trigger.selector)) {
+            return
+          }
+        }
+        this.executeWorkflow(workflow)
+      }
+    }
+
+    document.addEventListener('mouseup', handleSelection)
+    document.addEventListener('keyup', handleSelection)
+  }
+
+  private setupManualTrigger(workflow: any, trigger: any): void {
+    const handleKeydown = (event: KeyboardEvent) => {
+      // Check if the shortcut matches (simplified - would need proper key combination parsing)
+      if (trigger.shortcut && event.ctrlKey && event.shiftKey && event.key === 'K') {
+        this.executeWorkflow(workflow)
+      }
+    }
+
+    document.addEventListener('keydown', handleKeydown)
+  }
+
+  private async executeWorkflow(workflow: any): Promise<void> {
+    try {
+      console.log('Executing workflow:', workflow.name)
+      
+      // Send workflow execution request to background script
+      const response = await chrome.runtime.sendMessage({
+        type: 'EXECUTE_WORKFLOW',
+        data: { workflow }
+      })
+      
+      if (response.success) {
+        console.log('Workflow executed successfully:', response.data)
+      } else {
+        console.error('Workflow execution failed:', response.error)
+      }
+    } catch (error) {
+      console.error('Error executing workflow:', error)
+    }
   }
 
   private async handleMessage(message: any, _sender: chrome.runtime.MessageSender, sendResponse: (response?: any) => void): Promise<void> {
@@ -95,6 +244,16 @@ class ContentScriptHelpers implements HelpersAPI {
         case 'OPEN_QUICKBAR':
           this.openQuickbar()
           sendResponse({ success: true })
+          break
+
+        case 'GATHER_CONTEXT_DATA':
+          const contextData = this.gatherContextData()
+          sendResponse({ success: true, data: contextData })
+          break
+
+        case 'EXECUTE_HANDLER':
+          const handlerResult = await this.executeHandler(data.handlerId, data.input)
+          sendResponse({ success: true, data: handlerResult })
           break
 
         default:
@@ -630,6 +789,111 @@ class ContentScriptHelpers implements HelpersAPI {
       }
     }
     document.addEventListener('keydown', handleKeydown)
+  }
+
+  private async executeHandler(handlerId: string, input: any): Promise<any> {
+    try {
+      console.log('Executing handler:', handlerId, 'with input:', input)
+      
+      // Execute handler based on handlerId
+      switch (handlerId) {
+        case 'show_modal':
+          if (!input.title || !input.content) {
+            throw new Error('Title and content are required for show_modal handler')
+          }
+          
+          const modalId = await this.showModal({
+            title: input.title,
+            content: input.content,
+            html: input.html || false
+          })
+          
+          return {
+            success: true,
+            data: { modalId },
+            snapshot: { modalId, timestamp: Date.now() }
+          }
+          
+        case 'insert_text':
+          if (!input.selector || !input.text) {
+            throw new Error('Selector and text are required for insert_text handler')
+          }
+          
+          const success = await this.applyText(input.selector, input.text, { method: input.replace ? 'replace' : 'append' })
+          
+          if (!success) {
+            throw new Error(`Element not found for selector: ${input.selector}`)
+          }
+          
+          return {
+            success: true,
+            data: { selector: input.selector },
+            snapshot: { selector: input.selector, timestamp: Date.now() }
+          }
+          
+        default:
+          throw new Error(`Unknown handler: ${handlerId}`)
+      }
+    } catch (error) {
+      console.error('Error executing handler:', error)
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      }
+    }
+  }
+
+  private gatherContextData(): any[] {
+    const dataPoints: any[] = []
+    
+    // Gather selected text
+    const selection = window.getSelection()
+    if (selection && selection.toString().trim()) {
+      dataPoints.push({
+        id: 'selected_text',
+        name: 'Selected Text',
+        type: 'context',
+        value: {
+          text: selection.toString().trim(),
+          length: selection.toString().trim().length,
+          source: 'user_selection'
+        },
+        source: 'selected_text',
+        timestamp: Date.now()
+      })
+    }
+    
+    // Gather page content
+    dataPoints.push({
+      id: 'page_content',
+      name: 'Page Content',
+      type: 'context',
+      value: {
+        html: document.documentElement.outerHTML,
+        title: document.title,
+        url: window.location.href,
+        source: 'page_dom'
+      },
+      source: 'page_content',
+      timestamp: Date.now()
+    })
+    
+    // Gather extracted text (no HTML tags)
+    const extractedText = document.body.innerText || document.body.textContent || ''
+    dataPoints.push({
+      id: 'extracted_text',
+      name: 'Extracted Text',
+      type: 'context',
+      value: {
+        text: extractedText,
+        length: extractedText.length,
+        source: 'text_extraction'
+      },
+      source: 'extracted_text',
+      timestamp: Date.now()
+    })
+    
+    return dataPoints
   }
 }
 

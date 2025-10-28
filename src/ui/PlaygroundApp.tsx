@@ -2,18 +2,28 @@ import React, { useState, useEffect } from 'react'
 import { 
   Plus, Save, Trash2, Settings, Globe, Keyboard, Clock, Eye, Code, 
   Play, Download, Upload, Search, Grid, List,
-  AlertCircle, CheckCircle, Info
+  AlertCircle, CheckCircle, Info, Database, FileText, MousePointer,
+  Target, Zap, ChevronDown, ChevronRight
 } from 'lucide-react'
-import { Workflow, WorkflowStep } from '@common/types'
+import { Workflow, WorkflowStep, DataPoint, TaskTemplate, HandlerTemplate } from '@common/types'
+import { ToastContainer, useToast } from './components/Toast'
+import { TaskInputUI } from '@ui/components/TaskInputUI'
 
 export const PlaygroundApp: React.FC = () => {
   const [workflows, setWorkflows] = useState<Workflow[]>([])
   const [selectedWorkflow, setSelectedWorkflow] = useState<Workflow | null>(null)
   const [isCreating, setIsCreating] = useState(false)
   const [showPreview, setShowPreview] = useState(false)
+  const toast = useToast()
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
   const [searchQuery, setSearchQuery] = useState('')
   const [filterType, setFilterType] = useState<'all' | 'manual' | 'onPageLoad' | 'onSelection' | 'schedule'>('all')
+  
+  // Data points and templates
+  const [dataPoints, setDataPoints] = useState<DataPoint[]>([])
+  const [availableTasks, setAvailableTasks] = useState<TaskTemplate[]>([])
+  const [availableHandlers, setAvailableHandlers] = useState<HandlerTemplate[]>([])
+  const [showDataPoints, setShowDataPoints] = useState(false)
 
   // Form state for creating/editing workflows
   const [formData, setFormData] = useState({
@@ -26,115 +36,251 @@ export const PlaygroundApp: React.FC = () => {
       schedule: '',
       shortcut: ''
     },
+    websiteConfig: {
+      type: 'all' as 'all' | 'specific' | 'exclude',
+      patterns: ''
+    },
     steps: [] as WorkflowStep[]
   })
 
-  // Available handlers with more details
-  const availableHandlers = [
-    { 
-      id: 'show_modal', 
-      name: 'Show Modal', 
-      description: 'Display content in a modal dialog',
-      category: 'UI',
-      icon: '📱'
+  // Task templates
+  const taskTemplates: TaskTemplate[] = [
+    {
+      id: 'translation',
+      name: 'Translate Text',
+      description: 'Translate text from one language to another',
+      category: 'language',
+      apiType: 'translation',
+      inputSchema: {
+        type: 'object',
+        required: ['text', 'targetLanguage'],
+        properties: {
+          text: { type: 'string', description: 'Text to translate' },
+          sourceLanguage: { type: 'string', description: 'Source language (optional)' },
+          targetLanguage: { type: 'string', description: 'Target language' }
+        }
+      },
+      outputSchema: {
+        type: 'object',
+        properties: {
+          translatedText: { type: 'string' },
+          sourceLanguage: { type: 'string' },
+          targetLanguage: { type: 'string' },
+          confidence: { type: 'number' }
+        }
+      },
+      uiConfig: {
+        inputFields: [
+          {
+            name: 'text',
+            label: 'Text to Translate',
+            type: 'textarea',
+            dataPointTypes: ['text', 'html'],
+            required: true,
+            placeholder: 'Enter text to translate or select from data points...'
+          },
+          {
+            name: 'sourceLanguage',
+            label: 'Source Language',
+            type: 'language_selector',
+            required: false
+          },
+          {
+            name: 'targetLanguage',
+            label: 'Target Language',
+            type: 'language_selector',
+            required: true
+          }
+        ],
+        outputPreview: { type: 'structured' }
+      },
+      implementation: 'TranslationTask'
     },
-    { 
-      id: 'insert_text', 
-      name: 'Insert Text', 
-      description: 'Fill form fields with text',
-      category: 'Form',
-      icon: '✏️'
+    {
+      id: 'language_detection',
+      name: 'Detect Language',
+      description: 'Detect the language of the input text',
+      category: 'language',
+      apiType: 'language_detection',
+      inputSchema: {
+        type: 'object',
+        required: ['text'],
+        properties: {
+          text: { type: 'string', description: 'Text to analyze' }
+        }
+      },
+      outputSchema: {
+        type: 'object',
+        properties: {
+          language: { type: 'string' },
+          languageCode: { type: 'string' },
+          confidence: { type: 'number' }
+        }
+      },
+      uiConfig: {
+        inputFields: [
+          {
+            name: 'text',
+            label: 'Text to Analyze',
+            type: 'textarea',
+            dataPointTypes: ['text', 'html'],
+            required: true,
+            placeholder: 'Enter text to analyze or select from data points...'
+          }
+        ],
+        outputPreview: { type: 'structured' }
+      },
+      implementation: 'LanguageDetectionTask'
     },
-    { 
-      id: 'modify_css', 
-      name: 'Modify CSS', 
-      description: 'Inject or toggle CSS styles',
-      category: 'Styling',
-      icon: '🎨'
-    },
-    { 
-      id: 'parse_table_to_csv', 
-      name: 'Parse Table to CSV', 
-      description: 'Extract table data and download as CSV',
-      category: 'Data',
-      icon: '📊'
-    },
-    { 
-      id: 'download_file', 
-      name: 'Download File', 
-      description: 'Download content as a file',
-      category: 'File',
-      icon: '💾'
-    },
-    { 
-      id: 'save_capture', 
-      name: 'Save Capture', 
-      description: 'Store structured data for later use',
-      category: 'Data',
-      icon: '💾'
+    {
+      id: 'custom_prompt',
+      name: 'Custom Prompt',
+      description: 'Use a custom prompt with the AI',
+      category: 'ai',
+      apiType: 'prompt',
+      inputSchema: {
+        type: 'object',
+        required: ['prompt'],
+        properties: {
+          prompt: { type: 'string', description: 'Your custom prompt' },
+          context: { type: 'string', description: 'Additional context (optional)' }
+        }
+      },
+      outputSchema: {
+        type: 'object',
+        properties: {
+          response: { type: 'string' },
+          tokens: { type: 'number' },
+          confidence: { type: 'number' }
+        }
+      },
+      uiConfig: {
+        inputFields: [
+          {
+            name: 'prompt',
+            label: 'Prompt',
+            type: 'textarea',
+            required: true,
+            placeholder: 'Enter your prompt here...'
+          },
+          {
+            name: 'context',
+            label: 'Context',
+            type: 'textarea',
+            dataPointTypes: ['text', 'html', 'json'],
+            required: false,
+            placeholder: 'Enter additional context or select from data points...'
+          }
+        ],
+        outputPreview: { type: 'text' }
+      },
+      implementation: 'CustomPromptTask'
     }
   ]
 
-  // Enhanced prompt templates
-  const promptTemplates = [
+  // Handler templates
+  const handlerTemplates: HandlerTemplate[] = [
     {
-      id: 'summarize_content',
-      name: 'Summarize Content',
-      description: 'Extract key points from page content',
-      prompt: 'Summarize the main content of this webpage in 3-5 key points. Focus on the most important information and insights.',
-      context: { usePageContent: true, useSelectedText: false, useKB: false, useLastCapture: false },
-      category: 'Content',
-      icon: '📝'
+      id: 'show_modal',
+      name: 'Show Modal',
+      description: 'Display text or HTML in a modal',
+      category: 'ui',
+      inputSchema: {
+        type: 'object',
+        required: ['title', 'content'],
+        properties: {
+          title: { type: 'string' },
+          content: { type: 'string' }
+        }
+      },
+      permissions: ['activeTab'],
+      uiConfig: {
+        inputFields: [
+          {
+            name: 'title',
+            label: 'Modal Title',
+            type: 'text',
+            required: true
+          },
+          {
+            name: 'content',
+            label: 'Modal Content',
+            type: 'textarea',
+            dataPointTypes: ['text', 'html'],
+            required: true,
+            placeholder: 'Enter modal content or select from data points...'
+          }
+        ]
+      },
+      implementation: 'show_modal'
     },
     {
-      id: 'extract_quotes',
-      name: 'Extract Quotes',
-      description: 'Find and extract notable quotes from the page',
-      prompt: 'Extract the most notable quotes from this webpage. Include the context and author if available.',
-      context: { usePageContent: true, useSelectedText: false, useKB: false, useLastCapture: false },
-      category: 'Content',
-      icon: '💬'
+      id: 'insert_text',
+      name: 'Insert Text',
+      description: 'Insert text into an input field',
+      category: 'ui',
+      inputSchema: {
+        type: 'object',
+        required: ['selector', 'text'],
+        properties: {
+          selector: { type: 'string' },
+          text: { type: 'string' }
+        }
+      },
+      permissions: ['activeTab'],
+      uiConfig: {
+        inputFields: [
+          {
+            name: 'selector',
+            label: 'CSS Selector',
+            type: 'text',
+            required: true,
+            placeholder: 'e.g., #input-field'
+          },
+          {
+            name: 'text',
+            label: 'Text to Insert',
+            type: 'text',
+            dataPointTypes: ['text'],
+            required: true,
+            placeholder: 'Enter text or select from data points...'
+          }
+        ]
+      },
+      implementation: 'insert_text'
+    }
+  ]
+
+  // Context providers for data points
+  const contextProviders = [
+    {
+      id: 'selected_text',
+      name: 'Selected Text',
+      description: 'Currently selected text on the page',
+      icon: <MousePointer className="icon" />,
+      type: 'text'
     },
     {
-      id: 'analyze_sentiment',
-      name: 'Analyze Sentiment',
-      description: 'Analyze the emotional tone of the content',
-      prompt: 'Analyze the sentiment and emotional tone of this webpage content. Provide insights on the overall mood and key emotional themes.',
-      context: { usePageContent: true, useSelectedText: false, useKB: false, useLastCapture: false },
-      category: 'Analysis',
-      icon: '😊'
+      id: 'page_content',
+      name: 'Page Content',
+      description: 'Full HTML content of the current page',
+      icon: <FileText className="icon" />,
+      type: 'html'
     },
     {
-      id: 'extract_links',
-      name: 'Extract Links',
-      description: 'Find and categorize all links on the page',
-      prompt: 'Extract all links from this webpage and categorize them by type (internal, external, social media, etc.).',
-      context: { usePageContent: true, useSelectedText: false, useKB: false, useLastCapture: false },
-      category: 'Data',
-      icon: '🔗'
-    },
-    {
-      id: 'translate_content',
-      name: 'Translate Content',
-      description: 'Translate page content to another language',
-      prompt: 'Translate the main content of this webpage to {language}. Maintain the original formatting and structure.',
-      context: { usePageContent: true, useSelectedText: false, useKB: false, useLastCapture: false },
-      category: 'Content',
-      icon: '🌐'
-    },
-    {
-      id: 'extract_contact_info',
-      name: 'Extract Contact Info',
-      description: 'Find contact information on the page',
-      prompt: 'Extract all contact information from this webpage including emails, phone numbers, and addresses.',
-      context: { usePageContent: true, useSelectedText: false, useKB: false, useLastCapture: false },
-      category: 'Data',
-      icon: '📞'
+      id: 'extracted_text',
+      name: 'Extracted Text',
+      description: 'Plain text extracted from the page (no HTML)',
+      icon: <Target className="icon" />,
+      type: 'text'
     }
   ]
 
   useEffect(() => {
     loadWorkflows()
+    loadDataPoints()
+    setAvailableTasks(taskTemplates)
+    setAvailableHandlers(handlerTemplates)
     
     // Handle back button
     const backButton = document.getElementById('backButton')
@@ -148,17 +294,185 @@ export const PlaygroundApp: React.FC = () => {
 
   const loadWorkflows = async () => {
     try {
+      console.log('--- Loading workflows ---')
       const response = await chrome.runtime.sendMessage({ type: 'GET_WORKFLOWS' })
-      if (response.success) {
-        setWorkflows(response.data || [])
+      console.log('GET_WORKFLOWS response:', response)
+      
+      if (response && response.success) {
+        const workflows = response.data || []
+        console.log('Loaded workflows count:', workflows.length)
+        console.log('Loaded workflows:', workflows.map((w: Workflow) => ({ id: w.id, name: w.name })))
+        setWorkflows(workflows)
+        console.log('✅ Workflows state updated')
+      } else {
+        console.warn('Failed to load workflows, response:', response)
       }
     } catch (error) {
-      console.error('Error loading workflows:', error)
+      console.error('❌ Error loading workflows:', error)
     }
+  }
+
+  const loadDataPoints = async () => {
+    try {
+      // Load data points from the current workflow or create default context data points
+      const defaultDataPoints: DataPoint[] = contextProviders.map(provider => ({
+        id: provider.id,
+        name: provider.name,
+        type: 'context',
+        value: null,
+        source: 'context_provider',
+        timestamp: Date.now()
+      }))
+      
+      setDataPoints(defaultDataPoints)
+    } catch (error) {
+      console.error('Error loading data points:', error)
+    }
+  }
+
+  const addDataPoint = (dataPoint: DataPoint) => {
+    setDataPoints(prev => [...prev, dataPoint])
+  }
+
+  const removeDataPoint = (dataPointId: string) => {
+    setDataPoints(prev => prev.filter(dp => dp.id !== dataPointId))
+  }
+
+  const gatherContextData = async (providerId: string) => {
+    try {
+      // This would normally call the content script to gather data
+      // For now, we'll simulate it
+      const mockData = {
+        selected_text: {
+          text: 'This is selected text from the page',
+          length: 40,
+          source: 'user_selection'
+        },
+        page_content: {
+          html: '<html><body><h1>Page Title</h1><p>Page content...</p></body></html>',
+          title: 'Page Title',
+          url: window.location.href,
+          source: 'page_dom'
+        },
+        extracted_text: {
+          text: 'Page Title\n\nPage content...',
+          length: 25,
+          source: 'text_extraction'
+        }
+      }
+
+      const provider = contextProviders.find(p => p.id === providerId)
+      const value = mockData[providerId as keyof typeof mockData] || { text: 'No data available' }
+
+      const dataPoint: DataPoint = {
+        id: `${providerId}_${Date.now()}`,
+        name: provider?.name || providerId,
+        type: 'context',
+        value: value,
+        source: providerId,
+        timestamp: Date.now()
+      }
+
+      addDataPoint(dataPoint)
+      return dataPoint
+    } catch (error) {
+      console.error('Error gathering context data:', error)
+      return null
+    }
+  }
+
+  // Normalize data point references: map dynamic playground IDs to stable runtime IDs
+  const normalizeWorkflowDataPointReferences = (workflow: Workflow): Workflow => {
+    const normalized = JSON.parse(JSON.stringify(workflow)) // Deep clone
+    
+    // Map to track step outputs
+    const stepOutputMap: Record<string, string> = {}
+    
+    normalized.steps = normalized.steps.map((step: WorkflowStep, index: number) => {
+      const normalizedStep = { ...step }
+      normalizedStep.input = normalizeDataPointReferences(step.input, stepOutputMap, index)
+      
+      // Map this step's output ID for future steps
+      if (step.type === 'task' && step.id) {
+        stepOutputMap[step.id] = `${step.id}_output`
+      }
+      
+      return normalizedStep
+    })
+    
+    return normalized
+  }
+  
+  const normalizeDataPointReferences = (input: any, stepOutputMap: Record<string, string>, currentStepIndex: number): any => {
+    if (typeof input !== 'object' || input === null) {
+      return input
+    }
+    
+    // If this is a data point reference
+    if (input.type === 'data_point') {
+      const dataPointId = input.dataPointId
+      
+      // Check if it's a context provider (starts with context provider ID)
+      if (dataPointId.startsWith('selected_text') || dataPointId === 'selected_text') {
+        return {
+          type: 'data_point',
+          dataPointId: 'selected_text', // Stable runtime ID
+          field: input.field
+        }
+      } else if (dataPointId.startsWith('page_content') || dataPointId === 'page_content') {
+        return {
+          type: 'data_point',
+          dataPointId: 'page_content',
+          field: input.field
+        }
+      } else if (dataPointId.startsWith('extracted_text') || dataPointId === 'extracted_text') {
+        return {
+          type: 'data_point',
+          dataPointId: 'extracted_text',
+          field: input.field
+        }
+      }
+      // Check if it's a task output from a previous step
+      else if (dataPointId.includes('_output_')) {
+        // Extract the step ID from the output ID
+        const stepId = dataPointId.split('_output_')[0]
+        const normalizedOutputId = stepOutputMap[stepId] || `${stepId}_output`
+        
+        return {
+          type: 'data_point',
+          dataPointId: normalizedOutputId,
+          field: input.field
+        }
+      }
+      
+      // Return as-is if we can't normalize
+      return input
+    }
+    
+    // Recursively normalize nested objects
+    const normalized: any = {}
+    for (const [key, value] of Object.entries(input)) {
+      normalized[key] = normalizeDataPointReferences(value, stepOutputMap, currentStepIndex)
+    }
+    
+    return normalized
   }
 
   const saveWorkflow = async () => {
     try {
+      console.log('Saving workflow with form data:', formData)
+      
+      // Validate required fields
+      if (!formData.name.trim()) {
+        alert('Please enter a workflow name')
+        return
+      }
+      
+      if (formData.steps.length === 0) {
+        alert('Please add at least one step to the workflow')
+        return
+      }
+
       // Convert form trigger to WorkflowTrigger interface
       const trigger = {
         type: formData.trigger.type,
@@ -173,23 +487,53 @@ export const PlaygroundApp: React.FC = () => {
         description: formData.description,
         steps: formData.steps,
         triggers: [trigger],
+        dataPoints: [], // Workflows are templates - no actual data points
         enabled: true,
         createdAt: selectedWorkflow?.createdAt || Date.now(),
-        updatedAt: Date.now()
+        updatedAt: Date.now(),
+        version: '1.0.0',
+        websiteConfig: formData.websiteConfig
       }
 
-      const response = await chrome.runtime.sendMessage({
-        type: 'SAVE_WORKFLOW',
-        data: { workflow }
-      })
+      // Normalize data point references to use stable IDs
+      const normalizedWorkflow = normalizeWorkflowDataPointReferences(workflow)
+      console.log('Sending workflow to background:', normalizedWorkflow)
 
-      if (response.success) {
+      // Send message with timeout
+      const response = await Promise.race([
+        chrome.runtime.sendMessage({
+          type: 'SAVE_WORKFLOW',
+          data: { workflow: normalizedWorkflow }
+        }),
+        new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Save timeout: No response from background script')), 5000)
+        )
+      ]) as any
+
+      console.log('Save response received:', response)
+      console.log('Response type:', typeof response)
+      console.log('Response keys:', response ? Object.keys(response) : 'null')
+
+      if (response && response.success) {
+        console.log('Save successful, reloading workflows...')
+        toast.success('Workflow saved successfully!')
         await loadWorkflows()
-        setSelectedWorkflow(workflow)
+        setSelectedWorkflow(normalizedWorkflow)
         setIsCreating(false)
+      } else {
+        const errorMsg = response?.error || 'Unknown error'
+        console.error('Save failed:', errorMsg, 'Full response:', response)
+        toast.error(`Failed to save workflow: ${errorMsg}`)
       }
     } catch (error) {
       console.error('Error saving workflow:', error)
+      console.error('Error details:', {
+        message: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined
+      })
+      
+      const errorMessage = error instanceof Error ? error.message : String(error)
+      toast.error(`Error saving workflow: ${errorMessage}`)
     }
   }
 
@@ -213,12 +557,37 @@ export const PlaygroundApp: React.FC = () => {
     }
   }
 
-  const addStep = (type: 'prompt' | 'action') => {
+  const toggleWorkflowEnabled = async (workflowId: string) => {
+    try {
+      const workflow = workflows.find(w => w.id === workflowId)
+      if (!workflow) return
+
+      const updatedWorkflow = { ...workflow, enabled: !workflow.enabled }
+      
+      const response = await chrome.runtime.sendMessage({
+        type: 'SAVE_WORKFLOW',
+        data: { workflow: updatedWorkflow }
+      })
+
+      if (response.success) {
+        await loadWorkflows()
+        alert(`Workflow ${updatedWorkflow.enabled ? 'enabled' : 'disabled'} successfully!`)
+      } else {
+        alert('Failed to update workflow status')
+      }
+    } catch (error) {
+      console.error('Error toggling workflow status:', error)
+      alert('Error updating workflow status')
+    }
+  }
+
+  const addStep = (type: 'task' | 'handler') => {
     const newStep: WorkflowStep = {
       id: `step_${Date.now()}`,
       type,
-      promptId: type === 'prompt' ? '' : undefined,
-      action: type === 'action' ? { op: 'SHOW_MODAL', params: {} } : undefined,
+      taskId: type === 'task' ? '' : undefined,
+      handlerId: type === 'handler' ? '' : undefined,
+      input: {},
       condition: '',
       delay: 0
     }
@@ -229,13 +598,75 @@ export const PlaygroundApp: React.FC = () => {
     }))
   }
 
+  // Simulate task execution and add output data points
+  const simulateTaskExecution = (step: WorkflowStep) => {
+    if (step.type === 'task' && step.taskId) {
+      const taskTemplate = availableTasks.find(t => t.id === step.taskId)
+      if (taskTemplate) {
+        // Create mock output based on task type
+        let mockOutput: any = {}
+        
+        if (step.taskId === 'language_detection') {
+          mockOutput = {
+            language: 'Spanish',
+            languageCode: 'es',
+            confidence: 0.95,
+            allResults: [
+              { language: 'Spanish', languageCode: 'es', confidence: 0.95 },
+              { language: 'Portuguese', languageCode: 'pt', confidence: 0.03 },
+              { language: 'Italian', languageCode: 'it', confidence: 0.02 }
+            ]
+          }
+        } else if (step.taskId === 'translation') {
+          mockOutput = {
+            translatedText: 'This is the translated text',
+            sourceLanguage: 'es',
+            targetLanguage: 'en',
+            confidence: 0.9
+          }
+        } else if (step.taskId === 'custom_prompt') {
+          mockOutput = {
+            response: 'This is the AI response to your custom prompt',
+            tokens: 150,
+            confidence: 0.85
+          }
+        }
+
+        // Add task output as data point
+        const outputDataPoint: DataPoint = {
+          id: `${step.id}_output_${Date.now()}`,
+          name: `${taskTemplate.name} Output`,
+          type: 'task_output',
+          value: mockOutput,
+          source: step.id,
+          timestamp: Date.now()
+        }
+
+        addDataPoint(outputDataPoint)
+      }
+    }
+  }
+
   const updateStep = (stepId: string, updates: Partial<WorkflowStep>) => {
-    setFormData(prev => ({
-      ...prev,
-      steps: prev.steps.map(step =>
+    setFormData(prev => {
+      const updatedSteps = prev.steps.map(step =>
         step.id === stepId ? { ...step, ...updates } : step
       )
-    }))
+      
+      // If a task was just selected, simulate its execution to create output data point
+      const updatedStep = updatedSteps.find(step => step.id === stepId)
+      if (updatedStep && updates.taskId && updatedStep.type === 'task') {
+        // Delay the simulation to allow the UI to update first
+        setTimeout(() => {
+          simulateTaskExecution(updatedStep)
+        }, 100)
+      }
+      
+      return {
+        ...prev,
+        steps: updatedSteps
+      }
+    })
   }
 
   const removeStep = (stepId: string) => {
@@ -256,6 +687,10 @@ export const PlaygroundApp: React.FC = () => {
         schedule: '',
         shortcut: ''
       },
+      websiteConfig: {
+        type: 'all',
+        patterns: ''
+      },
       steps: []
     })
     setSelectedWorkflow(null)
@@ -272,6 +707,10 @@ export const PlaygroundApp: React.FC = () => {
         selector: workflow.triggers[0]?.selector || '',
         schedule: workflow.triggers[0]?.schedule || '',
         shortcut: '' // This is a UI-only field for manual triggers
+      },
+      websiteConfig: workflow.websiteConfig || {
+        type: 'all',
+        patterns: ''
       },
       steps: workflow.steps
     })
@@ -338,6 +777,7 @@ export const PlaygroundApp: React.FC = () => {
   if (!isCreating) {
     return (
       <div className="playground-app">
+        <ToastContainer toasts={toast.toasts} onRemove={toast.removeToast} />
         {/* Header Controls */}
         <div className="playground-controls">
           <div className="playground-controls-left">
@@ -464,13 +904,19 @@ export const PlaygroundApp: React.FC = () => {
                   </div>
                   <div className="workflow-stats">
                     <span>{workflow.steps.length} step{workflow.steps.length !== 1 ? 's' : ''}</span>
-                    <span className="workflow-status">
-                      {workflow.enabled ? (
-                        <><CheckCircle className="icon" /> Enabled</>
-                      ) : (
-                        <><AlertCircle className="icon" /> Disabled</>
-                      )}
-                    </span>
+                    <div className="workflow-status">
+                      <button
+                        className={`status-toggle ${workflow.enabled ? 'enabled' : 'disabled'}`}
+                        onClick={() => toggleWorkflowEnabled(workflow.id)}
+                        title={workflow.enabled ? 'Disable workflow' : 'Enable workflow'}
+                      >
+                        {workflow.enabled ? (
+                          <><CheckCircle className="icon" /> Enabled</>
+                        ) : (
+                          <><AlertCircle className="icon" /> Disabled</>
+                        )}
+                      </button>
+                    </div>
                   </div>
                 </div>
 
@@ -481,9 +927,9 @@ export const PlaygroundApp: React.FC = () => {
                         <span className="step-number">{index + 1}</span>
                         <span className="step-type">{step.type}</span>
                         <span className="step-detail">
-                          {step.type === 'prompt' 
-                            ? promptTemplates.find(t => t.id === step.promptId)?.name || 'Custom Prompt'
-                            : step.action?.op || 'Unknown Action'
+                          {step.type === 'task' 
+                            ? 'Task'
+                            : 'Handler'
                           }
                         </span>
                       </div>
@@ -500,6 +946,7 @@ export const PlaygroundApp: React.FC = () => {
 
   return (
     <div className="workflow-editor">
+      <ToastContainer toasts={toast.toasts} onRemove={toast.removeToast} />
       {/* Editor Header */}
       <div className="editor-header">
         <div className="editor-title">
@@ -548,6 +995,94 @@ export const PlaygroundApp: React.FC = () => {
                 />
               </div>
             </div>
+          </div>
+
+          {/* Data Points Management */}
+          <div className="editor-section">
+            <div className="section-header">
+              <h3>Data Points</h3>
+              <button 
+                className="btn btn-secondary"
+                onClick={() => setShowDataPoints(!showDataPoints)}
+              >
+                {showDataPoints ? <ChevronDown className="icon" /> : <ChevronRight className="icon" />}
+                {showDataPoints ? 'Hide' : 'Show'} Data Points
+              </button>
+            </div>
+            
+            {showDataPoints && (
+              <div className="data-points-container">
+                <div className="data-points-header">
+                  <h4>Available Data Points</h4>
+                  <p>These are the data sources you can use in your workflow steps</p>
+                </div>
+                
+                <div className="context-providers">
+                  <h5>Context Providers</h5>
+                  <div className="provider-grid">
+                    {contextProviders.map(provider => (
+                      <div key={provider.id} className="provider-card">
+                        <div className="provider-icon">{provider.icon}</div>
+                        <div className="provider-info">
+                          <h6>{provider.name}</h6>
+                          <p>{provider.description}</p>
+                        </div>
+                        <button
+                          className="btn btn-sm btn-primary"
+                          onClick={() => gatherContextData(provider.id)}
+                        >
+                          <Zap className="icon" />
+                          Gather
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="data-points-list">
+                  <h5>Current Data Points</h5>
+                  {dataPoints.length === 0 ? (
+                    <div className="empty-state">
+                      <Database className="icon" />
+                      <p>No data points yet. Use context providers to gather data.</p>
+                    </div>
+                  ) : (
+                    <div className="data-points-grid">
+                      {dataPoints.map(dataPoint => (
+                        <div key={dataPoint.id} className="data-point-card">
+                          <div className="data-point-header">
+                            <div className="data-point-icon">
+                              {dataPoint.type === 'context' && <Database className="icon" />}
+                              {dataPoint.type === 'task_output' && <Zap className="icon" />}
+                              {dataPoint.type === 'static' && <FileText className="icon" />}
+                            </div>
+                            <div className="data-point-info">
+                              <h6>{dataPoint.name}</h6>
+                              <span className="data-point-type">{dataPoint.type}</span>
+                            </div>
+                            <button
+                              className="btn-icon danger"
+                              onClick={() => removeDataPoint(dataPoint.id)}
+                              title="Remove data point"
+                            >
+                              <Trash2 className="icon" />
+                            </button>
+                          </div>
+                          <div className="data-point-preview">
+                            <code>
+                              {typeof dataPoint.value === 'string' 
+                                ? dataPoint.value.substring(0, 100) + (dataPoint.value.length > 100 ? '...' : '')
+                                : JSON.stringify(dataPoint.value).substring(0, 100) + (JSON.stringify(dataPoint.value).length > 100 ? '...' : '')
+                              }
+                            </code>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Trigger Configuration */}
@@ -622,18 +1157,61 @@ export const PlaygroundApp: React.FC = () => {
             </div>
           </div>
 
+          {/* Website Configuration */}
+          <div className="editor-section">
+            <h3>Website Configuration</h3>
+            <div className="form-grid">
+              <div className="form-group">
+                <label>Run on websites</label>
+                <select
+                  value={formData.websiteConfig.type}
+                  onChange={(e) => setFormData(prev => ({
+                    ...prev,
+                    websiteConfig: { ...prev.websiteConfig, type: e.target.value as any }
+                  }))}
+                  className="form-select"
+                >
+                  <option value="all">All websites</option>
+                  <option value="specific">Specific websites only</option>
+                  <option value="exclude">All websites except</option>
+                </select>
+              </div>
+
+              {(formData.websiteConfig.type === 'specific' || formData.websiteConfig.type === 'exclude') && (
+                <div className="form-group">
+                  <label>
+                    {formData.websiteConfig.type === 'specific' ? 'Website patterns' : 'Excluded patterns'}
+                  </label>
+                  <textarea
+                    value={formData.websiteConfig.patterns}
+                    onChange={(e) => setFormData(prev => ({
+                      ...prev,
+                      websiteConfig: { ...prev.websiteConfig, patterns: e.target.value }
+                    }))}
+                    placeholder="Enter one pattern per line:&#10;medium.com&#10;*.github.com&#10;example.com/path"
+                    className="form-textarea"
+                    rows={4}
+                  />
+                  <small>
+                    Use * for wildcards. One pattern per line. Examples: medium.com, *.github.com, example.com/path
+                  </small>
+                </div>
+              )}
+            </div>
+          </div>
+
           {/* Workflow Steps */}
           <div className="editor-section">
             <div className="section-header">
               <h3>Workflow Steps</h3>
               <div className="step-actions">
-                <button className="btn btn-secondary" onClick={() => addStep('prompt')}>
+                <button className="btn btn-secondary" onClick={() => addStep('task')}>
                   <Plus className="icon" />
-                  Add Prompt
+                  Add Task
                 </button>
-                <button className="btn btn-secondary" onClick={() => addStep('action')}>
+                <button className="btn btn-secondary" onClick={() => addStep('handler')}>
                   <Plus className="icon" />
-                  Add Action
+                  Add Handler
                 </button>
               </div>
             </div>
@@ -653,48 +1231,68 @@ export const PlaygroundApp: React.FC = () => {
                   </div>
 
                   <div className="step-content">
-                    {step.type === 'prompt' && (
-                      <div className="form-group">
-                        <label>Prompt Template</label>
-                        <select
-                          value={step.promptId || ''}
-                          onChange={(e) => updateStep(step.id, { promptId: e.target.value })}
-                          className="form-select"
-                        >
-                          <option value="">Select a template...</option>
-                          {promptTemplates.map(template => (
-                            <option key={template.id} value={template.id}>
-                              {template.icon} {template.name} - {template.description}
-                            </option>
-                          ))}
-                        </select>
-                        {step.promptId && (
-                          <div className="prompt-preview">
-                            <h5>Preview:</h5>
-                            <p>{promptTemplates.find(t => t.id === step.promptId)?.prompt}</p>
+                    {step.type === 'task' && (
+                      <>
+                        <div className="form-group">
+                          <label>Task Template</label>
+                          <select
+                            value={step.taskId || ''}
+                            onChange={(e) => updateStep(step.id, { taskId: e.target.value })}
+                            className="form-select"
+                          >
+                            <option value="">Select a task...</option>
+                            {availableTasks.map(task => (
+                              <option key={task.id} value={task.id}>
+                                {task.name} - {task.description}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+
+                        {step.taskId && (
+                          <div className="task-input-section">
+                            <h5>Task Configuration</h5>
+                            <TaskInputUI
+                              taskTemplate={availableTasks.find(t => t.id === step.taskId)}
+                              dataPoints={dataPoints}
+                              input={step.input || {}}
+                              onInputChange={(input) => updateStep(step.id, { input })}
+                            />
                           </div>
                         )}
-                      </div>
+                      </>
                     )}
 
-                    {step.type === 'action' && (
-                      <div className="form-group">
-                        <label>Action</label>
-                        <select
-                          value={step.action?.op || ''}
-                          onChange={(e) => updateStep(step.id, {
-                            action: { op: e.target.value, params: {} }
-                          })}
-                          className="form-select"
-                        >
-                          <option value="">Select an action...</option>
-                          {availableHandlers.map(handler => (
-                            <option key={handler.id} value={handler.id.toUpperCase()}>
-                              {handler.icon} {handler.name} - {handler.description}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
+                    {step.type === 'handler' && (
+                      <>
+                        <div className="form-group">
+                          <label>Handler</label>
+                          <select
+                            value={step.handlerId || ''}
+                            onChange={(e) => updateStep(step.id, { handlerId: e.target.value })}
+                            className="form-select"
+                          >
+                            <option value="">Select a handler...</option>
+                            {availableHandlers.map(handler => (
+                              <option key={handler.id} value={handler.id}>
+                                {handler.name} - {handler.description}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+
+                        {step.handlerId && (
+                          <div className="handler-input-section">
+                            <h5>Handler Configuration</h5>
+                            <TaskInputUI
+                              taskTemplate={availableHandlers.find(h => h.id === step.handlerId)}
+                              dataPoints={dataPoints}
+                              input={step.input || {}}
+                              onInputChange={(input) => updateStep(step.id, { input })}
+                            />
+                          </div>
+                        )}
+                      </>
                     )}
 
                     <div className="form-group">
@@ -748,9 +1346,9 @@ export const PlaygroundApp: React.FC = () => {
                     <span className="step-number">{index + 1}</span>
                     <span className="step-type">{step.type}</span>
                     <span className="step-detail">
-                      {step.type === 'prompt' 
-                        ? promptTemplates.find(t => t.id === step.promptId)?.name || 'Custom Prompt'
-                        : step.action?.op || 'Unknown Action'
+                      {step.type === 'task' 
+                        ? 'Task'
+                        : 'Handler'
                       }
                     </span>
                   </div>

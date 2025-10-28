@@ -48,6 +48,9 @@ export default defineConfig({
       '@content': resolve(__dirname, 'src/content'),
       '@handlers': resolve(__dirname, 'src/handlers'),
       '@common': resolve(__dirname, 'src/common'),
+      '@core': resolve(__dirname, 'src/core'),
+      '@tasks': resolve(__dirname, 'src/tasks'),
+      '@context': resolve(__dirname, 'src/context'),
       '@utils': resolve(__dirname, 'src/utils')
     }
   },
