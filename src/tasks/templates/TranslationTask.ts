@@ -55,16 +55,38 @@ export class TranslationTask extends BaseTask {
         throw new Error('Translator API is not available in this browser')
       }
       
-      // Check availability and download model if needed
-      const availability = await TranslatorAPI.availability()
-      if (availability === 'unavailable') {
-        throw new Error('Translator API is not available')
+      // Determine source and target languages
+      const sourceLang = (sourceLanguage as string) || 'auto'
+      const targetLang = targetLanguage as string
+      
+      // For auto-detection, we can't check availability without a source language
+      // So we'll try to create the translator directly and handle errors
+      let translator
+      let availability: 'available' | 'downloadable' | 'unavailable' = 'available'
+      
+      if (sourceLang !== 'auto') {
+        // Check availability for specific language pair
+        try {
+          availability = await TranslatorAPI.availability({
+            sourceLanguage: sourceLang,
+            targetLanguage: targetLang
+          })
+        } catch (err) {
+          console.warn('Failed to check availability, attempting to create translator:', err)
+          availability = 'available' // Assume available and try to create
+        }
       }
       
-      let translator
+      if (availability === 'unavailable') {
+        throw new Error(`Translation model not available for ${sourceLang} -> ${targetLang}`)
+      }
+      
+      // Create translator with appropriate options
       if (availability === 'downloadable') {
         // Create translator with download monitoring
         translator = await TranslatorAPI.create({
+          sourceLanguage: sourceLang === 'auto' ? undefined : sourceLang,
+          targetLanguage: targetLang,
           monitor(m: any) {
             m.addEventListener('downloadprogress', (e: any) => {
               console.log(`Translation model downloaded ${e.loaded * 100}%`)
@@ -73,17 +95,15 @@ export class TranslationTask extends BaseTask {
         })
       } else {
         // Model is already available
-        translator = await TranslatorAPI.create()
+        translator = await TranslatorAPI.create({
+          sourceLanguage: sourceLang === 'auto' ? undefined : sourceLang,
+          targetLanguage: targetLang
+        })
       }
       
       // Translate text using Chrome Translator API
-      // API signature: translate(text: string, targetLanguage: string, sourceLanguage?: string)
-      const sourceLang = (sourceLanguage as string) || 'auto'
-      const translatedText = await translator.translate(
-        text as string,
-        targetLanguage as string,
-        sourceLang === 'auto' ? undefined : sourceLang
-      )
+      // API signature: translate(text: string)
+      const translatedText = await translator.translate(text as string)
       
       return {
         data: {
@@ -100,31 +120,12 @@ export class TranslationTask extends BaseTask {
         }
       }
     } catch (error) {
-      // Fallback to the existing aiAdapter if Chrome API fails
-      console.warn('Chrome Translator API failed, using fallback method:', error)
-      try {
-        const translatedText = await context.aiAdapter.translator(
-          text as string,
-          targetLanguage as string
-        )
-        
-        return {
-          data: {
-            translatedText,
-            sourceLanguage: sourceLanguage || 'auto',
-            targetLanguage,
-            confidence: 0.9
-          },
-          type: 'structured',
-          metadata: {
-            confidence: 0.9,
-            processingTime: Date.now() - context.startTime,
-            source: 'fallback_translation_api'
-          }
-        }
-      } catch (fallbackError) {
-        throw new Error(`Translation failed: ${fallbackError instanceof Error ? fallbackError.message : 'Unknown error'}`)
-      }
+      // Chrome Translator API is required - no fallback
+      console.error('Chrome Translator API failed:', error)
+      throw new Error(
+        `Translation failed: ${error instanceof Error ? error.message : 'Unknown error'}. ` +
+        `Chrome Translator API is required for this task.`
+      )
     }
   }
   

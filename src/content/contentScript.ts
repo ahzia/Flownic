@@ -117,7 +117,15 @@ class ContentScriptHelpers implements HelpersAPI {
   }
 
   private setupSelectionTrigger(workflow: any, trigger: any): void {
+    let lastExecutionTime = 0
+    const DEBOUNCE_MS = 1000 // Prevent multiple executions within 1 second
+    
     const handleSelection = () => {
+      const now = Date.now()
+      if (now - lastExecutionTime < DEBOUNCE_MS) {
+        return // Skip if executed recently
+      }
+      
       const selection = window.getSelection()
       if (selection && selection.toString().trim()) {
         // Check if selection matches selector if specified
@@ -127,6 +135,7 @@ class ContentScriptHelpers implements HelpersAPI {
             return
           }
         }
+        lastExecutionTime = now
         this.executeWorkflow(workflow)
       }
     }
@@ -254,6 +263,11 @@ class ContentScriptHelpers implements HelpersAPI {
         case 'EXECUTE_HANDLER':
           const handlerResult = await this.executeHandler(data.handlerId, data.input)
           sendResponse({ success: true, data: handlerResult })
+          break
+
+        case 'EXECUTE_TASK':
+          const taskResult = await this.executeTask(data.taskId, data.input)
+          sendResponse({ success: true, data: taskResult })
           break
 
         default:
@@ -791,20 +805,59 @@ class ContentScriptHelpers implements HelpersAPI {
     document.addEventListener('keydown', handleKeydown)
   }
 
+  private async executeTask(taskId: string, input: any): Promise<any> {
+    try {
+      console.log(`🎯 Executing task: ${taskId}`, input)
+      
+      // Import TaskRegistry dynamically
+      const { TaskRegistry } = await import('@core/TaskRegistry')
+      const registry = new TaskRegistry()
+      
+      // Create execution context
+      const context = {
+        startTime: Date.now(),
+        tabId: null,
+        url: window.location.href,
+        aiAdapter: null // Tasks will use Chrome APIs directly
+      }
+      
+      // Execute the task
+      const result = await registry.executeTask(taskId, input, context)
+      
+      console.log(`✅ Task completed: ${taskId}`, result)
+      
+      return {
+        success: true,
+        data: result.data || result
+      }
+    } catch (error) {
+      console.error(`❌ Error executing task ${taskId}:`, error)
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      }
+    }
+  }
+
   private async executeHandler(handlerId: string, input: any): Promise<any> {
     try {
-      console.log('Executing handler:', handlerId, 'with input:', input)
+      console.log('🎬 Executing handler:', handlerId, 'with input:', input)
       
       // Execute handler based on handlerId
       switch (handlerId) {
         case 'show_modal':
-          if (!input.title || !input.content) {
+          // Convert null/empty content to empty string for display
+          const title = input.title || 'Notification'
+          const content = input.content != null ? String(input.content) : ''
+          
+          if (!title || content === null) {
+            console.error('Invalid modal input:', { title, content: input.content })
             throw new Error('Title and content are required for show_modal handler')
           }
           
           const modalId = await this.showModal({
-            title: input.title,
-            content: input.content,
+            title,
+            content,
             html: input.html || false
           })
           

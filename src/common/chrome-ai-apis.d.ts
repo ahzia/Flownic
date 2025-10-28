@@ -22,14 +22,19 @@ declare global {
   }
   
   interface Translator {
-    availability(): Promise<'available' | 'downloadable' | 'unavailable'>
+    availability(options: {
+      sourceLanguage: string
+      targetLanguage: string
+    }): Promise<'available' | 'downloadable' | 'unavailable'>
     create(options?: {
+      sourceLanguage?: string
+      targetLanguage: string
       monitor?: (monitor: EventTarget) => void
     }): Promise<TranslatorInstance>
   }
   
   interface TranslatorInstance {
-    translate(text: string, targetLanguage: string, sourceLanguage?: string): Promise<string>
+    translate(text: string): Promise<string>
   }
   
   // Make LanguageDetector and Translator available globally
