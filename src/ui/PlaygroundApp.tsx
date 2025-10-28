@@ -279,8 +279,8 @@ export const PlaygroundApp: React.FC = () => {
   useEffect(() => {
     loadWorkflows()
     loadDataPoints()
-    setAvailableTasks(taskTemplates)
-    setAvailableHandlers(handlerTemplates)
+    loadTasks()
+    loadHandlers()
     
     // Handle back button
     const backButton = document.getElementById('backButton')
@@ -291,6 +291,31 @@ export const PlaygroundApp: React.FC = () => {
       })
     }
   }, [])
+  
+  const loadTasks = async () => {
+    try {
+      // For now, use hardcoded task templates
+      // TODO: Load from TaskRegistry
+      setAvailableTasks(taskTemplates)
+    } catch (error) {
+      console.error('Error loading tasks:', error)
+    }
+  }
+  
+  const loadHandlers = async () => {
+    try {
+      // Load handlers from HandlerRegistry
+      const { HandlerRegistry } = await import('@core/HandlerRegistry')
+      const registry = new HandlerRegistry()
+      const templates = registry.getAllTemplates()
+      setAvailableHandlers(templates)
+      console.log('Loaded handlers:', templates.map(h => h.id))
+    } catch (error) {
+      console.error('Error loading handlers:', error)
+      // Fallback to hardcoded handlers if import fails
+      setAvailableHandlers(handlerTemplates)
+    }
+  }
 
   const loadWorkflows = async () => {
     try {

@@ -53,6 +53,7 @@ export interface HelpersAPI {
   getKB: (key: string) => Promise<unknown>
   confirmAction: (prompt: string) => Promise<boolean>
   notify: (message: string, type?: 'info' | 'success' | 'warning' | 'error') => Promise<void>
+  parseTable: (selector: string) => Promise<string[][]>
 }
 
 export interface NodeMeta {

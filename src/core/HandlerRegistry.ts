@@ -1,12 +1,30 @@
 import { BaseHandler } from './BaseHandler'
 import { HandlerTemplate, HandlerInput, HelpersAPI, HandlerResult } from '@common/types'
+import { 
+  ShowModalHandler, 
+  InsertTextHandler, 
+  DownloadFileHandler, 
+  ModifyCSSHandler,
+  ParseTableToCSVHandler,
+  SaveCaptureHandler
+} from '@handlers/templates'
 
 export class HandlerRegistry {
   private handlers: Map<string, BaseHandler> = new Map()
   private templates: Map<string, HandlerTemplate> = new Map()
   
   constructor() {
-    // Handlers will be registered when we create the handler classes
+    this.initializeDefaultHandlers()
+  }
+  
+  private initializeDefaultHandlers(): void {
+    // Register built-in handlers
+    this.registerHandler(new ShowModalHandler())
+    this.registerHandler(new InsertTextHandler())
+    this.registerHandler(new DownloadFileHandler())
+    this.registerHandler(new ModifyCSSHandler())
+    this.registerHandler(new ParseTableToCSVHandler())
+    this.registerHandler(new SaveCaptureHandler())
   }
   
   registerHandler(handler: BaseHandler): void {

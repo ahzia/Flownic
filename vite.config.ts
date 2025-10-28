@@ -3,7 +3,52 @@ import react from '@vitejs/plugin-react'
 import { resolve } from 'path'
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [
+    react(),
+    {
+      name: 'inline-content-script-deps',
+      generateBundle(options, bundle) {
+        // Find content script and HandlerRegistry chunks
+        const contentScriptKey = Object.keys(bundle).find(key => 
+          key.includes('contentScript.js') && bundle[key].type === 'chunk'
+        )
+        const handlerRegistryKey = Object.keys(bundle).find(key => 
+          key.includes('HandlerRegistry') && bundle[key].type === 'chunk'
+        )
+        
+        if (contentScriptKey && handlerRegistryKey) {
+          const contentChunk = bundle[contentScriptKey] as any
+          const handlerChunk = bundle[handlerRegistryKey] as any
+          
+          // If content script imports HandlerRegistry, inline it
+          if (contentChunk.imports?.includes(handlerRegistryKey)) {
+            // Clean HandlerRegistry code: remove export statements
+            let handlerCode = handlerChunk.code
+            // Remove export declarations like "export { HandlerRegistry };"
+            handlerCode = handlerCode.replace(/export\s*\{[^}]*HandlerRegistry[^}]*\}\s*;?\s*/g, '')
+            // Remove "export class HandlerRegistry" and replace with just "class HandlerRegistry"
+            handlerCode = handlerCode.replace(/export\s+class\s+HandlerRegistry/g, 'class HandlerRegistry')
+            // Remove "export default" statements
+            handlerCode = handlerCode.replace(/export\s+default\s+/g, '')
+            
+            // Merge HandlerRegistry code into content script
+            contentChunk.code = handlerCode + '\n' + contentChunk.code
+            // Remove the import statement from content script
+            contentChunk.code = contentChunk.code.replace(
+              /import\s*\{[^}]*HandlerRegistry[^}]*\}\s*from\s*["'][^"']*["'];\s*/g,
+              ''
+            )
+            // Remove HandlerRegistry from imports
+            contentChunk.imports = contentChunk.imports.filter((imp: string) => imp !== handlerRegistryKey)
+            // Delete the HandlerRegistry chunk
+            delete bundle[handlerRegistryKey]
+            
+            console.log('✅ Inlined HandlerRegistry into content script (removed exports)')
+          }
+        }
+      }
+    }
+  ],
   build: {
     outDir: 'dist',
     rollupOptions: {
@@ -29,11 +74,35 @@ export default defineConfig({
           if (chunkInfo.name === 'playground') return 'ui/playground.js'
           if (chunkInfo.name === 'background') return 'background/serviceWorker.js'
           if (chunkInfo.name === 'content') return 'content/contentScript.js'
-          // if (chunkInfo.name === 'handlers') return 'handlers/[name].js'
           return '[name].js'
         },
-        chunkFileNames: 'chunks/[name]-[hash].js',
-        assetFileNames: 'assets/[name]-[hash].[ext]'
+        chunkFileNames: (chunkInfo) => {
+          // Content script chunks should also use IIFE format
+          if (chunkInfo.name?.includes('HandlerRegistry') || chunkInfo.name?.includes('TaskRegistry')) {
+            // Check if this chunk is used by content script
+            // Since we can't easily determine this here, we'll need to handle format in manualChunks
+          }
+          return 'chunks/[name]-[hash].js'
+        },
+        assetFileNames: 'assets/[name]-[hash].[ext]',
+        manualChunks: (id) => {
+          // Always bundle HandlerRegistry and TaskRegistry with content script (no separate chunks)
+          // This prevents ES module syntax issues
+          if (id.includes('HandlerRegistry') && id.includes('src/core')) {
+            return null // Bundle with content script
+          }
+          
+          if (id.includes('TaskRegistry') && id.includes('src/core')) {
+            return null // Bundle with content script
+          }
+          
+          // Keep all content script modules together
+          if (id.includes('content/') || 
+              id.includes('contentScript') || 
+              id.includes('ContentScriptMain')) {
+            return null
+          }
+        }
       }
     },
     target: 'es2020',
