@@ -158,6 +158,11 @@ export interface WorkflowTrigger {
   shortcut?: string
 }
 
+export interface WebsiteConfig {
+  type: 'all' | 'specific' | 'exclude'
+  patterns: string
+}
+
 export interface Capture {
   id: string
   name: string

@@ -2,14 +2,16 @@ import React, { useState, useEffect } from 'react'
 import { 
   Plus, Save, Trash2, Settings, Globe, Keyboard, Clock, Eye, Code, 
   Play, Download, Upload, Search, Grid, List,
-  AlertCircle, CheckCircle, Info, Database, FileText, MousePointer,
-  Target, Zap, ChevronDown, ChevronRight
+  AlertCircle, CheckCircle
 } from 'lucide-react'
-import { Workflow, WorkflowStep, DataPoint, TaskTemplate, HandlerTemplate } from '@common/types'
+import { Workflow, WorkflowStep, DataPoint, TaskTemplate, HandlerTemplate, WorkflowTrigger } from '@common/types'
 import { ToastContainer, useToast } from './components/Toast'
-import { TaskInputUI } from '@ui/components/TaskInputUI'
+import { StepsEditor } from '@ui/components/StepsEditor'
+import { TriggerConfigSection } from '@ui/components/TriggerConfigSection'
+import { DataPointsPanel } from '@ui/components/DataPointsPanel'
 import { TaskRegistry } from '@core/TaskRegistry'
 import { HandlerRegistry } from '@core/HandlerRegistry'
+import { ContextProviderRegistry } from '@context/ContextProviderRegistry'
 
 export const PlaygroundApp: React.FC = () => {
   const [workflows, setWorkflows] = useState<Workflow[]>([])
@@ -26,18 +28,19 @@ export const PlaygroundApp: React.FC = () => {
   const [availableTasks, setAvailableTasks] = useState<TaskTemplate[]>([])
   const [availableHandlers, setAvailableHandlers] = useState<HandlerTemplate[]>([])
   const [showDataPoints, setShowDataPoints] = useState(false)
+  const [providerMetas, setProviderMetas] = useState<{ id: string; name: string; description: string; outputType: string }[]>([])
 
   // Form state for creating/editing workflows
   const [formData, setFormData] = useState({
     name: '',
     description: '',
     trigger: {
-      type: 'manual' as 'manual' | 'onPageLoad' | 'onSelection' | 'schedule',
+      type: 'manual' as 'manual' | 'onPageLoad' | 'onSelection' | 'onFocus' | 'schedule',
       pattern: '',
       selector: '',
       schedule: '',
       shortcut: ''
-    },
+    } as WorkflowTrigger,
     websiteConfig: {
       type: 'all' as 'all' | 'specific' | 'exclude',
       patterns: ''
@@ -45,242 +48,28 @@ export const PlaygroundApp: React.FC = () => {
     steps: [] as WorkflowStep[]
   })
 
-  // Task templates
-  const taskTemplates: TaskTemplate[] = [
-    {
-      id: 'translation',
-      name: 'Translate Text',
-      description: 'Translate text from one language to another',
-      category: 'language',
-      apiType: 'translation',
-      inputSchema: {
-        type: 'object',
-        required: ['text', 'targetLanguage'],
-        properties: {
-          text: { type: 'string', description: 'Text to translate' },
-          sourceLanguage: { type: 'string', description: 'Source language (optional)' },
-          targetLanguage: { type: 'string', description: 'Target language' }
-        }
-      },
-      outputSchema: {
-        type: 'object',
-        properties: {
-          translatedText: { type: 'string' },
-          sourceLanguage: { type: 'string' },
-          targetLanguage: { type: 'string' },
-          confidence: { type: 'number' }
-        }
-      },
-      uiConfig: {
-        inputFields: [
-          {
-            name: 'text',
-            label: 'Text to Translate',
-            type: 'textarea',
-            dataPointTypes: ['text', 'html'],
-            required: true,
-            placeholder: 'Enter text to translate or select from data points...'
-          },
-          {
-            name: 'sourceLanguage',
-            label: 'Source Language',
-            type: 'language_selector',
-            required: false
-          },
-          {
-            name: 'targetLanguage',
-            label: 'Target Language',
-            type: 'language_selector',
-            required: true
-          }
-        ],
-        outputPreview: { type: 'structured' }
-      },
-      implementation: 'TranslationTask'
-    },
-    {
-      id: 'language_detection',
-      name: 'Detect Language',
-      description: 'Detect the language of the input text',
-      category: 'language',
-      apiType: 'language_detection',
-      inputSchema: {
-        type: 'object',
-        required: ['text'],
-        properties: {
-          text: { type: 'string', description: 'Text to analyze' }
-        }
-      },
-      outputSchema: {
-        type: 'object',
-        properties: {
-          language: { type: 'string' },
-          languageCode: { type: 'string' },
-          confidence: { type: 'number' }
-        }
-      },
-      uiConfig: {
-        inputFields: [
-          {
-            name: 'text',
-            label: 'Text to Analyze',
-            type: 'textarea',
-            dataPointTypes: ['text', 'html'],
-            required: true,
-            placeholder: 'Enter text to analyze or select from data points...'
-          }
-        ],
-        outputPreview: { type: 'structured' }
-      },
-      implementation: 'LanguageDetectionTask'
-    },
-    {
-      id: 'custom_prompt',
-      name: 'Custom Prompt',
-      description: 'Use a custom prompt with the AI',
-      category: 'ai',
-      apiType: 'prompt',
-      inputSchema: {
-        type: 'object',
-        required: ['prompt'],
-        properties: {
-          prompt: { type: 'string', description: 'Your custom prompt' },
-          context: { type: 'string', description: 'Additional context (optional)' }
-        }
-      },
-      outputSchema: {
-        type: 'object',
-        properties: {
-          response: { type: 'string' },
-          tokens: { type: 'number' },
-          confidence: { type: 'number' }
-        }
-      },
-      uiConfig: {
-        inputFields: [
-          {
-            name: 'prompt',
-            label: 'Prompt',
-            type: 'textarea',
-            required: true,
-            placeholder: 'Enter your prompt here...'
-          },
-          {
-            name: 'context',
-            label: 'Context',
-            type: 'textarea',
-            dataPointTypes: ['text', 'html', 'json'],
-            required: false,
-            placeholder: 'Enter additional context or select from data points...'
-          }
-        ],
-        outputPreview: { type: 'text' }
-      },
-      implementation: 'CustomPromptTask'
-    }
-  ]
 
-  // Handler templates
-  const handlerTemplates: HandlerTemplate[] = [
-    {
-      id: 'show_modal',
-      name: 'Show Modal',
-      description: 'Display text or HTML in a modal',
-      category: 'ui',
-      inputSchema: {
-        type: 'object',
-        required: ['title', 'content'],
-        properties: {
-          title: { type: 'string' },
-          content: { type: 'string' }
-        }
-      },
-      permissions: ['activeTab'],
-      uiConfig: {
-        inputFields: [
-          {
-            name: 'title',
-            label: 'Modal Title',
-            type: 'text',
-            required: true
-          },
-          {
-            name: 'content',
-            label: 'Modal Content',
-            type: 'textarea',
-            dataPointTypes: ['text', 'html'],
-            required: true,
-            placeholder: 'Enter modal content or select from data points...'
-          }
-        ]
-      },
-      implementation: 'show_modal'
-    },
-    {
-      id: 'insert_text',
-      name: 'Insert Text',
-      description: 'Insert text into an input field',
-      category: 'ui',
-      inputSchema: {
-        type: 'object',
-        required: ['selector', 'text'],
-        properties: {
-          selector: { type: 'string' },
-          text: { type: 'string' }
-        }
-      },
-      permissions: ['activeTab'],
-      uiConfig: {
-        inputFields: [
-          {
-            name: 'selector',
-            label: 'CSS Selector',
-            type: 'text',
-            required: true,
-            placeholder: 'e.g., #input-field'
-          },
-          {
-            name: 'text',
-            label: 'Text to Insert',
-            type: 'text',
-            dataPointTypes: ['text'],
-            required: true,
-            placeholder: 'Enter text or select from data points...'
-          }
-        ]
-      },
-      implementation: 'insert_text'
+  // Load context provider metadata from registry
+  const loadContextProviders = () => {
+    try {
+      const registry = new ContextProviderRegistry()
+      const metas = registry.getAllMeta()
+      setProviderMetas(metas)
+    } catch (error) {
+      console.error('❌ Error loading context providers:', error)
+      // Fallback to minimal built-ins if registry fails
+      setProviderMetas([
+        { id: 'selected_text', name: 'Selected Text', description: 'Currently selected text on the page', outputType: 'text' },
+        { id: 'page_content', name: 'Page Content', description: 'Full HTML content of the current page', outputType: 'html' },
+        { id: 'extracted_text', name: 'Extracted Text', description: 'Plain text extracted from the page (no HTML tags)', outputType: 'text' }
+      ])
     }
-  ]
-
-  // Context providers for data points
-  const contextProviders = [
-    {
-      id: 'selected_text',
-      name: 'Selected Text',
-      description: 'Currently selected text on the page',
-      icon: <MousePointer className="icon" />,
-      type: 'text'
-    },
-    {
-      id: 'page_content',
-      name: 'Page Content',
-      description: 'Full HTML content of the current page',
-      icon: <FileText className="icon" />,
-      type: 'html'
-    },
-    {
-      id: 'extracted_text',
-      name: 'Extracted Text',
-      description: 'Plain text extracted from the page (no HTML)',
-      icon: <Target className="icon" />,
-      type: 'text'
-    }
-  ]
+  }
 
   useEffect(() => {
     loadWorkflows()
     loadDataPoints()
+    loadContextProviders()
     loadTasks()
     loadHandlers()
     
@@ -308,10 +97,9 @@ export const PlaygroundApp: React.FC = () => {
       setAvailableTasks(templates)
     } catch (error) {
       console.error('❌ Error loading tasks from TaskRegistry:', error)
-      console.error('Error details:', error instanceof Error ? error.message : String(error))
-      // Fallback to hardcoded templates if registry fails
-      console.log('⚠️ Using fallback task templates:', taskTemplates.length)
-      setAvailableTasks(taskTemplates)
+      setAvailableTasks([])
+      // Show error to user instead of fallback
+      alert('Failed to load task templates. Please refresh the page.')
     }
   }
   
@@ -324,8 +112,9 @@ export const PlaygroundApp: React.FC = () => {
       console.log('✅ Loaded handlers:', templates.length, 'handlers:', templates.map(h => h.id))
     } catch (error) {
       console.error('❌ Error loading handlers:', error)
-      // Fallback to hardcoded handlers if registry fails
-      setAvailableHandlers(handlerTemplates)
+      setAvailableHandlers([])
+      // Show error to user instead of fallback
+      alert('Failed to load handler templates. Please refresh the page.')
     }
   }
 
@@ -352,9 +141,9 @@ export const PlaygroundApp: React.FC = () => {
   const loadDataPoints = async () => {
     try {
       // Load data points from the current workflow or create default context data points
-      const defaultDataPoints: DataPoint[] = contextProviders.map(provider => ({
-        id: provider.id,
-        name: provider.name,
+      const defaultDataPoints: DataPoint[] = providerMetas.map(meta => ({
+        id: meta.id,
+        name: meta.name,
         type: 'context',
         value: null,
         source: 'context_provider',
@@ -377,33 +166,15 @@ export const PlaygroundApp: React.FC = () => {
 
   const gatherContextData = async (providerId: string) => {
     try {
-      // This would normally call the content script to gather data
-      // For now, we'll simulate it
-      const mockData = {
-        selected_text: {
-          text: 'This is selected text from the page',
-          length: 40,
-          source: 'user_selection'
-        },
-        page_content: {
-          html: '<html><body><h1>Page Title</h1><p>Page content...</p></body></html>',
-          title: 'Page Title',
-          url: window.location.href,
-          source: 'page_dom'
-        },
-        extracted_text: {
-          text: 'Page Title\n\nPage content...',
-          length: 25,
-          source: 'text_extraction'
-        }
-      }
-
-      const provider = contextProviders.find(p => p.id === providerId)
-      const value = mockData[providerId as keyof typeof mockData] || { text: 'No data available' }
+      // Prefer real execution via background -> content script in future; for now keep mock for UX
+      const meta = providerMetas.find(p => p.id === providerId)
+      const value: any = meta?.outputType === 'html'
+        ? { html: '<html><body><h1>Example</h1><p>Content...</p></body></html>', source: providerId }
+        : { text: 'Sample context value', source: providerId }
 
       const dataPoint: DataPoint = {
         id: `${providerId}_${Date.now()}`,
-        name: provider?.name || providerId,
+        name: meta?.name || providerId,
         type: 'context',
         value: value,
         source: providerId,
@@ -640,119 +411,41 @@ export const PlaygroundApp: React.FC = () => {
   const simulateTaskExecution = (step: WorkflowStep) => {
     if (step.type === 'task' && step.taskId) {
       const taskTemplate = availableTasks.find(t => t.id === step.taskId)
-      if (taskTemplate) {
-        // Create mock output from task's outputSchema
-        const mockOutput = generateMockOutputFromSchema(taskTemplate.outputSchema, step.taskId)
-        
-        // Add task output as data point
-        const outputDataPoint: DataPoint = {
-          id: `${step.id}_output_${Date.now()}`,
-          name: `${taskTemplate.name} Output`,
-          type: 'task_output',
-          value: mockOutput,
-          source: step.id,
-          timestamp: Date.now()
-        }
-
-        addDataPoint(outputDataPoint)
-      }
-    }
-  }
-
-  // Generate mock output based on task output schema
-  const generateMockOutputFromSchema = (schema: any, taskId: string): any => {
-    if (!schema || !schema.properties) {
-      return {}
-    }
-
-    const mockOutput: any = {}
-    const properties = schema.properties || {}
-
-    // Generate mock values based on property types and task-specific defaults
-    for (const [key, prop] of Object.entries(properties) as [string, any][]) {
-      const propType = prop.type || 'string'
       
-      // Use task-specific defaults if available
-      if (taskId === 'language_detection') {
-        if (key === 'language') mockOutput[key] = 'Spanish'
-        else if (key === 'languageCode') mockOutput[key] = 'es'
-        else if (key === 'confidence') mockOutput[key] = 0.95
-        else if (key === 'allResults') {
-          mockOutput[key] = [
-            { language: 'Spanish', languageCode: 'es', confidence: 0.95 },
-            { language: 'Portuguese', languageCode: 'pt', confidence: 0.03 }
-          ]
-        } else {
-          mockOutput[key] = getDefaultValueForType(propType)
-        }
-      } else if (taskId === 'translation') {
-        if (key === 'translatedText') mockOutput[key] = 'This is the translated text'
-        else if (key === 'sourceLanguage') mockOutput[key] = 'es'
-        else if (key === 'targetLanguage') mockOutput[key] = 'en'
-        else if (key === 'confidence') mockOutput[key] = 0.9
-        else {
-          mockOutput[key] = getDefaultValueForType(propType)
-        }
-      } else if (taskId === 'custom_prompt') {
-        if (key === 'response') mockOutput[key] = 'This is the AI response to your custom prompt'
-        else if (key === 'tokens') mockOutput[key] = 150
-        else if (key === 'confidence') mockOutput[key] = 0.85
-        else {
-          mockOutput[key] = getDefaultValueForType(propType)
-        }
-      } else if (taskId === 'summarizer') {
-        if (key === 'summary') mockOutput[key] = 'This is a concise summary of the input text with key points highlighted.'
-        else if (key === 'type') mockOutput[key] = 'key-points'
-        else if (key === 'format') mockOutput[key] = 'markdown'
-        else if (key === 'length') mockOutput[key] = 'medium'
-        else {
-          mockOutput[key] = getDefaultValueForType(propType)
-        }
-      } else if (taskId === 'proofreader') {
-        if (key === 'correctedText') mockOutput[key] = 'This is the corrected text with grammar and spelling errors fixed.'
-        else if (key === 'format') mockOutput[key] = 'markdown'
-        else {
-          mockOutput[key] = getDefaultValueForType(propType)
-        }
-      } else if (taskId === 'rewriter') {
-        if (key === 'rewrittenText') mockOutput[key] = 'This is the rewritten text following the specified guidelines.'
-        else if (key === 'format') mockOutput[key] = 'markdown'
-        else if (key === 'guidelines') mockOutput[key] = []
-        else {
-          mockOutput[key] = getDefaultValueForType(propType)
-        }
-      } else if (taskId === 'writer') {
-        if (key === 'writtenText') mockOutput[key] = 'This is the newly generated content based on the provided context and guidelines.'
-        else if (key === 'format') mockOutput[key] = 'markdown'
-        else if (key === 'guidelines') mockOutput[key] = []
-        else {
-          mockOutput[key] = getDefaultValueForType(propType)
+      if (taskTemplate) {
+        try {
+          // Get the actual task instance from TaskRegistry
+          const taskRegistry = new TaskRegistry()
+          const taskInstance = taskRegistry.getTask(taskTemplate.id)
+          
+          if (taskInstance) {
+            // Generate mock output using the task instance
+            const mockOutput = taskInstance.generateMockOutput()
+            
+            // Add task output as data point
+            const outputDataPoint: DataPoint = {
+              id: `${step.id}_output_${Date.now()}`,
+              name: `${taskTemplate.name} Output`,
+              type: 'task_output',
+              value: mockOutput,
+              source: step.id,
+              timestamp: Date.now()
+            }
+
+            addDataPoint(outputDataPoint)
+            console.log('✅ Added task output data point:', outputDataPoint.name)
+          } else {
+            console.warn('⚠️ Task instance not found for:', taskTemplate.id)
+          }
+        } catch (error) {
+          console.error('❌ Error simulating task execution:', error)
         }
       } else {
-        // Generic fallback: generate based on type
-        mockOutput[key] = getDefaultValueForType(propType)
+        console.warn('⚠️ Task template not found for:', step.taskId)
       }
     }
-
-    return mockOutput
   }
 
-  const getDefaultValueForType = (type: string): any => {
-    switch (type) {
-      case 'string':
-        return 'Sample value'
-      case 'number':
-        return 0
-      case 'boolean':
-        return false
-      case 'array':
-        return []
-      case 'object':
-        return {}
-      default:
-        return null
-    }
-  }
 
   const updateStep = (stepId: string, updates: Partial<WorkflowStep>) => {
     setFormData(prev => {
@@ -763,7 +456,7 @@ export const PlaygroundApp: React.FC = () => {
       // If a task was just selected, simulate its execution to create output data point
       const updatedStep = updatedSteps.find(step => step.id === stepId)
       if (updatedStep && updates.taskId && updatedStep.type === 'task') {
-        // Delay the simulation to allow the UI to update first
+        // Call simulation after state update
         setTimeout(() => {
           simulateTaskExecution(updatedStep)
         }, 100)
@@ -1105,325 +798,33 @@ export const PlaygroundApp: React.FC = () => {
           </div>
 
           {/* Data Points Management */}
-          <div className="editor-section">
-            <div className="section-header">
-              <h3>Data Points</h3>
-              <button 
-                className="btn btn-secondary"
-                onClick={() => setShowDataPoints(!showDataPoints)}
-              >
-                {showDataPoints ? <ChevronDown className="icon" /> : <ChevronRight className="icon" />}
-                {showDataPoints ? 'Hide' : 'Show'} Data Points
-              </button>
-            </div>
-            
-            {showDataPoints && (
-              <div className="data-points-container">
-                <div className="data-points-header">
-                  <h4>Available Data Points</h4>
-                  <p>These are the data sources you can use in your workflow steps</p>
-                </div>
-                
-                <div className="context-providers">
-                  <h5>Context Providers</h5>
-                  <div className="provider-grid">
-                    {contextProviders.map(provider => (
-                      <div key={provider.id} className="provider-card">
-                        <div className="provider-icon">{provider.icon}</div>
-                        <div className="provider-info">
-                          <h6>{provider.name}</h6>
-                          <p>{provider.description}</p>
-                        </div>
-                        <button
-                          className="btn btn-sm btn-primary"
-                          onClick={() => gatherContextData(provider.id)}
-                        >
-                          <Zap className="icon" />
-                          Gather
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="data-points-list">
-                  <h5>Current Data Points</h5>
-                  {dataPoints.length === 0 ? (
-                    <div className="empty-state">
-                      <Database className="icon" />
-                      <p>No data points yet. Use context providers to gather data.</p>
-                    </div>
-                  ) : (
-                    <div className="data-points-grid">
-                      {dataPoints.map(dataPoint => (
-                        <div key={dataPoint.id} className="data-point-card">
-                          <div className="data-point-header">
-                            <div className="data-point-icon">
-                              {dataPoint.type === 'context' && <Database className="icon" />}
-                              {dataPoint.type === 'task_output' && <Zap className="icon" />}
-                              {dataPoint.type === 'static' && <FileText className="icon" />}
-                            </div>
-                            <div className="data-point-info">
-                              <h6>{dataPoint.name}</h6>
-                              <span className="data-point-type">{dataPoint.type}</span>
-                            </div>
-                            <button
-                              className="btn-icon danger"
-                              onClick={() => removeDataPoint(dataPoint.id)}
-                              title="Remove data point"
-                            >
-                              <Trash2 className="icon" />
-                            </button>
-                          </div>
-                          <div className="data-point-preview">
-                            <code>
-                              {typeof dataPoint.value === 'string' 
-                                ? dataPoint.value.substring(0, 100) + (dataPoint.value.length > 100 ? '...' : '')
-                                : JSON.stringify(dataPoint.value).substring(0, 100) + (JSON.stringify(dataPoint.value).length > 100 ? '...' : '')
-                              }
-                            </code>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-          </div>
+          <DataPointsPanel
+            showDataPoints={showDataPoints}
+            dataPoints={dataPoints}
+            providerMetas={providerMetas}
+            onToggleShow={() => setShowDataPoints(!showDataPoints)}
+            onGatherContextData={gatherContextData}
+            onRemoveDataPoint={removeDataPoint}
+          />
 
           {/* Trigger Configuration */}
-          <div className="editor-section">
-            <h3>Trigger Configuration</h3>
-            <div className="form-grid">
-              <div className="form-group">
-                <label>When to run</label>
-                <select
-                  value={formData.trigger.type}
-                  onChange={(e) => setFormData(prev => ({
-                    ...prev,
-                    trigger: { ...prev.trigger, type: e.target.value as any }
-                  }))}
-                  className="form-select"
-                >
-                  <option value="manual">Manual (keyboard shortcut)</option>
-                  <option value="onPageLoad">On page load</option>
-                  <option value="onSelection">On text selection</option>
-                  <option value="schedule">Scheduled</option>
-                </select>
-              </div>
-
-              {formData.trigger.type === 'manual' && (
-                <div className="form-group">
-                  <label>Keyboard Shortcut</label>
-                  <input
-                    type="text"
-                    value={formData.trigger.shortcut}
-                    onChange={(e) => setFormData(prev => ({
-                      ...prev,
-                      trigger: { ...prev.trigger, shortcut: e.target.value }
-                    }))}
-                    placeholder="e.g., Ctrl+Shift+S"
-                    className="form-input"
-                  />
-                </div>
-              )}
-
-              {formData.trigger.type === 'onPageLoad' && (
-                <div className="form-group">
-                  <label>Website Pattern</label>
-                  <input
-                    type="text"
-                    value={formData.trigger.pattern}
-                    onChange={(e) => setFormData(prev => ({
-                      ...prev,
-                      trigger: { ...prev.trigger, pattern: e.target.value }
-                    }))}
-                    placeholder="e.g., medium.com, *.github.com"
-                    className="form-input"
-                  />
-                  <small>Use * for wildcards. Leave empty for all sites.</small>
-                </div>
-              )}
-
-              {formData.trigger.type === 'onSelection' && (
-                <div className="form-group">
-                  <label>CSS Selector (optional)</label>
-                  <input
-                    type="text"
-                    value={formData.trigger.selector}
-                    onChange={(e) => setFormData(prev => ({
-                      ...prev,
-                      trigger: { ...prev.trigger, selector: e.target.value }
-                    }))}
-                    placeholder="e.g., .article-content, #main"
-                    className="form-input"
-                  />
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Website Configuration */}
-          <div className="editor-section">
-            <h3>Website Configuration</h3>
-            <div className="form-grid">
-              <div className="form-group">
-                <label>Run on websites</label>
-                <select
-                  value={formData.websiteConfig.type}
-                  onChange={(e) => setFormData(prev => ({
-                    ...prev,
-                    websiteConfig: { ...prev.websiteConfig, type: e.target.value as any }
-                  }))}
-                  className="form-select"
-                >
-                  <option value="all">All websites</option>
-                  <option value="specific">Specific websites only</option>
-                  <option value="exclude">All websites except</option>
-                </select>
-              </div>
-
-              {(formData.websiteConfig.type === 'specific' || formData.websiteConfig.type === 'exclude') && (
-                <div className="form-group">
-                  <label>
-                    {formData.websiteConfig.type === 'specific' ? 'Website patterns' : 'Excluded patterns'}
-                  </label>
-                  <textarea
-                    value={formData.websiteConfig.patterns}
-                    onChange={(e) => setFormData(prev => ({
-                      ...prev,
-                      websiteConfig: { ...prev.websiteConfig, patterns: e.target.value }
-                    }))}
-                    placeholder="Enter one pattern per line:&#10;medium.com&#10;*.github.com&#10;example.com/path"
-                    className="form-textarea"
-                    rows={4}
-                  />
-                  <small>
-                    Use * for wildcards. One pattern per line. Examples: medium.com, *.github.com, example.com/path
-                  </small>
-                </div>
-              )}
-            </div>
-          </div>
+          <TriggerConfigSection
+            trigger={formData.trigger}
+            websiteConfig={formData.websiteConfig}
+            onTriggerChange={(trigger) => setFormData(prev => ({ ...prev, trigger }))}
+            onWebsiteConfigChange={(websiteConfig) => setFormData(prev => ({ ...prev, websiteConfig }))}
+          />
 
           {/* Workflow Steps */}
-          <div className="editor-section">
-            <div className="section-header">
-              <h3>Workflow Steps</h3>
-              <div className="step-actions">
-                <button className="btn btn-secondary" onClick={() => addStep('task')}>
-                  <Plus className="icon" />
-                  Add Task
-                </button>
-                <button className="btn btn-secondary" onClick={() => addStep('handler')}>
-                  <Plus className="icon" />
-                  Add Handler
-                </button>
-              </div>
-            </div>
-
-            <div className="steps-container">
-              {formData.steps.map((step, index) => (
-                <div key={step.id} className="workflow-step-editor">
-                  <div className="step-header">
-                    <div className="step-number">{index + 1}</div>
-                    <div className="step-type-badge">{step.type}</div>
-                    <button
-                      className="btn-icon danger"
-                      onClick={() => removeStep(step.id)}
-                    >
-                      <Trash2 className="icon" />
-                    </button>
-                  </div>
-
-                  <div className="step-content">
-                    {step.type === 'task' && (
-                      <>
-                        <div className="form-group">
-                          <label>Task Template</label>
-                          <select
-                            value={step.taskId || ''}
-                            onChange={(e) => updateStep(step.id, { taskId: e.target.value })}
-                            className="form-select"
-                          >
-                            <option value="">Select a task...</option>
-                            {availableTasks.map(task => (
-                              <option key={task.id} value={task.id}>
-                                {task.name} - {task.description}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
-
-                        {step.taskId && (
-                          <div className="task-input-section">
-                            <h5>Task Configuration</h5>
-                            <TaskInputUI
-                              taskTemplate={availableTasks.find(t => t.id === step.taskId)}
-                              dataPoints={dataPoints}
-                              input={step.input || {}}
-                              onInputChange={(input) => updateStep(step.id, { input })}
-                            />
-                          </div>
-                        )}
-                      </>
-                    )}
-
-                    {step.type === 'handler' && (
-                      <>
-                        <div className="form-group">
-                          <label>Handler</label>
-                          <select
-                            value={step.handlerId || ''}
-                            onChange={(e) => updateStep(step.id, { handlerId: e.target.value })}
-                            className="form-select"
-                          >
-                            <option value="">Select a handler...</option>
-                            {availableHandlers.map(handler => (
-                              <option key={handler.id} value={handler.id}>
-                                {handler.name} - {handler.description}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
-
-                        {step.handlerId && (
-                          <div className="handler-input-section">
-                            <h5>Handler Configuration</h5>
-                            <TaskInputUI
-                              taskTemplate={availableHandlers.find(h => h.id === step.handlerId)}
-                              dataPoints={dataPoints}
-                              input={step.input || {}}
-                              onInputChange={(input) => updateStep(step.id, { input })}
-                            />
-                          </div>
-                        )}
-                      </>
-                    )}
-
-                    <div className="form-group">
-                      <label>Delay (seconds)</label>
-                      <input
-                        type="number"
-                        value={step.delay || 0}
-                        onChange={(e) => updateStep(step.id, { delay: parseInt(e.target.value) || 0 })}
-                        className="form-input"
-                        min="0"
-                      />
-                    </div>
-                  </div>
-                </div>
-              ))}
-
-              {formData.steps.length === 0 && (
-                <div className="empty-steps">
-                  <Info className="icon" />
-                  <p>No steps yet. Add prompts and actions to build your workflow.</p>
-                </div>
-              )}
-            </div>
-          </div>
+          <StepsEditor
+            steps={formData.steps}
+            availableTasks={availableTasks}
+            availableHandlers={availableHandlers}
+            dataPoints={dataPoints}
+            onAddStep={addStep}
+            onRemoveStep={removeStep}
+            onUpdateStep={updateStep}
+          />
         </div>
 
         {/* Preview Panel */}

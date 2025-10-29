@@ -161,4 +161,50 @@ export abstract class BaseTask {
       validation: config.validation
     }
   }
+
+  // Generate a mock output object for this task based on its outputSchema.
+  // Child tasks may override getTaskSpecificMockDefaults to provide richer defaults.
+  generateMockOutput(): any {
+    const schema: any = this.outputSchema || {}
+    const properties: Record<string, any> = schema.properties || {}
+    const mockOutput: Record<string, any> = {}
+
+    for (const [key, propSchema] of Object.entries(properties)) {
+      const type = (propSchema as any).type || 'string'
+      const taskDefault = this.getTaskSpecificMockDefaults(key)
+      if (taskDefault !== undefined) {
+        mockOutput[key] = taskDefault
+        continue
+      }
+
+      mockOutput[key] = this.getDefaultValueForType(type)
+    }
+
+    return mockOutput
+  }
+
+  // Override in concrete tasks to provide task-specific mock defaults for certain keys
+  // Return undefined to fall back to generic defaults
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  protected getTaskSpecificMockDefaults(_key: string): any {
+    return undefined
+  }
+
+  private getDefaultValueForType(type: string): any {
+    switch (type) {
+      case 'string':
+        return 'Sample value'
+      case 'number':
+        return 0
+      case 'boolean':
+        return false
+      case 'array':
+        return []
+      case 'object':
+        return {}
+      default:
+        return null
+    }
+  }
+
 }
