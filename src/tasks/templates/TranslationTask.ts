@@ -129,6 +129,21 @@ export class TranslationTask extends BaseTask {
     }
   }
   
+  protected getTaskSpecificMockDefaults(key: string): any {
+    switch (key) {
+      case 'translatedText':
+        return 'This is the translated text in the target language. The actual translation will be generated using the Chrome Translator API when the workflow is executed.'
+      case 'sourceLanguage':
+        return 'en'
+      case 'targetLanguage':
+        return 'es'
+      case 'confidence':
+        return 0.95
+      default:
+        return undefined
+    }
+  }
+
   getInputUI(): TaskInputUI {
     return {
       fields: [

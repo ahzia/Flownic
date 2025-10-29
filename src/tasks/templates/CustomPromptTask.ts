@@ -50,17 +50,29 @@ export class CustomPromptTask extends BaseTask {
     }
     
     try {
-      // Check if Chrome Prompt API is available
-      if (typeof self.prompt !== 'function') {
-        throw new Error('Chrome Prompt API is not available in this browser')
+      // Check if Chrome LanguageModel API is available
+      if (typeof (self as any).LanguageModel === 'undefined') {
+        throw new Error('Chrome LanguageModel API is not available in this browser')
       }
       
+      // Check model availability
+      const availability = await (self as any).LanguageModel.availability()
+      if (availability === 'unavailable') {
+        throw new Error('Chrome LanguageModel is not available on this device')
+      }
+      
+      // Create a new session
+      const session = await (self as any).LanguageModel.create()
+      
       // Call Chrome built-in Prompt API
-      const response = await self.prompt(fullPrompt)
+      const response = await session.prompt(fullPrompt)
       
       if (!response) {
         throw new Error('Chrome Prompt API returned null response')
       }
+      
+      // Clean up the session
+      session.destroy()
       
       return {
         data: {
@@ -78,6 +90,15 @@ export class CustomPromptTask extends BaseTask {
     } catch (error) {
       // Fallback to the existing aiAdapter if Chrome API fails
       console.warn('Chrome Prompt API failed, using fallback method:', error)
+      
+      // Check if AI adapter is available
+      if (!context.aiAdapter) {
+        throw new Error(
+          'Chrome Prompt API is not available and no fallback AI adapter is configured. ' +
+          'Please ensure Chrome Prompt API is enabled in your browser settings or configure a fallback AI service.'
+        )
+      }
+      
       try {
         const response = await context.aiAdapter.prompt(fullPrompt)
         
@@ -105,6 +126,19 @@ export class CustomPromptTask extends BaseTask {
     return Math.ceil(text.length / 4)
   }
   
+  protected getTaskSpecificMockDefaults(key: string): any {
+    switch (key) {
+      case 'response':
+        return 'This is a mock response from the AI based on your custom prompt. The actual response will be generated using the Chrome Prompt API when the workflow is executed.'
+      case 'tokens':
+        return 150
+      case 'confidence':
+        return 0.85
+      default:
+        return undefined
+    }
+  }
+
   getInputUI(): TaskInputUI {
     return {
       fields: [

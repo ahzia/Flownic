@@ -54,11 +54,16 @@ async function executeWorkflow(workflow: any, tabId: number): Promise<any> {
   
   // Prevent duplicate executions
   if (executingWorkflows.has(workflowId)) {
-    console.log(`Workflow ${workflowId} already executing, skipping`)
-    return { success: false, error: 'Workflow already executing' }
+    console.log(`⚠️ Workflow ${workflowId} already executing, skipping duplicate execution`)
+    return { 
+      success: false, 
+      error: 'Workflow is already running. Please wait for it to complete before running again.',
+      workflowId 
+    }
   }
   
   executingWorkflows.add(workflowId)
+  console.log(`📝 Added workflow ${workflowId} to executing set. Current executing:`, Array.from(executingWorkflows))
   
   try {
     console.log('🚀 Executing workflow:', workflowId, workflow.name)
@@ -145,6 +150,7 @@ async function executeWorkflow(workflow: any, tabId: number): Promise<any> {
     }
   } finally {
     executingWorkflows.delete(workflowId)
+    console.log(`🧹 Cleaned up workflow ${workflowId} from executing set. Remaining:`, Array.from(executingWorkflows))
   }
 }
 

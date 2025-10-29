@@ -122,6 +122,21 @@ export class SummarizerTask extends BaseTask {
     }
   }
   
+  protected getTaskSpecificMockDefaults(key: string): any {
+    switch (key) {
+      case 'summary':
+        return 'This is a concise summary of the provided content, highlighting the key points and main ideas. The actual summary will be generated using the Chrome Summarizer API when the workflow is executed.'
+      case 'type':
+        return 'key-points'
+      case 'format':
+        return 'markdown'
+      case 'length':
+        return 'medium'
+      default:
+        return undefined
+    }
+  }
+
   getInputUI(): TaskInputUI {
     return {
       fields: [

@@ -129,6 +129,19 @@ export class WriterTask extends BaseTask {
     }
   }
   
+  protected getTaskSpecificMockDefaults(key: string): any {
+    switch (key) {
+      case 'writtenText':
+        return 'This is the newly generated content based on the provided context and guidelines. The actual content will be generated using the Chrome Writer API when the workflow is executed.'
+      case 'format':
+        return 'markdown'
+      case 'guidelines':
+        return []
+      default:
+        return undefined
+    }
+  }
+
   getInputUI(): TaskInputUI {
     return {
       fields: [

@@ -22,6 +22,12 @@ export class TaskExecutor {
         aiAdapter: null // Tasks will use Chrome APIs directly
       }
       
+      // Log Chrome API availability for debugging
+      if (taskId === 'custom_prompt') {
+        console.log('🔍 Chrome Prompt API available:', typeof self.prompt === 'function')
+        console.log('🔍 AI Adapter available:', context.aiAdapter !== null)
+      }
+      
       // Execute the task
       const result = await this.taskRegistry.executeTask(taskId, input, context)
       
@@ -33,9 +39,14 @@ export class TaskExecutor {
       }
     } catch (error) {
       console.error(`❌ Error executing task ${taskId}:`, error)
+      
+      // Provide more specific error information
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+      console.error(`❌ Task ${taskId} failed with error:`, errorMessage)
+      
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error'
+        error: errorMessage
       }
     }
   }

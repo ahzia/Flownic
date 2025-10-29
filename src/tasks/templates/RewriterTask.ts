@@ -120,6 +120,19 @@ export class RewriterTask extends BaseTask {
     }
   }
   
+  protected getTaskSpecificMockDefaults(key: string): any {
+    switch (key) {
+      case 'rewrittenText':
+        return 'This is the rewritten version of the text following the specified guidelines. The actual rewriting will be generated using the Chrome Rewriter API when the workflow is executed.'
+      case 'format':
+        return 'markdown'
+      case 'guidelines':
+        return []
+      default:
+        return undefined
+    }
+  }
+
   getInputUI(): TaskInputUI {
     return {
       fields: [
