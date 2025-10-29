@@ -1,7 +1,7 @@
-import { ContentScript } from './ContentScriptMain'
+import { ContentScript as ContentScriptClass } from './ContentScriptMain'
 
 // Initialize content script
-new ContentScript()
+new ContentScriptClass()
 
 // Export for testing
-export { ContentScript }
+export { ContentScriptClass as ContentScript }

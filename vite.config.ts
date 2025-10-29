@@ -6,46 +6,114 @@ export default defineConfig({
   plugins: [
     react(),
     {
-      name: 'inline-content-script-deps',
+      name: 'inline-registry-chunks',
       generateBundle(options, bundle) {
-        // Find content script and HandlerRegistry chunks
-        const contentScriptKey = Object.keys(bundle).find(key => 
+        // Inline HandlerRegistry and TaskRegistry chunks into ALL entry points that import them
+        const registryChunks = ['HandlerRegistry', 'TaskRegistry']
+        
+        // Find all chunks containing registries
+        const chunksToInline: { key: string, name: string, code: string }[] = []
+        registryChunks.forEach(registryName => {
+          const chunkKey = Object.keys(bundle).find(key =>
+            key.includes(registryName) && bundle[key].type === 'chunk'
+          )
+          if (chunkKey) {
+            chunksToInline.push({
+              key: chunkKey,
+              name: registryName,
+              code: (bundle[chunkKey] as any).code
+            })
+          }
+        })
+
+        if (chunksToInline.length === 0) return
+
+        // Process each entry point (playground, content script, etc.)
+        Object.keys(bundle).forEach(bundleKey => {
+          const bundleItem = bundle[bundleKey]
+          if (bundleItem.type !== 'chunk') return
+
+          // Check if this bundle imports any registry chunks
+          const needsInlining = chunksToInline.some(chunk => 
+            bundleItem.imports?.includes(chunk.key)
+          )
+
+          if (needsInlining) {
+            chunksToInline.forEach(chunk => {
+              if (bundleItem.imports?.includes(chunk.key)) {
+                // Clean chunk code: remove exports and imports
+                let cleanedCode = chunk.code
+                cleanedCode = cleanedCode.replace(/export\s*\{[^}]*\}\s*;?\s*/g, '')
+                cleanedCode = cleanedCode.replace(/export\s+class\s+/g, 'class ')
+                cleanedCode = cleanedCode.replace(/export\s+default\s+/g, '')
+                cleanedCode = cleanedCode.replace(/export\s+(const|let|var|function|async\s+function|class|interface|type|enum)\s+/g, '$1 ')
+                // Only remove imports from registry chunks themselves, not all imports
+                cleanedCode = cleanedCode.replace(/import\s+.*?from\s+["'][^"']*["'];\s*/g, '')
+
+                // Inline at the beginning
+                bundleItem.code = cleanedCode + '\n' + bundleItem.code
+
+                // Remove ONLY the specific import statement for this registry chunk
+                // Use more precise patterns to avoid removing other imports
+                const importPatterns = [
+                  // Match: import { TaskRegistry, ... } from "...HandlerRegistry..."
+                  new RegExp(`import\\s*\\{[^}]*\\b${chunk.name}\\b[^}]*\\}\\s*from\\s*["'][^"']*${chunk.name}[^"']*["'];?\\s*`, 'g'),
+                  // Match: import HandlerRegistry from "...HandlerRegistry..."
+                  new RegExp(`import\\s+\\b${chunk.name}\\b\\s+from\\s*["'][^"']*${chunk.name}[^"']*["'];?\\s*`, 'g'),
+                  // Match: import { ... HandlerRegistry ... } from "..."
+                  new RegExp(`import\\s*\\{[^}]*\\b${chunk.name}\\b[^}]*\\}\\s*from\\s*["'][^"']*["'];?\\s*`, 'g')
+                ]
+                importPatterns.forEach(pattern => {
+                  bundleItem.code = bundleItem.code.replace(pattern, '')
+                })
+
+                // Remove from imports array
+                if (bundleItem.imports) {
+                  bundleItem.imports = bundleItem.imports.filter((imp: string) => imp !== chunk.key)
+                }
+
+                console.log(`✅ Inlined ${chunk.name} into ${bundleKey}`)
+              }
+            })
+          }
+        })
+
+        // Delete registry chunk files
+        chunksToInline.forEach(chunk => {
+          delete bundle[chunk.key]
+        })
+
+        // Wrap content script in IIFE if needed
+        const contentScriptKey = Object.keys(bundle).find(key =>
           key.includes('contentScript.js') && bundle[key].type === 'chunk'
         )
-        const handlerRegistryKey = Object.keys(bundle).find(key => 
-          key.includes('HandlerRegistry') && bundle[key].type === 'chunk'
-        )
-        
-        if (contentScriptKey && handlerRegistryKey) {
+        if (contentScriptKey) {
           const contentChunk = bundle[contentScriptKey] as any
-          const handlerChunk = bundle[handlerRegistryKey] as any
-          
-          // If content script imports HandlerRegistry, inline it
-          if (contentChunk.imports?.includes(handlerRegistryKey)) {
-            // Clean HandlerRegistry code: remove export statements
-            let handlerCode = handlerChunk.code
-            // Remove export declarations like "export { HandlerRegistry };"
-            handlerCode = handlerCode.replace(/export\s*\{[^}]*HandlerRegistry[^}]*\}\s*;?\s*/g, '')
-            // Remove "export class HandlerRegistry" and replace with just "class HandlerRegistry"
-            handlerCode = handlerCode.replace(/export\s+class\s+HandlerRegistry/g, 'class HandlerRegistry')
-            // Remove "export default" statements
-            handlerCode = handlerCode.replace(/export\s+default\s+/g, '')
-            
-            // Merge HandlerRegistry code into content script
-            contentChunk.code = handlerCode + '\n' + contentChunk.code
-            // Remove the import statement from content script
-            contentChunk.code = contentChunk.code.replace(
-              /import\s*\{[^}]*HandlerRegistry[^}]*\}\s*from\s*["'][^"']*["'];\s*/g,
-              ''
-            )
-            // Remove HandlerRegistry from imports
-            contentChunk.imports = contentChunk.imports.filter((imp: string) => imp !== handlerRegistryKey)
-            // Delete the HandlerRegistry chunk
-            delete bundle[handlerRegistryKey]
-            
-            console.log('✅ Inlined HandlerRegistry into content script (removed exports)')
+          if (!contentChunk.code.startsWith('(function')) {
+            contentChunk.code = `(function() {\n${contentChunk.code}\n})();`
           }
         }
+      }
+    },
+    {
+      name: 'fix-playground-html-paths',
+      generateBundle(options, bundle) {
+        // Fix relative paths in playground.html for Chrome extension
+        Object.keys(bundle).forEach(key => {
+          // Check if this is the playground HTML file
+          if (key.includes('playground.html') || key === 'src/ui/playground.html') {
+            const htmlAsset = bundle[key]
+            if (htmlAsset && htmlAsset.type === 'asset' && typeof htmlAsset.source === 'string') {
+              // Fix paths: /ui/ -> ../../ui/, /chunks/ -> ../../chunks/, /assets/ -> ../../assets/
+              // HTML is at dist/src/ui/playground.html, so we need to go up two levels
+              htmlAsset.source = htmlAsset.source
+                .replace(/src="\/ui\//g, 'src="../../ui/')
+                .replace(/href="\/chunks\//g, 'href="../../chunks/')
+                .replace(/href="\/assets\//g, 'href="../../assets/')
+              console.log('✅ Fixed paths in playground.html')
+            }
+          }
+        })
       }
     }
   ],
@@ -77,29 +145,18 @@ export default defineConfig({
           return '[name].js'
         },
         chunkFileNames: (chunkInfo) => {
-          // Content script chunks should also use IIFE format
-          if (chunkInfo.name?.includes('HandlerRegistry') || chunkInfo.name?.includes('TaskRegistry')) {
-            // Check if this chunk is used by content script
-            // Since we can't easily determine this here, we'll need to handle format in manualChunks
-          }
           return 'chunks/[name]-[hash].js'
         },
         assetFileNames: 'assets/[name]-[hash].[ext]',
         manualChunks: (id) => {
-          // Always bundle HandlerRegistry and TaskRegistry with content script (no separate chunks)
-          // This prevents ES module syntax issues
-          if (id.includes('HandlerRegistry') && id.includes('src/core')) {
-            return null // Bundle with content script
-          }
-          
-          if (id.includes('TaskRegistry') && id.includes('src/core')) {
-            return null // Bundle with content script
+          // NEVER create separate chunks for HandlerRegistry or TaskRegistry
+          // They must be inlined into their consuming entry points
+          if (id.includes('HandlerRegistry') || id.includes('TaskRegistry')) {
+            return null // Always inline, no separate chunks
           }
           
           // Keep all content script modules together
-          if (id.includes('content/') || 
-              id.includes('contentScript') || 
-              id.includes('ContentScriptMain')) {
+          if (id.includes('content/') || id.includes('contentScript') || id.includes('ContentScriptMain')) {
             return null
           }
         }

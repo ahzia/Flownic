@@ -122,13 +122,57 @@ export class WorkflowTriggerManager {
   }
 
   private setupManualTrigger(workflow: any, trigger: any): void {
+    if (!trigger.shortcut) {
+      console.warn(`Workflow ${workflow.id} has manual trigger but no shortcut defined`)
+      return
+    }
+
     const handleKeydown = (event: KeyboardEvent) => {
-      if (trigger.shortcut && event.ctrlKey && event.shiftKey && event.key === 'K') {
+      if (this.matchesShortcut(event, trigger.shortcut)) {
+        event.preventDefault()
+        event.stopPropagation()
         this.executeWorkflow(workflow)
       }
     }
 
     document.addEventListener('keydown', handleKeydown)
+  }
+
+  private matchesShortcut(event: KeyboardEvent, shortcut: string): boolean {
+    // Parse shortcut string like "Ctrl+Shift+S" or "ctrl+shift+s"
+    const parts = shortcut.toLowerCase().split('+').map(p => p.trim())
+    
+    // Check modifiers
+    const needsCtrl = parts.some(p => p === 'ctrl' || p === 'control')
+    const needsAlt = parts.some(p => p === 'alt')
+    const needsShift = parts.some(p => p === 'shift')
+    const needsMeta = parts.some(p => p === 'meta' || p === 'cmd')
+    
+    // Check if modifiers match
+    if (needsCtrl && !event.ctrlKey) return false
+    if (needsAlt && !event.altKey) return false
+    if (needsShift && !event.shiftKey) return false
+    if (needsMeta && !event.metaKey) return false
+    
+    // Check key - find the non-modifier part
+    const keyParts = parts.filter(p => 
+      !['ctrl', 'control', 'alt', 'shift', 'meta', 'cmd'].includes(p)
+    )
+    
+    if (keyParts.length === 0) return false
+    
+    const expectedKey = keyParts[0].toLowerCase()
+    const eventKey = event.key.toLowerCase()
+    
+    // Handle special cases
+    if (expectedKey === 's' && eventKey === 's') return true
+    if (expectedKey === eventKey) return true
+    
+    // Handle space and other special keys
+    if (expectedKey === 'space' && eventKey === ' ') return true
+    if (expectedKey === 'enter' && eventKey === 'enter') return true
+    
+    return false
   }
 
   private async executeWorkflow(workflow: any): Promise<void> {

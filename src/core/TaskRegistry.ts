@@ -3,6 +3,10 @@ import { TaskTemplate } from '@common/types'
 import { TranslationTask } from '@tasks/templates/TranslationTask'
 import { LanguageDetectionTask } from '@tasks/templates/LanguageDetectionTask'
 import { CustomPromptTask } from '@tasks/templates/CustomPromptTask'
+import { SummarizerTask } from '@tasks/templates/SummarizerTask'
+import { ProofreaderTask } from '@tasks/templates/ProofreaderTask'
+import { RewriterTask } from '@tasks/templates/RewriterTask'
+import { WriterTask } from '@tasks/templates/WriterTask'
 
 export class TaskRegistry {
   private tasks: Map<string, BaseTask> = new Map()
@@ -17,6 +21,10 @@ export class TaskRegistry {
     this.registerTask(new TranslationTask())
     this.registerTask(new LanguageDetectionTask())
     this.registerTask(new CustomPromptTask())
+    this.registerTask(new SummarizerTask())
+    this.registerTask(new ProofreaderTask())
+    this.registerTask(new RewriterTask())
+    this.registerTask(new WriterTask())
   }
   
   registerTask(task: BaseTask): void {

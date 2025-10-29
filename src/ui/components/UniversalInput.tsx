@@ -129,6 +129,7 @@ export const UniversalInput: React.FC<UniversalInputProps> = ({
               className="universal-input-select"
             >
               <option value="">Select field...</option>
+              <option value="__raw__">(Original JSON)</option>
               {(() => {
                 const selectedDataPoint = dataPoints.find(dp => dp.id === value.dataPointId)
                 if (selectedDataPoint) {

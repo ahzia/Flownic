@@ -112,19 +112,47 @@ export const TaskInputUI: React.FC<TaskInputUIProps> = ({
           )}
           
               {field.type === 'data_point_selector' && (
-                <DataPointSelector
-                  dataPoints={dataPoints}
-                  onSelect={(dataPointId, fieldName) => {
-                    const dataPointRef: DataPointReference = {
-                      type: 'data_point',
-                      dataPointId,
-                      field: fieldName
-                    }
-                    handleFieldChange(field.name, dataPointRef)
-                  }}
-                  selectedValue={input[field.name] as DataPointReference}
-                  placeholder={field.placeholder}
-                />
+                <>
+                  <DataPointSelector
+                    dataPoints={dataPoints}
+                    onSelect={(dataPointId, fieldName) => {
+                      const dataPointRef: DataPointReference = {
+                        type: 'data_point',
+                        dataPointId,
+                        field: fieldName
+                      }
+                      handleFieldChange(field.name, dataPointRef)
+                    }}
+                    selectedValue={input[field.name] as DataPointReference}
+                    placeholder={field.placeholder}
+                  />
+                  
+                  {input[field.name] && typeof input[field.name] === 'object' && (input[field.name] as DataPointReference).dataPointId && (
+                    <div className="task-field-selector">
+                      <label>Field:</label>
+                      <select
+                        value={(input[field.name] as DataPointReference).field || ''}
+                        onChange={(e) => {
+                          const currentRef = input[field.name] as DataPointReference
+                          handleFieldChange(field.name, { ...currentRef, field: e.target.value })
+                        }}
+                        className="task-input-select"
+                      >
+                        <option value="">Select field...</option>
+                        <option value="__raw__">(Original JSON)</option>
+                        {(() => {
+                          const selectedDataPoint = dataPoints.find(dp => dp.id === (input[field.name] as DataPointReference).dataPointId)
+                          if (selectedDataPoint && selectedDataPoint.value && typeof selectedDataPoint.value === 'object') {
+                            return Object.keys(selectedDataPoint.value).map(key => (
+                              <option key={key} value={key}>{key}</option>
+                            ))
+                          }
+                          return null
+                        })()}
+                      </select>
+                    </div>
+                  )}
+                </>
               )}
           
           {field.type === 'language_selector' && (
@@ -201,6 +229,7 @@ export const TaskInputUI: React.FC<TaskInputUIProps> = ({
                         className="task-input-select"
                       >
                         <option value="">Select field...</option>
+                        <option value="__raw__">(Original JSON)</option>
                         {(() => {
                           const selectedDataPoint = dataPoints.find(dp => dp.id === (input[field.name] as DataPointReference).dataPointId)
                           if (selectedDataPoint && selectedDataPoint.value && typeof selectedDataPoint.value === 'object') {

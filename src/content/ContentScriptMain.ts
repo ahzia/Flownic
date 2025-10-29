@@ -233,43 +233,25 @@ export class ContentScript {
     // Create and inject the quickbar overlay
     const overlay = document.createElement('div')
     overlay.id = 'promptflow-quickbar-overlay'
-    overlay.style.cssText = `
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.5);
-      z-index: 999999;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    `
+    overlay.className = 'promptflow-quickbar-overlay'
+    
+    // Inject quickbar styles if not already present
+    this.injectQuickbarStyles()
 
     const quickbar = document.createElement('div')
-    quickbar.style.cssText = `
-      background: white;
-      border-radius: 12px;
-      padding: 24px;
-      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-      max-width: 600px;
-      width: 90%;
-      max-height: 80vh;
-      overflow-y: auto;
-    `
-
+    quickbar.className = 'promptflow-quickbar-content-wrapper'
     quickbar.innerHTML = `
-      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px;">
-        <h2 style="margin: 0; font-size: 20px; font-weight: 600; color: #111827;">🚀 PromptFlow Quickbar</h2>
-        <button id="close-quickbar" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #6b7280;">×</button>
+      <div class="promptflow-quickbar-header-inline">
+        <h2 class="promptflow-quickbar-title-inline">🚀 PromptFlow Quickbar</h2>
+        <button id="close-quickbar" class="promptflow-quickbar-close-btn">×</button>
       </div>
-      <div style="margin-bottom: 20px;">
-        <input type="text" id="quickbar-input" placeholder="What would you like to do?" 
-               style="width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 16px;">
+      <div class="promptflow-quickbar-input-wrapper">
+        <input type="text" id="quickbar-input" class="promptflow-quickbar-input-field" 
+               placeholder="What would you like to do?">
       </div>
-      <div style="display: flex; gap: 12px; justify-content: flex-end;">
-        <button id="run-action" style="background: #3b82f6; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: 500;">Run Action</button>
-        <button id="preview-action" style="background: #6b7280; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: 500;">Preview</button>
+      <div class="promptflow-quickbar-actions-inline">
+        <button id="run-action" class="promptflow-quickbar-btn-primary">Run Action</button>
+        <button id="preview-action" class="promptflow-quickbar-btn-secondary">Preview</button>
       </div>
     `
 
@@ -320,5 +302,134 @@ export class ContentScript {
       }
     }
     document.addEventListener('keydown', handleKeydown)
+  }
+
+  private injectQuickbarStyles(): void {
+    if (document.getElementById('promptflow-quickbar-styles')) return
+
+    const style = document.createElement('style')
+    style.id = 'promptflow-quickbar-styles'
+    style.textContent = `
+      .promptflow-quickbar-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: var(--color-overlay, rgba(0, 0, 0, 0.5));
+        z-index: 999999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: var(--font-family-sans, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif);
+      }
+      
+      .promptflow-quickbar-content-wrapper {
+        background: var(--color-surface, #ffffff);
+        border-radius: var(--radius-xl, 12px);
+        padding: var(--space-6, 24px);
+        box-shadow: var(--color-shadow-xl, 0 25px 50px -12px rgba(0, 0, 0, 0.25));
+        max-width: 600px;
+        width: 90%;
+        max-height: 80vh;
+        overflow-y: auto;
+        border: 1px solid var(--color-border-primary, #e5e7eb);
+      }
+      
+      .promptflow-quickbar-header-inline {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: var(--space-5, 20px);
+      }
+      
+      .promptflow-quickbar-title-inline {
+        margin: 0;
+        font-size: var(--font-size-xl, 20px);
+        font-weight: var(--font-weight-semibold, 600);
+        color: var(--color-text-primary, #111827);
+      }
+      
+      .promptflow-quickbar-close-btn {
+        background: none;
+        border: none;
+        font-size: 24px;
+        cursor: pointer;
+        color: var(--color-text-secondary, #6b7280);
+        padding: var(--space-1, 4px);
+        border-radius: var(--radius-md, 4px);
+        transition: all var(--transition-normal, 0.2s ease);
+      }
+      
+      .promptflow-quickbar-close-btn:hover {
+        background: var(--color-surface-secondary, #f3f4f6);
+        color: var(--color-text-primary, #374151);
+      }
+      
+      .promptflow-quickbar-input-wrapper {
+        margin-bottom: var(--space-5, 20px);
+      }
+      
+      .promptflow-quickbar-input-field {
+        width: 100%;
+        padding: var(--space-3, 12px);
+        border: 1px solid var(--color-input-border, #d1d5db);
+        border-radius: var(--radius-lg, 8px);
+        font-size: var(--font-size-base, 16px);
+        background: var(--color-input-background, #ffffff);
+        color: var(--color-input-text, #111827);
+        font-family: inherit;
+        transition: border-color var(--transition-normal, 0.2s ease);
+      }
+      
+      .promptflow-quickbar-input-field:focus {
+        outline: none;
+        border-color: var(--color-input-border-focus, #3b82f6);
+      }
+      
+      .promptflow-quickbar-input-field::placeholder {
+        color: var(--color-input-placeholder, #9ca3af);
+      }
+      
+      .promptflow-quickbar-actions-inline {
+        display: flex;
+        gap: var(--space-3, 12px);
+        justify-content: flex-end;
+      }
+      
+      .promptflow-quickbar-btn-primary {
+        background: var(--color-button-primary, #3b82f6);
+        color: var(--color-text-inverse, white);
+        border: none;
+        padding: 10px var(--space-5, 20px);
+        border-radius: var(--radius-lg, 6px);
+        cursor: pointer;
+        font-weight: var(--font-weight-medium, 500);
+        font-family: inherit;
+        transition: background var(--transition-normal, 0.2s ease);
+      }
+      
+      .promptflow-quickbar-btn-primary:hover {
+        background: var(--color-button-primary-hover, #2563eb);
+      }
+      
+      .promptflow-quickbar-btn-secondary {
+        background: var(--color-button-secondary, #6b7280);
+        color: var(--color-text-inverse, white);
+        border: none;
+        padding: 10px var(--space-5, 20px);
+        border-radius: var(--radius-lg, 6px);
+        cursor: pointer;
+        font-weight: var(--font-weight-medium, 500);
+        font-family: inherit;
+        transition: background var(--transition-normal, 0.2s ease);
+      }
+      
+      .promptflow-quickbar-btn-secondary:hover {
+        background: var(--color-button-secondary-hover, #4b5563);
+      }
+    `
+    
+    document.head.appendChild(style)
   }
 }

@@ -8,6 +8,8 @@ import {
 import { Workflow, WorkflowStep, DataPoint, TaskTemplate, HandlerTemplate } from '@common/types'
 import { ToastContainer, useToast } from './components/Toast'
 import { TaskInputUI } from '@ui/components/TaskInputUI'
+import { TaskRegistry } from '@core/TaskRegistry'
+import { HandlerRegistry } from '@core/HandlerRegistry'
 
 export const PlaygroundApp: React.FC = () => {
   const [workflows, setWorkflows] = useState<Workflow[]>([])
@@ -292,27 +294,37 @@ export const PlaygroundApp: React.FC = () => {
     }
   }, [])
   
-  const loadTasks = async () => {
+  const loadTasks = () => {
     try {
-      // For now, use hardcoded task templates
-      // TODO: Load from TaskRegistry
-      setAvailableTasks(taskTemplates)
+      // Load tasks from TaskRegistry (now statically imported)
+      const registry = new TaskRegistry()
+      const templates = registry.getAllTemplates()
+      
+      if (!templates || templates.length === 0) {
+        throw new Error('No templates returned from TaskRegistry')
+      }
+      
+      console.log('✅ Loaded tasks from TaskRegistry:', templates.length, 'tasks:', templates.map((t: TaskTemplate) => t.name))
+      setAvailableTasks(templates)
     } catch (error) {
-      console.error('Error loading tasks:', error)
+      console.error('❌ Error loading tasks from TaskRegistry:', error)
+      console.error('Error details:', error instanceof Error ? error.message : String(error))
+      // Fallback to hardcoded templates if registry fails
+      console.log('⚠️ Using fallback task templates:', taskTemplates.length)
+      setAvailableTasks(taskTemplates)
     }
   }
   
-  const loadHandlers = async () => {
+  const loadHandlers = () => {
     try {
-      // Load handlers from HandlerRegistry
-      const { HandlerRegistry } = await import('@core/HandlerRegistry')
+      // Load handlers from HandlerRegistry (now statically imported)
       const registry = new HandlerRegistry()
       const templates = registry.getAllTemplates()
       setAvailableHandlers(templates)
-      console.log('Loaded handlers:', templates.map(h => h.id))
+      console.log('✅ Loaded handlers:', templates.length, 'handlers:', templates.map(h => h.id))
     } catch (error) {
-      console.error('Error loading handlers:', error)
-      // Fallback to hardcoded handlers if import fails
+      console.error('❌ Error loading handlers:', error)
+      // Fallback to hardcoded handlers if registry fails
       setAvailableHandlers(handlerTemplates)
     }
   }
@@ -503,7 +515,8 @@ export const PlaygroundApp: React.FC = () => {
         type: formData.trigger.type,
         pattern: formData.trigger.pattern || undefined,
         selector: formData.trigger.selector || undefined,
-        schedule: formData.trigger.schedule || undefined
+        schedule: formData.trigger.schedule || undefined,
+        shortcut: formData.trigger.shortcut || undefined
       }
 
       const workflow: Workflow = {
@@ -628,35 +641,9 @@ export const PlaygroundApp: React.FC = () => {
     if (step.type === 'task' && step.taskId) {
       const taskTemplate = availableTasks.find(t => t.id === step.taskId)
       if (taskTemplate) {
-        // Create mock output based on task type
-        let mockOutput: any = {}
+        // Create mock output from task's outputSchema
+        const mockOutput = generateMockOutputFromSchema(taskTemplate.outputSchema, step.taskId)
         
-        if (step.taskId === 'language_detection') {
-          mockOutput = {
-            language: 'Spanish',
-            languageCode: 'es',
-            confidence: 0.95,
-            allResults: [
-              { language: 'Spanish', languageCode: 'es', confidence: 0.95 },
-              { language: 'Portuguese', languageCode: 'pt', confidence: 0.03 },
-              { language: 'Italian', languageCode: 'it', confidence: 0.02 }
-            ]
-          }
-        } else if (step.taskId === 'translation') {
-          mockOutput = {
-            translatedText: 'This is the translated text',
-            sourceLanguage: 'es',
-            targetLanguage: 'en',
-            confidence: 0.9
-          }
-        } else if (step.taskId === 'custom_prompt') {
-          mockOutput = {
-            response: 'This is the AI response to your custom prompt',
-            tokens: 150,
-            confidence: 0.85
-          }
-        }
-
         // Add task output as data point
         const outputDataPoint: DataPoint = {
           id: `${step.id}_output_${Date.now()}`,
@@ -669,6 +656,101 @@ export const PlaygroundApp: React.FC = () => {
 
         addDataPoint(outputDataPoint)
       }
+    }
+  }
+
+  // Generate mock output based on task output schema
+  const generateMockOutputFromSchema = (schema: any, taskId: string): any => {
+    if (!schema || !schema.properties) {
+      return {}
+    }
+
+    const mockOutput: any = {}
+    const properties = schema.properties || {}
+
+    // Generate mock values based on property types and task-specific defaults
+    for (const [key, prop] of Object.entries(properties) as [string, any][]) {
+      const propType = prop.type || 'string'
+      
+      // Use task-specific defaults if available
+      if (taskId === 'language_detection') {
+        if (key === 'language') mockOutput[key] = 'Spanish'
+        else if (key === 'languageCode') mockOutput[key] = 'es'
+        else if (key === 'confidence') mockOutput[key] = 0.95
+        else if (key === 'allResults') {
+          mockOutput[key] = [
+            { language: 'Spanish', languageCode: 'es', confidence: 0.95 },
+            { language: 'Portuguese', languageCode: 'pt', confidence: 0.03 }
+          ]
+        } else {
+          mockOutput[key] = getDefaultValueForType(propType)
+        }
+      } else if (taskId === 'translation') {
+        if (key === 'translatedText') mockOutput[key] = 'This is the translated text'
+        else if (key === 'sourceLanguage') mockOutput[key] = 'es'
+        else if (key === 'targetLanguage') mockOutput[key] = 'en'
+        else if (key === 'confidence') mockOutput[key] = 0.9
+        else {
+          mockOutput[key] = getDefaultValueForType(propType)
+        }
+      } else if (taskId === 'custom_prompt') {
+        if (key === 'response') mockOutput[key] = 'This is the AI response to your custom prompt'
+        else if (key === 'tokens') mockOutput[key] = 150
+        else if (key === 'confidence') mockOutput[key] = 0.85
+        else {
+          mockOutput[key] = getDefaultValueForType(propType)
+        }
+      } else if (taskId === 'summarizer') {
+        if (key === 'summary') mockOutput[key] = 'This is a concise summary of the input text with key points highlighted.'
+        else if (key === 'type') mockOutput[key] = 'key-points'
+        else if (key === 'format') mockOutput[key] = 'markdown'
+        else if (key === 'length') mockOutput[key] = 'medium'
+        else {
+          mockOutput[key] = getDefaultValueForType(propType)
+        }
+      } else if (taskId === 'proofreader') {
+        if (key === 'correctedText') mockOutput[key] = 'This is the corrected text with grammar and spelling errors fixed.'
+        else if (key === 'format') mockOutput[key] = 'markdown'
+        else {
+          mockOutput[key] = getDefaultValueForType(propType)
+        }
+      } else if (taskId === 'rewriter') {
+        if (key === 'rewrittenText') mockOutput[key] = 'This is the rewritten text following the specified guidelines.'
+        else if (key === 'format') mockOutput[key] = 'markdown'
+        else if (key === 'guidelines') mockOutput[key] = []
+        else {
+          mockOutput[key] = getDefaultValueForType(propType)
+        }
+      } else if (taskId === 'writer') {
+        if (key === 'writtenText') mockOutput[key] = 'This is the newly generated content based on the provided context and guidelines.'
+        else if (key === 'format') mockOutput[key] = 'markdown'
+        else if (key === 'guidelines') mockOutput[key] = []
+        else {
+          mockOutput[key] = getDefaultValueForType(propType)
+        }
+      } else {
+        // Generic fallback: generate based on type
+        mockOutput[key] = getDefaultValueForType(propType)
+      }
+    }
+
+    return mockOutput
+  }
+
+  const getDefaultValueForType = (type: string): any => {
+    switch (type) {
+      case 'string':
+        return 'Sample value'
+      case 'number':
+        return 0
+      case 'boolean':
+        return false
+      case 'array':
+        return []
+      case 'object':
+        return {}
+      default:
+        return null
     }
   }
 

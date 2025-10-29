@@ -61,6 +61,21 @@ iconSizes.forEach(size => {
   }
 });
 
+// Fix paths in playground.html for Chrome extension
+// HTML is at dist/src/ui/playground.html, chunks are at dist/chunks/, assets at dist/assets/
+// So from src/ui/ we need ../../chunks/ and ../../assets/ and ../../ui/ for JS
+const playgroundHtmlPath = path.join(distDir, 'src/ui/playground.html');
+if (fs.existsSync(playgroundHtmlPath)) {
+  let html = fs.readFileSync(playgroundHtmlPath, 'utf8');
+  // Replace absolute paths with correct relative paths
+  html = html
+    .replace(/src="\/ui\//g, 'src="../../ui/')
+    .replace(/href="\/chunks\//g, 'href="../../chunks/')
+    .replace(/href="\/assets\//g, 'href="../../assets/');
+  fs.writeFileSync(playgroundHtmlPath, html);
+  console.log('✅ Fixed paths in playground.html');
+}
+
 console.log('✅ Development setup complete!');
 console.log('📁 Extension built in: dist/');
 console.log('🔧 To load in Chrome:');

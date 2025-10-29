@@ -155,6 +155,7 @@ export interface WorkflowTrigger {
   pattern?: string
   selector?: string
   schedule?: string
+  shortcut?: string
 }
 
 export interface Capture {

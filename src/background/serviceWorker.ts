@@ -166,24 +166,32 @@ function resolveDataPointReferences(input: any, dataPoints: any[]): any {
     
     console.log('✅ Found data point:', { id: dataPoint.id, value: dataPoint.value })
     
+    // Handle raw JSON option
+    if (input.field === '__raw__') {
+      if (typeof dataPoint.value === 'object' && dataPoint.value !== null) {
+        console.log('📤 Returning raw JSON object:', dataPoint.value)
+        // Return as JSON string for display in modal
+        return JSON.stringify(dataPoint.value, null, 2)
+      }
+      // If not an object, return as-is
+      return dataPoint.value
+    }
+    
     if (input.field && dataPoint.value && typeof dataPoint.value === 'object') {
       const fieldValue = dataPoint.value[input.field]
       console.log(`🔑 Extracted field '${input.field}':`, fieldValue)
+      
+      // If field value is an object/array, stringify it
+      if (fieldValue !== null && fieldValue !== undefined && typeof fieldValue !== 'string' && typeof fieldValue !== 'number' && typeof fieldValue !== 'boolean') {
+        return JSON.stringify(fieldValue, null, 2)
+      }
+      
       return fieldValue || null
     }
     
-    // If value is an object but no field specified, try to extract a sensible default
+    // If value is an object but no field specified, return JSON string
     if (typeof dataPoint.value === 'object' && dataPoint.value !== null) {
-      // Try common fields that might contain the actual text content
-      const textFields = ['text', 'translatedText', 'content', 'value', 'result']
-      for (const field of textFields) {
-        if (dataPoint.value[field] && typeof dataPoint.value[field] === 'string') {
-          console.log(`📤 Returning field '${field}':`, dataPoint.value[field])
-          return dataPoint.value[field]
-        }
-      }
-      // If no text field found, return JSON string
-      const jsonValue = JSON.stringify(dataPoint.value)
+      const jsonValue = JSON.stringify(dataPoint.value, null, 2)
       console.log('📤 Returning JSON stringified value:', jsonValue)
       return jsonValue
     }

@@ -29,21 +29,31 @@ export class NotificationHelpers {
     style.textContent = `
       .promptflow-notification {
         position: fixed;
-        top: 20px;
-        right: 20px;
-        padding: 12px 20px;
-        border-radius: 4px;
-        color: white;
-        font-weight: 500;
+        top: var(--space-5, 20px);
+        right: var(--space-5, 20px);
+        padding: var(--space-3, 12px) var(--space-5, 20px);
+        border-radius: var(--radius-md, 4px);
+        color: var(--color-text-inverse, white);
+        font-weight: var(--font-weight-medium, 500);
         z-index: 10001;
         max-width: 300px;
         word-wrap: break-word;
+        box-shadow: var(--color-shadow-lg, 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05));
+        font-family: var(--font-family-sans, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif);
       }
       
-      .promptflow-notification-info { background: #2196F3; }
-      .promptflow-notification-success { background: #4CAF50; }
-      .promptflow-notification-warning { background: #FF9800; }
-      .promptflow-notification-error { background: #F44336; }
+      .promptflow-notification-info { 
+        background: var(--color-status-info, #0ea5e9); 
+      }
+      .promptflow-notification-success { 
+        background: var(--color-status-success, #22c55e); 
+      }
+      .promptflow-notification-warning { 
+        background: var(--color-status-warning, #f59e0b); 
+      }
+      .promptflow-notification-error { 
+        background: var(--color-status-error, #ef4444); 
+      }
     `
     
     document.head.appendChild(style)
