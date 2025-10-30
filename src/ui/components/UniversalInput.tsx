@@ -1,6 +1,7 @@
-import React, { useState, useMemo } from 'react'
+import React, { useState, useMemo, useRef } from 'react'
 import { DataPoint, DataPointReference } from '@common/types'
 import { DataPointSelector } from './DataPointSelector'
+import { TokenAutocomplete } from './TokenAutocomplete'
 
 interface UniversalInputProps {
   value: any
@@ -12,6 +13,7 @@ interface UniversalInputProps {
   required?: boolean
   disabled?: boolean
   className?: string
+  enableTokenAutocomplete?: boolean
 }
 
 export const UniversalInput: React.FC<UniversalInputProps> = ({
@@ -22,9 +24,15 @@ export const UniversalInput: React.FC<UniversalInputProps> = ({
   options = [],
   dataPoints = [],
   disabled = false,
-  className = ''
+  className = '',
+  enableTokenAutocomplete = true
 }) => {
   const [isDataPointMode, setIsDataPointMode] = useState(false)
+  const textInputRef = useRef<HTMLInputElement>(null)
+  const textareaRef = useRef<HTMLTextAreaElement>(null)
+  
+  // Use appropriate ref based on input type
+  const inputRef = type === 'textarea' ? textareaRef : textInputRef
 
   const filteredDataPoints = useMemo(() => {
     // Always show all data points - no filtering by type
@@ -41,29 +49,51 @@ export const UniversalInput: React.FC<UniversalInputProps> = ({
   }
 
   const renderManualInput = () => {
+    const showAutocomplete = enableTokenAutocomplete && (type === 'text' || type === 'textarea') && !isDataPointMode
+    
     switch (type) {
       case 'text':
         return (
-          <input
-            type="text"
-            value={value || ''}
-            onChange={(e) => onChange(e.target.value)}
-            placeholder={placeholder}
-            disabled={disabled}
-            className={`universal-input-text ${className}`}
-          />
+          <div style={{ position: 'relative' }}>
+            <input
+              ref={textInputRef}
+              type="text"
+              value={value || ''}
+              onChange={(e) => onChange(e.target.value)}
+              placeholder={placeholder}
+              disabled={disabled}
+              className={`universal-input-text ${className}`}
+            />
+            {showAutocomplete && (
+              <TokenAutocomplete
+                textareaRef={inputRef}
+                dataPoints={dataPoints}
+                onInsert={(text) => onChange(text)}
+              />
+            )}
+          </div>
         )
       
       case 'textarea':
         return (
-          <textarea
-            value={value || ''}
-            onChange={(e) => onChange(e.target.value)}
-            placeholder={placeholder}
-            disabled={disabled}
-            rows={4}
-            className={`universal-input-textarea ${className}`}
-          />
+          <div style={{ position: 'relative' }}>
+            <textarea
+              ref={textareaRef}
+              value={value || ''}
+              onChange={(e) => onChange(e.target.value)}
+              placeholder={placeholder}
+              disabled={disabled}
+              rows={4}
+              className={`universal-input-textarea ${className}`}
+            />
+            {showAutocomplete && (
+              <TokenAutocomplete
+                textareaRef={inputRef}
+                dataPoints={dataPoints}
+                onInsert={(text) => onChange(text)}
+              />
+            )}
+          </div>
         )
       
       case 'number':

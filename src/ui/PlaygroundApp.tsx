@@ -2,13 +2,16 @@ import React, { useState, useEffect } from 'react'
 import { 
   Plus, Save, Trash2, Settings, Globe, Keyboard, Clock, Eye, Code, 
   Play, Download, Upload, Search, Grid, List,
-  AlertCircle, CheckCircle
+  AlertCircle, CheckCircle, Database
 } from 'lucide-react'
 import { Workflow, WorkflowStep, DataPoint, TaskTemplate, HandlerTemplate, WorkflowTrigger } from '@common/types'
 import { ToastContainer, useToast } from './components/Toast'
 import { StepsEditor } from '@ui/components/StepsEditor'
 import { TriggerConfigSection } from '@ui/components/TriggerConfigSection'
 import { DataPointsPanel } from '@ui/components/DataPointsPanel'
+import { KnowledgeBasePanel } from '@ui/components/KnowledgeBasePanel'
+import { KBEntry } from '@common/types'
+import { getKBEntries } from '@utils/kb'
 import { TaskRegistry } from '@core/TaskRegistry'
 import { HandlerRegistry } from '@core/HandlerRegistry'
 import { ContextProviderRegistry } from '@context/ContextProviderRegistry'
@@ -29,6 +32,8 @@ export const PlaygroundApp: React.FC = () => {
   const [availableHandlers, setAvailableHandlers] = useState<HandlerTemplate[]>([])
   const [showDataPoints, setShowDataPoints] = useState(false)
   const [providerMetas, setProviderMetas] = useState<{ id: string; name: string; description: string; outputType: string }[]>([])
+  const [kbEntries, setKbEntries] = useState<KBEntry[]>([])
+  const [showKBManager, setShowKBManager] = useState(false)
 
   // Form state for creating/editing workflows
   const [formData, setFormData] = useState({
@@ -72,6 +77,7 @@ export const PlaygroundApp: React.FC = () => {
     loadContextProviders()
     loadTasks()
     loadHandlers()
+    loadKB()
     
     // Handle back button
     const backButton = document.getElementById('backButton')
@@ -82,6 +88,14 @@ export const PlaygroundApp: React.FC = () => {
       })
     }
   }, [])
+  const loadKB = async () => {
+    try {
+      const list = await getKBEntries()
+      setKbEntries(list)
+    } catch (e) {
+      console.warn('Failed to load KB entries:', e)
+    }
+  }
   
   const loadTasks = () => {
     try {
@@ -708,6 +722,11 @@ export const PlaygroundApp: React.FC = () => {
               Import
             </button>
 
+            <button className="btn btn-secondary" onClick={() => setShowKBManager(true)}>
+              <Database className="icon" />
+              Manage Knowledge Base
+            </button>
+
             <button className="btn btn-primary" onClick={startCreating}>
               <Plus className="icon" />
               Create Workflow
@@ -822,6 +841,20 @@ export const PlaygroundApp: React.FC = () => {
             ))
           )}
         </div>
+
+        {showKBManager && (
+          <div className="modal-overlay">
+            <div className="modal-content" style={{ maxWidth: 720 }}>
+              <div className="modal-header">
+                <h3>Manage Knowledge Base</h3>
+                <button className="btn btn-secondary" onClick={async () => { setShowKBManager(false); await loadKB() }}>Close</button>
+              </div>
+              <div className="modal-body">
+                <KnowledgeBasePanel />
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     )
   }
@@ -887,6 +920,15 @@ export const PlaygroundApp: React.FC = () => {
             onToggleShow={() => setShowDataPoints(!showDataPoints)}
             onGatherContextData={gatherContextData}
             onRemoveDataPoint={removeDataPoint}
+            kbEntries={kbEntries}
+            onAddKBToDataPoints={(entry) => addDataPoint({
+              id: `kb_${entry.id}`,
+              name: `KB: ${entry.name}`,
+              type: 'context',
+              value: { text: entry.content, title: entry.name, source: 'kb' },
+              source: 'kb',
+              timestamp: Date.now()
+            })}
           />
 
           {/* Trigger Configuration */}

@@ -163,6 +163,7 @@ export interface WebsiteConfig {
   patterns: string
 }
 
+
 export interface Capture {
   id: string
   name: string

@@ -1,6 +1,6 @@
 import React from 'react'
 import { ChevronDown, ChevronRight, MousePointer, FileText, Target, Zap, Database, Trash2 } from 'lucide-react'
-import { DataPoint } from '@common/types'
+import { DataPoint, KBEntry } from '@common/types'
 
 interface ProviderMeta {
   id: string
@@ -16,6 +16,8 @@ interface DataPointsPanelProps {
   onToggleShow: () => void
   onGatherContextData: (providerId: string) => void
   onRemoveDataPoint: (dataPointId: string) => void
+  kbEntries?: KBEntry[]
+  onAddKBToDataPoints?: (entry: KBEntry) => void
 }
 
 export const DataPointsPanel: React.FC<DataPointsPanelProps> = ({
@@ -24,7 +26,9 @@ export const DataPointsPanel: React.FC<DataPointsPanelProps> = ({
   providerMetas,
   onToggleShow,
   onGatherContextData,
-  onRemoveDataPoint
+  onRemoveDataPoint,
+  kbEntries,
+  onAddKBToDataPoints
 }) => {
   return (
     <div className="editor-section">
@@ -71,6 +75,36 @@ export const DataPointsPanel: React.FC<DataPointsPanelProps> = ({
               ))}
             </div>
           </div>
+
+          {kbEntries && kbEntries.length >= 0 && (
+            <div className="context-providers">
+              <h5>Knowledge Base</h5>
+              <div className="provider-grid">
+                {kbEntries.length === 0 ? (
+                  <div className="empty-state" style={{ width: '100%' }}>
+                    <p>No knowledge entries. Use Manage Knowledge Base to add.</p>
+                  </div>
+                ) : (
+                  kbEntries.map(e => (
+                    <div key={e.id} className="provider-card">
+                      <div className="provider-info">
+                        <h6>{e.name}</h6>
+                        <p>{e.content.substring(0, 100)}{e.content.length > 100 ? '...' : ''}</p>
+                      </div>
+                      {onAddKBToDataPoints && (
+                        <button
+                          className="btn btn-sm btn-primary"
+                          onClick={() => onAddKBToDataPoints(e)}
+                        >
+                          Add
+                        </button>
+                      )}
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          )}
 
           <div className="data-points-list">
             <h5>Current Data Points</h5>
