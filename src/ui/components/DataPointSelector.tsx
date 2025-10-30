@@ -24,7 +24,7 @@ export const DataPointSelector: React.FC<DataPointSelectorProps> = ({
   
   const selectedDataPoint = useMemo(() => {
     if (!selectedValue) return null
-    return dataPoints.find(dp => dp.id === selectedValue.dataPointId)
+    return dataPoints.find(dp => dp.id === selectedValue.dataPointId) || null
   }, [selectedValue, dataPoints])
   
   const handleSelect = (dataPoint: DataPoint, field?: string) => {
@@ -69,13 +69,23 @@ export const DataPointSelector: React.FC<DataPointSelectorProps> = ({
           disabled={disabled}
         >
           <div className="data-point-selector-content">
-            {selectedDataPoint ? (
+            {selectedValue ? (
               <div className="data-point-selector-selected">
-                {getTypeIcon(selectedDataPoint.type)}
-                <span className="data-point-selector-name">{selectedDataPoint.name}</span>
-                <span className="data-point-selector-type">
-                  {getTypeLabel(selectedDataPoint.type)}
-                </span>
+                {selectedDataPoint ? (
+                  <>
+                    {getTypeIcon(selectedDataPoint.type)}
+                    <span className="data-point-selector-name">{selectedDataPoint.name}</span>
+                    <span className="data-point-selector-type">
+                      {getTypeLabel(selectedDataPoint.type)}
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    {getTypeIcon('static')}
+                    <span className="data-point-selector-name">{selectedValue.dataPointId}</span>
+                    <span className="data-point-selector-type">Unresolved</span>
+                  </>
+                )}
               </div>
             ) : (
               <span className="data-point-selector-placeholder">{placeholder}</span>

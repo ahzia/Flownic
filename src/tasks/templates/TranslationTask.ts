@@ -56,7 +56,7 @@ export class TranslationTask extends BaseTask {
       }
       
       // Determine source and target languages
-      const sourceLang = (sourceLanguage as string) || 'auto'
+      const sourceLang = (sourceLanguage as string) || ''
       const targetLang = targetLanguage as string
       
       // For auto-detection, we can't check availability without a source language
@@ -64,7 +64,7 @@ export class TranslationTask extends BaseTask {
       let translator
       let availability: 'available' | 'downloadable' | 'unavailable' = 'available'
       
-      if (sourceLang !== 'auto') {
+      if (sourceLang) {
         // Check availability for specific language pair
         try {
           availability = await TranslatorAPI.availability({
@@ -84,21 +84,18 @@ export class TranslationTask extends BaseTask {
       // Create translator with appropriate options
       if (availability === 'downloadable') {
         // Create translator with download monitoring
-        translator = await TranslatorAPI.create({
-          sourceLanguage: sourceLang === 'auto' ? undefined : sourceLang,
-          targetLanguage: targetLang,
-          monitor(m: any) {
-            m.addEventListener('downloadprogress', (e: any) => {
-              console.log(`Translation model downloaded ${e.loaded * 100}%`)
-            })
-          }
-        })
+        const createOpts: any = { targetLanguage: targetLang, monitor(m: any) {
+          m.addEventListener('downloadprogress', (e: any) => {
+            console.log(`Translation model downloaded ${e.loaded * 100}%`)
+          })
+        } }
+        if (sourceLang) createOpts.sourceLanguage = sourceLang
+        translator = await TranslatorAPI.create(createOpts)
       } else {
         // Model is already available
-        translator = await TranslatorAPI.create({
-          sourceLanguage: sourceLang === 'auto' ? undefined : sourceLang,
-          targetLanguage: targetLang
-        })
+        const createOpts: any = { targetLanguage: targetLang }
+        if (sourceLang) createOpts.sourceLanguage = sourceLang
+        translator = await TranslatorAPI.create(createOpts)
       }
       
       // Translate text using Chrome Translator API
@@ -108,7 +105,7 @@ export class TranslationTask extends BaseTask {
       return {
         data: {
           translatedText,
-          sourceLanguage: sourceLanguage || 'auto',
+          sourceLanguage: sourceLanguage || '',
           targetLanguage,
           confidence: 0.95
         },
@@ -145,9 +142,8 @@ export class TranslationTask extends BaseTask {
           label: 'Source Language',
           type: 'language_selector',
           required: false,
-          placeholder: 'Auto-detect (optional)',
+          placeholder: 'Select source language or leave empty',
           options: [
-            { value: 'auto', label: 'Auto-detect' },
             { value: 'en', label: 'English' },
             { value: 'es', label: 'Spanish' },
             { value: 'fr', label: 'French' },

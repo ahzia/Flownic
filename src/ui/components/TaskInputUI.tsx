@@ -126,6 +126,13 @@ export const TaskInputUI: React.FC<TaskInputUIProps> = ({
                     selectedValue={input[field.name] as DataPointReference}
                     placeholder={field.placeholder}
                   />
+                  {input[field.name] && typeof input[field.name] === 'object' && (
+                    <div className="task-field-selected">
+                      <small>
+                        Field: { (input[field.name] as DataPointReference).field ? (input[field.name] as DataPointReference).field : '(not set)' }
+                      </small>
+                    </div>
+                  )}
                   
                   {input[field.name] && typeof input[field.name] === 'object' && (input[field.name] as DataPointReference).dataPointId && (
                     <div className="task-field-selector">
@@ -187,19 +194,25 @@ export const TaskInputUI: React.FC<TaskInputUIProps> = ({
                   className={`task-input-select ${hasError ? 'error' : ''}`}
                 >
                   <option value="">{field.placeholder || 'Select language...'}</option>
-                  <option value="auto">Auto-detect</option>
-                  <option value="en">English</option>
-                  <option value="es">Spanish</option>
-                  <option value="fr">French</option>
-                  <option value="de">German</option>
-                  <option value="it">Italian</option>
-                  <option value="pt">Portuguese</option>
-                  <option value="ru">Russian</option>
-                  <option value="ja">Japanese</option>
-                  <option value="ko">Korean</option>
-                  <option value="zh">Chinese</option>
-                  <option value="ar">Arabic</option>
-                  <option value="hi">Hindi</option>
+                  {(field.options && field.options.length > 0
+                    ? field.options
+                    : [
+                        { value: 'en', label: 'English' },
+                        { value: 'es', label: 'Spanish' },
+                        { value: 'fr', label: 'French' },
+                        { value: 'de', label: 'German' },
+                        { value: 'it', label: 'Italian' },
+                        { value: 'pt', label: 'Portuguese' },
+                        { value: 'ru', label: 'Russian' },
+                        { value: 'ja', label: 'Japanese' },
+                        { value: 'ko', label: 'Korean' },
+                        { value: 'zh', label: 'Chinese' },
+                        { value: 'ar', label: 'Arabic' },
+                        { value: 'hi', label: 'Hindi' }
+                      ]
+                  ).map(opt => (
+                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                  ))}
                 </select>
               ) : (
                 <div className="language-data-point-selector">

@@ -164,7 +164,85 @@ export const PlaygroundApp: React.FC = () => {
     setDataPoints(prev => prev.filter(dp => dp.id !== dataPointId))
   }
 
-  const gatherContextData = async (providerId: string) => {
+  const hydrateTaskOutputDataPoints = (workflow: Workflow) => {
+    try {
+      const registry = new TaskRegistry()
+      const synthesized: DataPoint[] = []
+
+      for (const step of workflow.steps) {
+        if (step.type === 'task' && step.taskId) {
+          const task = registry.getTask(step.taskId)
+          if (!task || !step.id) continue
+          const mockOutput = task.generateMockOutput()
+          const dpId = `${step.id}_output`
+          // Avoid duplicates if already present
+          const exists = dataPoints.some(dp => dp.id === dpId)
+          if (!exists) {
+            synthesized.push({
+              id: dpId,
+              name: `${task.name} Output`,
+              type: 'task_output',
+              value: mockOutput,
+              source: step.id,
+              timestamp: Date.now()
+            })
+          }
+        }
+      }
+
+      if (synthesized.length > 0) {
+        setDataPoints(prev => [...prev, ...synthesized])
+      }
+    } catch (e) {
+      console.warn('Hydration of task output data points failed:', e)
+    }
+  }
+
+  const collectReferencedDataPointIds = (obj: any, acc: Set<string>) => {
+    if (!obj || typeof obj !== 'object') return
+    if (obj.type === 'data_point' && typeof obj.dataPointId === 'string') {
+      acc.add(obj.dataPointId)
+    }
+    for (const value of Object.values(obj)) {
+      if (value && typeof value === 'object') {
+        collectReferencedDataPointIds(value, acc)
+      }
+    }
+  }
+
+  const hydrateContextProviderDataPoints = async (workflow: Workflow) => {
+    try {
+      // Gather all referenced dataPointIds across all step inputs
+      const referenced = new Set<string>()
+      for (const step of workflow.steps) {
+        collectReferencedDataPointIds(step.input, referenced)
+      }
+
+      // Determine provider ids dynamically from registry metadata, with safe fallbacks
+      const providerIds = new Set<string>(
+        (providerMetas && providerMetas.length > 0
+          ? providerMetas.map(p => p.id)
+          : ['selected_text', 'page_content', 'extracted_text'])
+      )
+
+      const missingProviderIds: string[] = []
+      referenced.forEach(id => {
+        if (providerIds.has(id)) {
+          const exists = dataPoints.some(dp => dp.id === id)
+          if (!exists) missingProviderIds.push(id)
+        }
+      })
+
+      if (missingProviderIds.length === 0) return
+
+      // Simulate gather for each missing provider (reuses existing gatherContextData UX)
+      await Promise.all(missingProviderIds.map(pid => gatherContextData(pid, true)))
+    } catch (e) {
+      console.warn('Hydration of context provider data points failed:', e)
+    }
+  }
+
+  const gatherContextData = async (providerId: string, stableId = false) => {
     try {
       // Prefer real execution via background -> content script in future; for now keep mock for UX
       const meta = providerMetas.find(p => p.id === providerId)
@@ -173,7 +251,7 @@ export const PlaygroundApp: React.FC = () => {
         : { text: 'Sample context value', source: providerId }
 
       const dataPoint: DataPoint = {
-        id: `${providerId}_${Date.now()}`,
+        id: stableId ? providerId : `${providerId}_${Date.now()}`,
         name: meta?.name || providerId,
         type: 'context',
         value: value,
@@ -502,11 +580,11 @@ export const PlaygroundApp: React.FC = () => {
       name: workflow.name,
       description: workflow.description,
       trigger: {
-        type: (workflow.triggers[0]?.type === 'onFocus' ? 'manual' : workflow.triggers[0]?.type) || 'manual',
-        pattern: workflow.triggers[0]?.pattern || '',
-        selector: workflow.triggers[0]?.selector || '',
-        schedule: workflow.triggers[0]?.schedule || '',
-        shortcut: '' // This is a UI-only field for manual triggers
+        type: (workflow.triggers && workflow.triggers[0]?.type) || 'manual',
+        pattern: workflow.triggers && (workflow.triggers[0]?.pattern || ''),
+        selector: workflow.triggers && (workflow.triggers[0]?.selector || ''),
+        schedule: workflow.triggers && (workflow.triggers[0]?.schedule || ''),
+        shortcut: workflow.triggers && (workflow.triggers[0]?.shortcut || '')
       },
       websiteConfig: workflow.websiteConfig || {
         type: 'all',
@@ -516,6 +594,10 @@ export const PlaygroundApp: React.FC = () => {
     })
     setSelectedWorkflow(workflow)
     setIsCreating(true)
+    // Hydrate synthesized data points for task outputs so selectors resolve
+    hydrateTaskOutputDataPoints(workflow)
+    // Hydrate context provider data points that are referenced
+    hydrateContextProviderDataPoints(workflow)
   }
 
   const testWorkflow = async () => {
