@@ -3,6 +3,7 @@ import { CSSHelpers } from './helpers/CSSHelpers'
 import { ModalHelpers } from './helpers/ModalHelpers'
 import { NotificationHelpers } from './helpers/NotificationHelpers'
 import { WorkflowTriggerManager } from './workflow/WorkflowTriggerManager'
+import { ProgressIndicator } from './helpers/ProgressIndicator'
 import { ContextGatherer } from './context/ContextGatherer'
 import { TaskExecutor } from './execution/TaskExecutor'
 import { HandlerExecutor } from './execution/HandlerExecutor'
@@ -27,7 +28,8 @@ export class ContentScript {
     this.cssHelpers = new CSSHelpers()
     this.modalHelpers = new ModalHelpers()
     this.notificationHelpers = new NotificationHelpers()
-    this.workflowTriggerManager = new WorkflowTriggerManager()
+    const progress = new ProgressIndicator()
+    this.workflowTriggerManager = new WorkflowTriggerManager(progress)
     this.contextGatherer = new ContextGatherer()
     this.taskExecutor = new TaskExecutor()
     this.handlerExecutor = new HandlerExecutor(

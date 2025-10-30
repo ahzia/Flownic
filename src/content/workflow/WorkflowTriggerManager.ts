@@ -1,8 +1,11 @@
 /**
  * Manages workflow triggers (onPageLoad, onSelection, manual)
  */
+import { ProgressIndicator } from '../helpers/ProgressIndicator'
+
 export class WorkflowTriggerManager {
   private enabledWorkflows: Map<string, any> = new Map()
+  private progress: ProgressIndicator
 
   async loadEnabledWorkflows(): Promise<void> {
     try {
@@ -121,6 +124,10 @@ export class WorkflowTriggerManager {
     })
   }
 
+  constructor(progress?: ProgressIndicator) {
+    this.progress = progress || new ProgressIndicator()
+  }
+
   private setupManualTrigger(workflow: any, trigger: any): void {
     if (!trigger.shortcut) {
       console.warn(`Workflow ${workflow.id} has manual trigger but no shortcut defined`)
@@ -178,6 +185,7 @@ export class WorkflowTriggerManager {
   private async executeWorkflow(workflow: any): Promise<void> {
     try {
       console.log('Executing workflow:', workflow.name)
+      this.progress.show(`Running: ${workflow.name}`)
       
       const response = await chrome.runtime.sendMessage({
         type: 'EXECUTE_WORKFLOW',
@@ -186,11 +194,14 @@ export class WorkflowTriggerManager {
       
       if (response.success) {
         console.log('Workflow executed successfully:', response.data)
+        this.progress.success('Workflow completed')
       } else {
         console.error('Workflow execution failed:', response.error)
+        this.progress.error('Workflow failed')
       }
     } catch (error) {
       console.error('Error executing workflow:', error)
+      this.progress.error('Workflow error')
     }
   }
 
