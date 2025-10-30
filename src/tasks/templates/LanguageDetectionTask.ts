@@ -144,24 +144,6 @@ export class LanguageDetectionTask extends BaseTask {
     return names[code] || code || 'Unknown'
   }
   
-  protected getTaskSpecificMockDefaults(key: string): any {
-    switch (key) {
-      case 'language':
-        return 'English'
-      case 'languageCode':
-        return 'en'
-      case 'confidence':
-        return 0.98
-      case 'allResults':
-        return [
-          { language: 'English', languageCode: 'en', confidence: 0.98 },
-          { language: 'Spanish', languageCode: 'es', confidence: 0.02 }
-        ]
-      default:
-        return undefined
-    }
-  }
-
   getInputUI(): TaskInputUI {
     return {
       fields: [

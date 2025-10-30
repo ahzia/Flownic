@@ -23,6 +23,11 @@ export class CustomPromptTask extends BaseTask {
       maxTokens: { 
         type: 'number',
         description: 'Maximum number of tokens in response (optional)'
+      },
+      outputLanguage: {
+        type: 'string',
+        description: 'Preferred output language (ISO code)',
+        enum: ['en', 'es', 'ja']
       }
     }
   }
@@ -37,16 +42,20 @@ export class CustomPromptTask extends BaseTask {
   }
   
   async execute(input: TaskInput, context: ExecutionContext): Promise<TaskOutput> {
-    const { prompt, context: additionalContext } = input
+    const { prompt, context: additionalContext, outputLanguage } = input as any
     
     if (!prompt || typeof prompt !== 'string') {
       throw new Error('Prompt input is required and must be a string')
     }
     
-    // Build the full prompt with context
+    // Build the full prompt with context and language hint
     let fullPrompt = prompt
     if (additionalContext && typeof additionalContext === 'string') {
       fullPrompt = `Context: ${additionalContext}\n\nPrompt: ${prompt}`
+    }
+    if (outputLanguage && typeof outputLanguage === 'string') {
+      // Add a gentle instruction to respond in selected language as a fallback
+      fullPrompt = `Please respond in ${outputLanguage}.\n\n${fullPrompt}`
     }
     
     try {
@@ -55,17 +64,23 @@ export class CustomPromptTask extends BaseTask {
         throw new Error('Chrome LanguageModel API is not available in this browser')
       }
       
-      // Check model availability
-      const availability = await (self as any).LanguageModel.availability()
+      // Prepare options with output language if provided
+      const lmOptions: any = {}
+      if (outputLanguage && typeof outputLanguage === 'string') {
+        lmOptions.responseLanguage = outputLanguage
+      }
+
+      // Check model availability (pass the same options)
+      const availability = await (self as any).LanguageModel.availability(lmOptions)
       if (availability === 'unavailable') {
         throw new Error('Chrome LanguageModel is not available on this device')
       }
       
-      // Create a new session
-      const session = await (self as any).LanguageModel.create()
+      // Create a new session (with options)
+      const session = await (self as any).LanguageModel.create(lmOptions)
       
-      // Call Chrome built-in Prompt API
-      const response = await session.prompt(fullPrompt)
+      // Call Chrome built-in Prompt API (with options)
+      const response = await session.prompt(fullPrompt, lmOptions)
       
       if (!response) {
         throw new Error('Chrome Prompt API returned null response')
@@ -160,6 +175,18 @@ export class CustomPromptTask extends BaseTask {
           required: false,
           placeholder: 'Select context data point or enter additional context',
           dataPointTypes: ['text', 'html', 'json']
+        }),
+        this.createInputField({
+          name: 'outputLanguage',
+          label: 'Output Language',
+          type: 'language_selector',
+          required: false,
+          placeholder: 'Default: English',
+          options: [
+            { value: 'en', label: 'English' },
+            { value: 'es', label: 'Spanish' },
+            { value: 'ja', label: 'Japanese' }
+          ]
         }),
         this.createInputField({
           name: 'maxTokens',

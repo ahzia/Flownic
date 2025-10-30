@@ -95,17 +95,6 @@ export class ProofreaderTask extends BaseTask {
     }
   }
   
-  protected getTaskSpecificMockDefaults(key: string): any {
-    switch (key) {
-      case 'correctedText':
-        return 'This is the corrected version of the text with all grammar and spelling errors fixed. The actual corrections will be generated using the Chrome Proofreader API when the workflow is executed.'
-      case 'format':
-        return 'markdown'
-      default:
-        return undefined
-    }
-  }
-
   getInputUI(): TaskInputUI {
     return {
       fields: [
