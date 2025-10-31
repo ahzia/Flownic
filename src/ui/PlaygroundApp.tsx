@@ -564,6 +564,29 @@ export const PlaygroundApp: React.FC = () => {
     }))
   }
 
+  // Reset form to default empty values
+  const resetForm = () => {
+    setFormData({
+      name: '',
+      description: '',
+      trigger: {
+        type: 'manual' as 'manual' | 'onPageLoad' | 'onSelection' | 'onFocus' | 'schedule',
+        pattern: '',
+        selector: '',
+        schedule: '',
+        shortcut: ''
+      } as WorkflowTrigger,
+      websiteConfig: {
+        type: 'all' as 'all' | 'specific' | 'exclude',
+        patterns: ''
+      },
+      steps: []
+    })
+    setSelectedWorkflow(null)
+    setDataPoints([])
+    setActiveTab('config')
+  }
+
   const editWorkflow = (workflow: Workflow) => {
     setFormData({
       name: workflow.name,
@@ -879,6 +902,7 @@ export const PlaygroundApp: React.FC = () => {
             toast.success('Workflow generated successfully! You can now review and edit it.')
           }}
           onManualCreate={() => {
+            resetForm()
             setIsCreating(true)
             setShowAIGenerator(false)
           }}
@@ -897,7 +921,10 @@ export const PlaygroundApp: React.FC = () => {
           <p>Design your AI-powered automation workflow</p>
         </div>
         <div className="editor-actions">
-          <button className="btn btn-secondary" onClick={() => setIsCreating(false)}>
+          <button className="btn btn-secondary" onClick={() => {
+            resetForm()
+            setIsCreating(false)
+          }}>
             Cancel
           </button>
           <button className="btn btn-secondary" onClick={() => setShowPreview(!showPreview)}>
