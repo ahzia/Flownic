@@ -1477,6 +1477,50 @@
   border-color: rgba(96, 165, 250, 0.3);
 }
 
+/* Condition Hint Box - Simple Hint Design */
+.condition-hint-box {
+  margin-bottom: var(--space-3, 0.75rem);
+  font-size: var(--font-size-xs, 0.75rem);
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+}
+
+.condition-hint-content,
+.condition-hint-examples {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1, 0.25rem);
+  flex-wrap: wrap;
+}
+
+.condition-hint-content {
+  margin-bottom: var(--space-2, 0.5rem);
+}
+
+.condition-hint-label {
+  font-size: var(--font-size-xs, 0.75rem);
+  font-weight: var(--font-weight-medium, 500);
+  color: var(--color-text-secondary);
+  flex-shrink: 0;
+}
+
+.condition-hint-operators,
+.condition-hint-example {
+  font-family: var(--font-family-mono, 'SF Mono', Monaco, 'Cascadia Code', monospace);
+  font-size: var(--font-size-xs, 0.75rem);
+  color: var(--color-text-secondary);
+  opacity: 0.85;
+}
+
+.condition-hint-example {
+  margin: 0;
+  white-space: nowrap;
+}
+
+.condition-hint-examples {
+  gap: var(--space-1, 0.25rem);
+}
+
 .prompt-preview {
   background: var(--color-surface);
   border: 1px solid var(--color-border-primary);

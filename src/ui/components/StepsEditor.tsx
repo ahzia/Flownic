@@ -31,7 +31,7 @@ const ConditionInput: React.FC<ConditionInputProps> = ({
   const inputRef = useRef<HTMLInputElement>(null)
 
   return (
-    <div style={{ position: 'relative' }}>
+    <div style={{ position: 'relative', width: '100%' }}>
       <input
         ref={inputRef}
         type="text"
@@ -39,6 +39,7 @@ const ConditionInput: React.FC<ConditionInputProps> = ({
         onChange={(e) => onChange(e.target.value)}
         className="form-input"
         placeholder={placeholder}
+        style={{ width: '100%' }}
       />
       <TokenAutocomplete
         textareaRef={inputRef}
@@ -270,16 +271,24 @@ export const StepsEditor: React.FC<StepsEditorProps> = ({
                               <Info className="icon-hint" />
                             </span>
                           </label>
+                          <div className="condition-hint-box">
+                            <div className="condition-hint-content">
+                              <span className="condition-hint-label">Supports:</span>
+                              <code className="condition-hint-operators">==, !=, &gt;, &gt;=, &lt;, &lt;=, &&, ||, !</code>
+                            </div>
+                            <div className="condition-hint-examples">
+                              <span className="condition-hint-label">Examples:</span>
+                              <code className="condition-hint-example">{' "${selected_text.text}" != ""'}</code>
+                              <code className="condition-hint-example">{' "${lang}" == "en"'}</code>
+                              <code className="condition-hint-example">{' "${score}" > 0.5'}</code>
+                            </div>
+                          </div>
                           <ConditionInput
                             value={step.condition || ''}
                             onChange={(value) => onUpdateStep(step.id, { condition: value })}
                             dataPoints={dataPoints}
                             placeholder='e.g., "${selected_text.text}" != ""'
                           />
-                          <div className="form-hint-text">
-                            Supports: ==, !=, &gt;, &gt;=, &lt;, &lt;=, &&, ||, !
-                            <br />Examples: {'"${selected_text.text}"'} != "", {'"${lang}"'} == "en", {'"${score}"'} &gt; 0.5
-                          </div>
                         </div>
 
                         <div className="form-group">
