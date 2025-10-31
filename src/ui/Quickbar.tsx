@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react'
-import { Search, Sparkles, Settings, History, X, Play, Clock, Globe } from 'lucide-react'
+import { Search, Sparkles, Settings, X, Play, Clock, Globe, Code } from 'lucide-react'
 import { Workflow } from '@common/types'
 import { clsx } from 'clsx'
+import { useToast, ToastContainer } from './components/Toast'
 
 interface QuickbarProps {
   isOpen: boolean
@@ -20,9 +21,17 @@ export const Quickbar: React.FC<QuickbarProps> = ({
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [selectedWorkflow, setSelectedWorkflow] = useState<Workflow | null>(null)
+  const [isExecuting, setIsExecuting] = useState(false)
 
   const inputRef = useRef<HTMLInputElement>(null)
   const quickbarRef = useRef<HTMLDivElement>(null)
+  const toast = useToast()
+  
+  // Store toast methods in ref to avoid dependency issues
+  const toastRef = useRef(toast)
+  useEffect(() => {
+    toastRef.current = toast
+  }, [toast])
 
   // Load workflows from storage
   const loadWorkflows = useCallback(async () => {
@@ -38,14 +47,19 @@ export const Quickbar: React.FC<QuickbarProps> = ({
         const enabledWorkflows = loadedWorkflows.filter(w => w.enabled)
         setWorkflows(enabledWorkflows)
         setFilteredWorkflows(enabledWorkflows)
+        setError(null)
       } else {
-        setError('Failed to load workflows')
+        const errorMsg = 'Failed to load workflows'
+        setError(errorMsg)
+        toastRef.current.error(errorMsg)
         setWorkflows([])
         setFilteredWorkflows([])
       }
     } catch (error) {
       console.error('Error loading workflows:', error)
-      setError('Error loading workflows')
+      const errorMsg = 'Error loading workflows'
+      setError(errorMsg)
+      toastRef.current.error(errorMsg)
       setWorkflows([])
       setFilteredWorkflows([])
     } finally {
@@ -108,12 +122,37 @@ export const Quickbar: React.FC<QuickbarProps> = ({
   }
 
   // Handle workflow execution
-  const handleExecuteWorkflow = useCallback((workflow: Workflow) => {
-    if (workflow && onWorkflowExecute) {
-      onWorkflowExecute(workflow)
-      onClose()
+  const handleExecuteWorkflow = useCallback(async (workflow: Workflow) => {
+    if (!workflow || !onWorkflowExecute || isExecuting) return
+    
+    try {
+      setIsExecuting(true)
+      await onWorkflowExecute(workflow)
+      toastRef.current.success(`Executing workflow: ${workflow.name}`)
+      // Close after a short delay to show the success message
+      setTimeout(() => {
+        onClose()
+      }, 300)
+    } catch (error) {
+      console.error('Error executing workflow:', error)
+      toastRef.current.error(`Failed to execute workflow: ${workflow.name}`)
+    } finally {
+      setIsExecuting(false)
     }
-  }, [onWorkflowExecute, onClose])
+  }, [onWorkflowExecute, onClose, isExecuting])
+  
+  // Handle opening playground
+  const handleOpenPlayground = useCallback(() => {
+    chrome.tabs.create({ url: chrome.runtime.getURL('src/ui/playground.html') })
+    onClose()
+  }, [onClose])
+  
+  // Handle opening settings (popup)
+  const handleOpenSettings = useCallback(() => {
+    // Open the extension popup in a new tab
+    chrome.tabs.create({ url: chrome.runtime.getURL('src/ui/index.html') })
+    onClose()
+  }, [onClose])
 
   // Handle keyboard shortcuts
   useEffect(() => {
@@ -170,17 +209,17 @@ export const Quickbar: React.FC<QuickbarProps> = ({
           <div className="flownic-quickbar-actions">
             <button
               className="flownic-btn flownic-btn-ghost"
-              onClick={() => {/* TODO: Open settings */}}
+              onClick={handleOpenSettings}
               title="Settings"
             >
               <Settings className="flownic-icon" />
             </button>
             <button
               className="flownic-btn flownic-btn-ghost"
-              onClick={() => {/* TODO: Open history */}}
-              title="History"
+              onClick={handleOpenPlayground}
+              title="Workflow Playground"
             >
-              <History className="flownic-icon" />
+              <Code className="flownic-icon" />
             </button>
             <button
               className="flownic-btn flownic-btn-ghost"
@@ -208,8 +247,8 @@ export const Quickbar: React.FC<QuickbarProps> = ({
             />
           </div>
 
-          {/* Error Display */}
-          {error && (
+          {/* Error Display - Only show if not loading and there's an error */}
+          {!isLoading && error && (
             <div className="flownic-error">
               <span>{error}</span>
             </div>
@@ -246,10 +285,12 @@ export const Quickbar: React.FC<QuickbarProps> = ({
                       key={workflow.id}
                       className={clsx(
                         'flownic-workflow-item',
-                        isSelected && 'flownic-workflow-item-selected'
+                        isSelected && 'flownic-workflow-item-selected',
+                        isExecuting && 'flownic-workflow-item-disabled'
                       )}
                       onClick={() => handleWorkflowClick(workflow)}
-                      onMouseEnter={() => setSelectedWorkflow(workflow)}
+                      onMouseEnter={() => !isExecuting && setSelectedWorkflow(workflow)}
+                      disabled={isExecuting}
                     >
                       <div className="flownic-workflow-header">
                         <div className="flownic-workflow-info">
@@ -314,6 +355,9 @@ export const Quickbar: React.FC<QuickbarProps> = ({
           )}
         </div>
       </div>
+      
+      {/* Toast Container */}
+      <ToastContainer toasts={toast.toasts} onRemove={toast.removeToast} />
     </div>
   )
 }

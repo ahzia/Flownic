@@ -15,9 +15,11 @@ This directory should contain the extension icons in the following sizes:
 - Consider both light and dark backgrounds
 - Follow Chrome extension icon guidelines
 
-## Logo
+## Logo & Icons
 
-The main logo is available as `flownic-logo.svg` - a colorful, modern sparkles design with gradient effects.
+The main project icon is available as `sparkles-icon.svg` - a colorful Sparkles icon from lucide-react with vibrant gradients and glow effects. This icon is used throughout the project UI.
+
+The legacy logo is available as `flownic-logo.svg` - a colorful, modern sparkles design with gradient effects.
 
 ## Temporary Icons
 
