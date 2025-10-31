@@ -33,7 +33,7 @@ export class WorkflowPromptBuilder {
     const handlers = this.handlerRegistry.getAllTemplates()
     const providers = this.getContextProviders()
 
-    return `You are a workflow generator for PromptFlow, a browser automation tool.
+    return `You are a workflow generator for Flownic, a browser automation tool.
 
 USER REQUEST:
 "${userQuery}"

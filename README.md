@@ -1,4 +1,4 @@
-# PromptFlow - Chrome Extension
+# Flownic - Chrome Extension
 
 An offline-first Chrome extension that transforms natural language prompts into safe, executable page actions using Chrome's built-in AI APIs.
 
@@ -124,7 +124,7 @@ The extension includes built-in templates and handlers for testing:
 
 ## Chrome AI API Integration
 
-PromptFlow leverages Chrome's built-in AI APIs:
+Flownic leverages Chrome's built-in AI APIs:
 
 - **Prompt API**: Generate dynamic prompts and structured outputs
 - **Writer API**: Create original and engaging text

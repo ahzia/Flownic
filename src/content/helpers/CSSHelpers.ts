@@ -13,7 +13,7 @@ export class CSSHelpers {
     this.removeCSS(cssId)
 
     const style = document.createElement('style')
-    style.id = `promptflow-${cssId}`
+    style.id = `flownic-${cssId}`
     style.textContent = cssText
     document.head.appendChild(style)
 
@@ -28,7 +28,7 @@ export class CSSHelpers {
     }
 
     // Also remove by ID in case of direct removal
-    const style = document.getElementById(`promptflow-${cssId}`)
+    const style = document.getElementById(`flownic-${cssId}`)
     if (style) {
       style.remove()
     }

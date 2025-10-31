@@ -1,5 +1,5 @@
 {
-  "name": "promptflow",
+  "name": "flownic",
   "version": "0.1.0",
   "description": "Offline-first AI prompt workflows for Chrome using built-in AI APIs",
   "type": "module",
@@ -43,6 +43,6 @@
     "privacy",
     "offline-first"
   ],
-  "author": "PromptFlow Team",
+  "author": "Flownic Team",
   "license": "MIT"
 }

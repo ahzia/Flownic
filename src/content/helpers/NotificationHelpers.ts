@@ -5,7 +5,7 @@ export class NotificationHelpers {
   async notify(message: string, type: 'info' | 'success' | 'warning' | 'error' = 'info'): Promise<void> {
     // Create a simple notification
     const notification = document.createElement('div')
-    notification.className = `promptflow-notification promptflow-notification-${type}`
+    notification.className = `flownic-notification flownic-notification-${type}`
     notification.textContent = message
     
     // Add styles
@@ -22,12 +22,12 @@ export class NotificationHelpers {
   }
 
   private injectNotificationStyles(): void {
-    if (document.getElementById('promptflow-notification-styles')) return
+    if (document.getElementById('flownic-notification-styles')) return
 
     const style = document.createElement('style')
-    style.id = 'promptflow-notification-styles'
+    style.id = 'flownic-notification-styles'
     style.textContent = `
-      .promptflow-notification {
+      .flownic-notification {
         position: fixed;
         top: var(--space-5, 20px);
         right: var(--space-5, 20px);
@@ -42,16 +42,16 @@ export class NotificationHelpers {
         font-family: var(--font-family-sans, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif);
       }
       
-      .promptflow-notification-info { 
+      .flownic-notification-info { 
         background: var(--color-status-info, #0ea5e9); 
       }
-      .promptflow-notification-success { 
+      .flownic-notification-success { 
         background: var(--color-status-success, #22c55e); 
       }
-      .promptflow-notification-warning { 
+      .flownic-notification-warning { 
         background: var(--color-status-warning, #f59e0b); 
       }
-      .promptflow-notification-error { 
+      .flownic-notification-error { 
         background: var(--color-status-error, #ef4444); 
       }
     `

@@ -212,7 +212,7 @@ export class AIAdapter {
           "metadata": {
             "confidence": 0.95,
             "timestamp": ${Date.now()},
-            "source": "promptflow"
+            "source": "flownic"
           }
         }
         
@@ -248,7 +248,7 @@ export class AIAdapter {
           metadata: {
             confidence: 0.7,
             timestamp: Date.now(),
-            source: 'promptflow-fallback'
+            source: 'flownic-fallback'
           }
         }
       }
@@ -272,7 +272,7 @@ export class AIAdapter {
         metadata: {
           confidence: 0.0,
           timestamp: Date.now(),
-          source: 'promptflow-error'
+          source: 'flownic-error'
         }
       }
     }
