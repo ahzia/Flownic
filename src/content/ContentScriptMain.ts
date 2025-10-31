@@ -49,6 +49,16 @@ export class ContentScript {
       this.handleMessage(message, sender, sendResponse)
       return true
     })
+
+    // Listen for messages from iframe (overlay)
+    window.addEventListener('message', (event) => {
+      if (event.data && event.data.type === 'CLOSE_OVERLAY') {
+        const wrapper = document.getElementById('promptflow-overlay-wrapper')
+        if (wrapper) {
+          wrapper.style.display = 'none'
+        }
+      }
+    })
   }
 
   private setupWorkflowTriggers(): void {
@@ -141,7 +151,7 @@ export class ContentScript {
           break
 
         case 'OPEN_QUICKBAR':
-          this.openQuickbar()
+          this.injectReactOverlay()
           sendResponse({ success: true })
           break
 
@@ -231,207 +241,65 @@ export class ContentScript {
     })
   }
 
-  private openQuickbar(): void {
-    // Create and inject the quickbar overlay
-    const overlay = document.createElement('div')
-    overlay.id = 'promptflow-quickbar-overlay'
-    overlay.className = 'promptflow-quickbar-overlay'
-    
-    // Inject quickbar styles if not already present
-    this.injectQuickbarStyles()
-
-    const quickbar = document.createElement('div')
-    quickbar.className = 'promptflow-quickbar-content-wrapper'
-    quickbar.innerHTML = `
-      <div class="promptflow-quickbar-header-inline">
-        <h2 class="promptflow-quickbar-title-inline">🚀 PromptFlow Quickbar</h2>
-        <button id="close-quickbar" class="promptflow-quickbar-close-btn">×</button>
-      </div>
-      <div class="promptflow-quickbar-input-wrapper">
-        <input type="text" id="quickbar-input" class="promptflow-quickbar-input-field" 
-               placeholder="What would you like to do?">
-      </div>
-      <div class="promptflow-quickbar-actions-inline">
-        <button id="run-action" class="promptflow-quickbar-btn-primary">Run Action</button>
-        <button id="preview-action" class="promptflow-quickbar-btn-secondary">Preview</button>
-      </div>
-    `
-
-    overlay.appendChild(quickbar)
-    document.body.appendChild(overlay)
-
-    // Add event listeners
-    const closeBtn = quickbar.querySelector('#close-quickbar')
-    const runBtn = quickbar.querySelector('#run-action')
-    const previewBtn = quickbar.querySelector('#preview-action')
-    const input = quickbar.querySelector('#quickbar-input') as HTMLInputElement
-
-    const closeQuickbar = () => {
-      if (overlay.parentNode) {
-        overlay.parentNode.removeChild(overlay)
+  private injectReactOverlay(): void {
+    // Check if overlay already exists and just toggle it
+    const existingWrapper = document.getElementById('promptflow-overlay-wrapper')
+    if (existingWrapper) {
+      existingWrapper.style.display = 'block'
+      const iframe = existingWrapper.querySelector('iframe')
+      if (iframe && iframe.contentWindow) {
+        // Send message to iframe to open Quickbar
+        iframe.contentWindow.postMessage({ type: 'OPEN_QUICKBAR' }, '*')
       }
+      return
     }
 
-    closeBtn?.addEventListener('click', closeQuickbar)
-    overlay.addEventListener('click', (e) => {
-      if (e.target === overlay) closeQuickbar()
-    })
+    // Create wrapper div for isolation
+    // This wrapper should be transparent - the Quickbar component handles its own backdrop
+    const wrapper = document.createElement('div')
+    wrapper.id = 'promptflow-overlay-wrapper'
+    wrapper.style.cssText = `
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 2147483647;
+      pointer-events: none;
+      isolation: isolate;
+      background: transparent;
+    `
 
-    runBtn?.addEventListener('click', () => {
-      const prompt = input?.value
-      if (prompt) {
-        chrome.runtime.sendMessage({
-          type: 'RUN_PROMPT',
-          data: { prompt, context: { usePageContent: true } }
-        })
-        closeQuickbar()
-      }
-    })
+    // Create container for React app
+    // This container needs pointer-events to capture clicks for the Quickbar
+    const container = document.createElement('div')
+    container.id = 'promptflow-overlay-root'
+    container.style.cssText = 'width: 100%; height: 100%; pointer-events: auto;'
+    wrapper.appendChild(container)
+    document.body.appendChild(wrapper)
 
-    previewBtn?.addEventListener('click', () => {
-      const prompt = input?.value
-      if (prompt) {
-        alert(`Preview: "${prompt}"`)
-      }
-    })
-
-    input?.focus()
-
-    const handleKeydown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        closeQuickbar()
-        document.removeEventListener('keydown', handleKeydown)
-      }
-    }
-    document.addEventListener('keydown', handleKeydown)
-  }
-
-  private injectQuickbarStyles(): void {
-    if (document.getElementById('promptflow-quickbar-styles')) return
-
-    const style = document.createElement('style')
-    style.id = 'promptflow-quickbar-styles'
-    style.textContent = `
-      .promptflow-quickbar-overlay {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: var(--color-overlay, rgba(0, 0, 0, 0.5));
-        z-index: 999999;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-family: var(--font-family-sans, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif);
-      }
-      
-      .promptflow-quickbar-content-wrapper {
-        background: var(--color-surface, #ffffff);
-        border-radius: var(--radius-xl, 12px);
-        padding: var(--space-6, 24px);
-        box-shadow: var(--color-shadow-xl, 0 25px 50px -12px rgba(0, 0, 0, 0.25));
-        max-width: 600px;
-        width: 90%;
-        max-height: 80vh;
-        overflow-y: auto;
-        border: 1px solid var(--color-border-primary, #e5e7eb);
-      }
-      
-      .promptflow-quickbar-header-inline {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        margin-bottom: var(--space-5, 20px);
-      }
-      
-      .promptflow-quickbar-title-inline {
-        margin: 0;
-        font-size: var(--font-size-xl, 20px);
-        font-weight: var(--font-weight-semibold, 600);
-        color: var(--color-text-primary, #111827);
-      }
-      
-      .promptflow-quickbar-close-btn {
-        background: none;
-        border: none;
-        font-size: 24px;
-        cursor: pointer;
-        color: var(--color-text-secondary, #6b7280);
-        padding: var(--space-1, 4px);
-        border-radius: var(--radius-md, 4px);
-        transition: all var(--transition-normal, 0.2s ease);
-      }
-      
-      .promptflow-quickbar-close-btn:hover {
-        background: var(--color-surface-secondary, #f3f4f6);
-        color: var(--color-text-primary, #374151);
-      }
-      
-      .promptflow-quickbar-input-wrapper {
-        margin-bottom: var(--space-5, 20px);
-      }
-      
-      .promptflow-quickbar-input-field {
-        width: 100%;
-        padding: var(--space-3, 12px);
-        border: 1px solid var(--color-input-border, #d1d5db);
-        border-radius: var(--radius-lg, 8px);
-        font-size: var(--font-size-base, 16px);
-        background: var(--color-input-background, #ffffff);
-        color: var(--color-input-text, #111827);
-        font-family: inherit;
-        transition: border-color var(--transition-normal, 0.2s ease);
-      }
-      
-      .promptflow-quickbar-input-field:focus {
-        outline: none;
-        border-color: var(--color-input-border-focus, #3b82f6);
-      }
-      
-      .promptflow-quickbar-input-field::placeholder {
-        color: var(--color-input-placeholder, #9ca3af);
-      }
-      
-      .promptflow-quickbar-actions-inline {
-        display: flex;
-        gap: var(--space-3, 12px);
-        justify-content: flex-end;
-      }
-      
-      .promptflow-quickbar-btn-primary {
-        background: var(--color-button-primary, #3b82f6);
-        color: var(--color-text-inverse, white);
-        border: none;
-        padding: 10px var(--space-5, 20px);
-        border-radius: var(--radius-lg, 6px);
-        cursor: pointer;
-        font-weight: var(--font-weight-medium, 500);
-        font-family: inherit;
-        transition: background var(--transition-normal, 0.2s ease);
-      }
-      
-      .promptflow-quickbar-btn-primary:hover {
-        background: var(--color-button-primary-hover, #2563eb);
-      }
-      
-      .promptflow-quickbar-btn-secondary {
-        background: var(--color-button-secondary, #6b7280);
-        color: var(--color-text-inverse, white);
-        border: none;
-        padding: 10px var(--space-5, 20px);
-        border-radius: var(--radius-lg, 6px);
-        cursor: pointer;
-        font-weight: var(--font-weight-medium, 500);
-        font-family: inherit;
-        transition: background var(--transition-normal, 0.2s ease);
-      }
-      
-      .promptflow-quickbar-btn-secondary:hover {
-        background: var(--color-button-secondary-hover, #4b5563);
-      }
+    // Create iframe to load the overlay HTML
+    const iframe = document.createElement('iframe')
+    iframe.src = chrome.runtime.getURL('src/ui/overlay.html')
+    iframe.style.cssText = `
+      width: 100%;
+      height: 100%;
+      border: none;
+      background: transparent;
+      pointer-events: auto;
     `
     
-    document.head.appendChild(style)
+    // Wait for iframe to load, then send message to open Quickbar
+    iframe.onload = () => {
+      if (iframe.contentWindow) {
+        // Small delay to ensure React has mounted
+        setTimeout(() => {
+          iframe.contentWindow?.postMessage({ type: 'OPEN_QUICKBAR' }, '*')
+        }, 100)
+      }
+    }
+    
+    container.appendChild(iframe)
   }
+
 }

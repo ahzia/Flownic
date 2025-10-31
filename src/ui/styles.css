@@ -12,13 +12,16 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background: var(--color-overlay);
+  /* Lighter backdrop - allows page content to remain visible */
+  background: rgba(0, 0, 0, 0.2);
   display: flex;
   align-items: flex-start;
   justify-content: center;
   padding-top: 10vh;
   z-index: var(--z-modal);
   font-family: var(--font-family-sans);
+  /* Allow clicking through backdrop to close */
+  cursor: pointer;
 }
 
 .promptflow-quickbar {
@@ -1479,4 +1482,188 @@
     background: #111827;
     border-color: #374151;
   }
+}
+
+/* Workflows List Styles */
+.promptflow-workflows-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-top: var(--space-4);
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.promptflow-workflow-item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  background: var(--color-surface-secondary);
+  border: 2px solid var(--color-border-primary);
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  text-align: left;
+  transition: all var(--transition-fast);
+  position: relative;
+}
+
+.promptflow-workflow-item:hover {
+  background: var(--color-surface-tertiary);
+  border-color: var(--color-border-secondary);
+  transform: translateY(-1px);
+  box-shadow: var(--color-shadow-md);
+}
+
+.promptflow-workflow-item-selected {
+  background: var(--color-primary-50);
+  border-color: var(--color-primary-500);
+}
+
+[data-theme="dark"] .promptflow-workflow-item-selected {
+  background: var(--color-primary-900);
+  border-color: var(--color-primary-500);
+}
+
+.promptflow-workflow-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.promptflow-workflow-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.promptflow-workflow-name {
+  margin: 0 0 var(--space-1) 0;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+}
+
+.promptflow-workflow-description {
+  margin: 0;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  line-height: 1.4;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.promptflow-icon-play {
+  width: 20px;
+  height: 20px;
+  color: var(--color-primary-500);
+  flex-shrink: 0;
+  opacity: 0.7;
+  transition: opacity var(--transition-fast);
+}
+
+.promptflow-workflow-item:hover .promptflow-icon-play {
+  opacity: 1;
+}
+
+.promptflow-workflow-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+}
+
+.promptflow-workflow-shortcut,
+.promptflow-workflow-website,
+.promptflow-workflow-steps {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.promptflow-icon-small {
+  width: 12px;
+  height: 12px;
+}
+
+.promptflow-workflow-triggers {
+  display: flex;
+  gap: var(--space-1);
+  flex-wrap: wrap;
+}
+
+.promptflow-trigger-tag {
+  display: inline-block;
+  padding: 2px 8px;
+  background: var(--color-surface-tertiary);
+  border: 1px solid var(--color-border-primary);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+}
+
+/* Empty State */
+.promptflow-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-8);
+  text-align: center;
+  color: var(--color-text-secondary);
+}
+
+.promptflow-empty-state .promptflow-icon {
+  width: 48px;
+  height: 48px;
+  margin-bottom: var(--space-4);
+}
+
+.promptflow-empty-state p {
+  margin: 0;
+  font-size: var(--font-size-sm);
+  line-height: 1.5;
+}
+
+/* Loading State */
+.promptflow-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-8);
+  gap: var(--space-3);
+  color: var(--color-text-secondary);
+}
+
+.promptflow-loading .promptflow-spinner {
+  width: 24px;
+  height: 24px;
+}
+
+/* Footer */
+.promptflow-quickbar-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-3) var(--space-5);
+  border-top: 1px solid var(--color-border-primary);
+  background: var(--color-surface-secondary);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+}
+
+.promptflow-quickbar-hints {
+  display: flex;
+  gap: var(--space-4);
+}
+
+.promptflow-workflow-count {
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-primary);
 }

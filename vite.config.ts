@@ -161,8 +161,9 @@ export default defineConfig({
       generateBundle(options, bundle) {
         // Fix relative paths in playground.html for Chrome extension
         Object.keys(bundle).forEach(key => {
-          // Check if this is the playground HTML file
-          if (key.includes('playground.html') || key === 'src/ui/playground.html') {
+          // Check if this is the playground or overlay HTML file
+          if (key.includes('playground.html') || key === 'src/ui/playground.html' ||
+              key.includes('overlay.html') || key === 'src/ui/overlay.html') {
             const htmlAsset = bundle[key]
             if (htmlAsset && htmlAsset.type === 'asset' && typeof htmlAsset.source === 'string') {
               // Fix paths: /ui/ -> ../../ui/, /chunks/ -> ../../chunks/, /assets/ -> ../../assets/
@@ -171,7 +172,8 @@ export default defineConfig({
                 .replace(/src="\/ui\//g, 'src="../../ui/')
                 .replace(/href="\/chunks\//g, 'href="../../chunks/')
                 .replace(/href="\/assets\//g, 'href="../../assets/')
-              console.log('✅ Fixed paths in playground.html')
+              const fileName = key.includes('playground') ? 'playground' : 'overlay'
+              console.log(`✅ Fixed paths in ${fileName}.html`)
             }
           }
         })

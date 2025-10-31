@@ -29,7 +29,7 @@
   ],
   "web_accessible_resources": [
     {
-      "resources": ["chunks/*.js", "src/ui/overlay.html", "content/*.js"],
+      "resources": ["chunks/*.js", "src/ui/overlay.html", "src/ui/overlay.js", "src/ui/*.js", "assets/*.css", "content/*.js"],
       "matches": ["<all_urls>"]
     }
   ],

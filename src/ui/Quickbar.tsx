@@ -1,275 +1,161 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react'
-import { Search, Sparkles, Settings, History, X, Check, AlertTriangle } from 'lucide-react'
-import { ActionPlan, PromptTemplate } from '@common/types'
-import { validateActionPlan } from '@common/schemas'
+import { Search, Sparkles, Settings, History, X, Play, Clock, Globe } from 'lucide-react'
+import { Workflow } from '@common/types'
 import { clsx } from 'clsx'
 
 interface QuickbarProps {
   isOpen: boolean
   onClose: () => void
-  onActionPlanGenerated: (actionPlan: ActionPlan) => void
-}
-
-interface ContextState {
-  selectedText: string
-  pageContent: string
-  kbContent: string
-  lastCapture: unknown
+  onWorkflowExecute: (workflow: Workflow) => void
 }
 
 export const Quickbar: React.FC<QuickbarProps> = ({
   isOpen,
   onClose,
-  onActionPlanGenerated
+  onWorkflowExecute
 }) => {
-  const [query, setQuery] = useState('')
+  const [searchQuery, setSearchQuery] = useState('')
+  const [workflows, setWorkflows] = useState<Workflow[]>([])
+  const [filteredWorkflows, setFilteredWorkflows] = useState<Workflow[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [context, setContext] = useState<ContextState>({
-    selectedText: '',
-    pageContent: '',
-    kbContent: '',
-    lastCapture: null
-  })
-  const [templates, setTemplates] = useState<PromptTemplate[]>([])
-  const [selectedTemplate, setSelectedTemplate] = useState<PromptTemplate | null>(null)
-  const [showPreview, setShowPreview] = useState(false)
-  const [actionPlan, setActionPlan] = useState<ActionPlan | null>(null)
+  const [selectedWorkflow, setSelectedWorkflow] = useState<Workflow | null>(null)
 
   const inputRef = useRef<HTMLInputElement>(null)
   const quickbarRef = useRef<HTMLDivElement>(null)
 
-  // Built-in templates
-  const builtInTemplates: PromptTemplate[] = [
-    {
-      id: 'summarize',
-      name: 'Summarize',
-      description: 'Summarize the selected text or page content',
-      prompt: 'Summarize the following content in 2-3 key points:',
-      category: 'content',
-      tags: ['summarize', 'content'],
-      context: {
-        useSelectedText: true,
-        usePageContent: true,
-        useKB: false,
-        useLastCapture: false
-      },
-      createdAt: Date.now(),
-      updatedAt: Date.now()
-    },
-    {
-      id: 'translate',
-      name: 'Translate',
-      description: 'Translate text to another language',
-      prompt: 'Translate the following text to English (or specify language):',
-      category: 'language',
-      tags: ['translate', 'language'],
-      context: {
-        useSelectedText: true,
-        usePageContent: false,
-        useKB: false,
-        useLastCapture: false
-      },
-      createdAt: Date.now(),
-      updatedAt: Date.now()
-    },
-    {
-      id: 'capture_job',
-      name: 'Capture Job',
-      description: 'Extract job requirements and details',
-      prompt: 'Extract key information from this job posting including requirements, responsibilities, and company details:',
-      category: 'workflow',
-      tags: ['job', 'capture', 'workflow'],
-      context: {
-        useSelectedText: false,
-        usePageContent: true,
-        useKB: false,
-        useLastCapture: false
-      },
-      createdAt: Date.now(),
-      updatedAt: Date.now()
-    },
-    {
-      id: 'tailor_cv',
-      name: 'Tailor CV',
-      description: 'Tailor CV content for a specific job',
-      prompt: 'Based on this job description, tailor my CV to highlight relevant experience and skills:',
-      category: 'workflow',
-      tags: ['cv', 'tailor', 'workflow'],
-      context: {
-        useSelectedText: false,
-        usePageContent: false,
-        useKB: true,
-        useLastCapture: true
-      },
-      createdAt: Date.now(),
-      updatedAt: Date.now()
-    },
-    {
-      id: 'proofread',
-      name: 'Proofread',
-      description: 'Check grammar and improve writing',
-      prompt: 'Proofread and improve the grammar, style, and clarity of this text:',
-      category: 'writing',
-      tags: ['proofread', 'grammar', 'writing'],
-      context: {
-        useSelectedText: true,
-        usePageContent: false,
-        useKB: false,
-        useLastCapture: false
-      },
-      createdAt: Date.now(),
-      updatedAt: Date.now()
-    },
-    {
-      id: 'rewrite',
-      name: 'Rewrite',
-      description: 'Rewrite text with different style or tone',
-      prompt: 'Rewrite the following text with a more professional tone:',
-      category: 'writing',
-      tags: ['rewrite', 'style', 'writing'],
-      context: {
-        useSelectedText: true,
-        usePageContent: false,
-        useKB: false,
-        useLastCapture: false
-      },
-      createdAt: Date.now(),
-      updatedAt: Date.now()
+  // Load workflows from storage
+  const loadWorkflows = useCallback(async () => {
+    try {
+      setIsLoading(true)
+      setError(null)
+      
+      const response = await chrome.runtime.sendMessage({ type: 'GET_WORKFLOWS' })
+      
+      if (response?.success) {
+        const loadedWorkflows = (response.data || []) as Workflow[]
+        // Only show enabled workflows in Quickbar
+        const enabledWorkflows = loadedWorkflows.filter(w => w.enabled)
+        setWorkflows(enabledWorkflows)
+        setFilteredWorkflows(enabledWorkflows)
+      } else {
+        setError('Failed to load workflows')
+        setWorkflows([])
+        setFilteredWorkflows([])
+      }
+    } catch (error) {
+      console.error('Error loading workflows:', error)
+      setError('Error loading workflows')
+      setWorkflows([])
+      setFilteredWorkflows([])
+    } finally {
+      setIsLoading(false)
     }
-  ]
-
-  useEffect(() => {
-    setTemplates(builtInTemplates)
   }, [])
 
+  // Search/filter workflows
+  useEffect(() => {
+    if (!searchQuery.trim()) {
+      setFilteredWorkflows(workflows)
+      return
+    }
+
+    const query = searchQuery.toLowerCase().trim()
+    const filtered = workflows.filter(workflow => {
+      const nameMatch = workflow.name.toLowerCase().includes(query)
+      const descMatch = workflow.description?.toLowerCase().includes(query)
+      
+      // Search in trigger shortcuts
+      const shortcutMatch = workflow.triggers?.some(t => 
+        t.shortcut?.toLowerCase().includes(query)
+      )
+      
+      return nameMatch || descMatch || shortcutMatch
+    })
+
+    setFilteredWorkflows(filtered)
+  }, [searchQuery, workflows])
+
+  // Load workflows when Quickbar opens
+  useEffect(() => {
+    if (isOpen) {
+      loadWorkflows()
+    }
+  }, [isOpen, loadWorkflows])
+
+  // Focus input when opened
   useEffect(() => {
     if (isOpen && inputRef.current) {
       inputRef.current.focus()
     }
   }, [isOpen])
 
-  useEffect(() => {
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        onClose()
-      }
-    }
-
-    if (isOpen) {
-      document.addEventListener('keydown', handleEscape)
-      return () => document.removeEventListener('keydown', handleEscape)
-    }
-  }, [isOpen, onClose])
-
-  const loadContext = useCallback(async () => {
-    try {
-      // Get selected text
-      const selectedText = window.getSelection()?.toString() || ''
-      
-      // Get page content (simplified)
-      const pageContent = document.body.innerText.substring(0, 2000)
-      
-      // Get KB content (placeholder)
-      const kbContent = ''
-      
-      // Get last capture (placeholder)
-      const lastCapture = null
-
-      setContext({
-        selectedText,
-        pageContent,
-        kbContent,
-        lastCapture
-      })
-    } catch (error) {
-      console.error('Error loading context:', error)
-    }
-  }, [])
-
-  useEffect(() => {
-    if (isOpen) {
-      loadContext()
-    }
-  }, [isOpen, loadContext])
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!query.trim() || isLoading) return
-
-    setIsLoading(true)
-    setError(null)
-    setActionPlan(null)
-
-    try {
-      // Use selected template or raw query
-      const prompt = selectedTemplate 
-        ? `${selectedTemplate.prompt}\n\n${buildContextString(selectedTemplate.context)}`
-        : query
-
-      // Send to background script for AI processing
-      const response = await chrome.runtime.sendMessage({
-        type: 'GENERATE_ACTION_PLAN',
-        data: { prompt, context }
-      })
-
-      if (response.success) {
-        const plan = response.data
-        if (validateActionPlan(plan)) {
-          setActionPlan(plan)
-          setShowPreview(true)
-        } else {
-          setError('Invalid action plan received from AI')
-        }
-      } else {
-        setError(response.error || 'Failed to generate action plan')
-      }
-    } catch (error) {
-      setError(error instanceof Error ? error.message : 'Unknown error occurred')
-    } finally {
-      setIsLoading(false)
-    }
+  // Get workflow shortcut display
+  const getWorkflowShortcut = (workflow: Workflow): string | null => {
+    const manualTrigger = workflow.triggers?.find(t => t.type === 'manual')
+    return manualTrigger?.shortcut || null
   }
 
-  const buildContextString = (templateContext: PromptTemplate['context']): string => {
-    let contextString = ''
-    
-    if (templateContext.useSelectedText && context.selectedText) {
-      contextString += `Selected Text:\n${context.selectedText}\n\n`
-    }
-    
-    if (templateContext.usePageContent && context.pageContent) {
-      contextString += `Page Content:\n${context.pageContent}\n\n`
-    }
-    
-    if (templateContext.useKB && context.kbContent) {
-      contextString += `Knowledge Base:\n${context.kbContent}\n\n`
-    }
-    
-    if (templateContext.useLastCapture && context.lastCapture) {
-      contextString += `Last Capture:\n${JSON.stringify(context.lastCapture, null, 2)}\n\n`
-    }
-    
-    return contextString.trim()
+  // Get trigger type display
+  const getTriggerTypes = (workflow: Workflow): string[] => {
+    const types: string[] = []
+    workflow.triggers?.forEach(trigger => {
+      if (trigger.type === 'onPageLoad') types.push('On Page Load')
+      if (trigger.type === 'onSelection') types.push('On Selection')
+      if (trigger.type === 'manual' && trigger.shortcut) types.push(`Shortcut: ${trigger.shortcut}`)
+    })
+    return types
   }
 
-  const handleExecuteActionPlan = () => {
-    if (actionPlan) {
-      onActionPlanGenerated(actionPlan)
+  // Handle workflow execution
+  const handleExecuteWorkflow = useCallback((workflow: Workflow) => {
+    if (workflow && onWorkflowExecute) {
+      onWorkflowExecute(workflow)
       onClose()
     }
-  }
+  }, [onWorkflowExecute, onClose])
 
-  const handleTemplateSelect = (template: PromptTemplate) => {
-    setSelectedTemplate(template)
-    setQuery(template.prompt)
-    setError(null)
+  // Handle keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose()
+      } else if (e.key === 'ArrowDown' && filteredWorkflows.length > 0) {
+        e.preventDefault()
+        const currentIndex = selectedWorkflow 
+          ? filteredWorkflows.findIndex(w => w.id === selectedWorkflow.id)
+          : -1
+        const nextIndex = currentIndex < filteredWorkflows.length - 1 ? currentIndex + 1 : 0
+        setSelectedWorkflow(filteredWorkflows[nextIndex])
+      } else if (e.key === 'ArrowUp' && filteredWorkflows.length > 0) {
+        e.preventDefault()
+        const currentIndex = selectedWorkflow
+          ? filteredWorkflows.findIndex(w => w.id === selectedWorkflow.id)
+          : -1
+        const prevIndex = currentIndex > 0 ? currentIndex - 1 : filteredWorkflows.length - 1
+        setSelectedWorkflow(filteredWorkflows[prevIndex])
+      } else if (e.key === 'Enter' && selectedWorkflow) {
+        e.preventDefault()
+        handleExecuteWorkflow(selectedWorkflow)
+      }
+    }
+
+    if (isOpen) {
+      document.addEventListener('keydown', handleKeyDown)
+      return () => document.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [isOpen, filteredWorkflows, selectedWorkflow, onClose, handleExecuteWorkflow])
+
+  // Handle workflow click/selection
+  const handleWorkflowClick = (workflow: Workflow) => {
+    setSelectedWorkflow(workflow)
+    handleExecuteWorkflow(workflow)
   }
 
   if (!isOpen) return null
 
   return (
-    <div className="promptflow-quickbar-overlay">
+    <div className="promptflow-quickbar-overlay" onClick={onClose}>
       <div 
         ref={quickbarRef}
         className="promptflow-quickbar"
@@ -308,122 +194,124 @@ export const Quickbar: React.FC<QuickbarProps> = ({
 
         {/* Main Content */}
         <div className="promptflow-quickbar-content">
-          {/* Templates */}
-          <div className="promptflow-templates">
-            {templates.map((template) => (
-              <button
-                key={template.id}
-                className={clsx(
-                  'promptflow-template',
-                  selectedTemplate?.id === template.id && 'promptflow-template-selected'
-                )}
-                onClick={() => handleTemplateSelect(template)}
-                title={template.description}
-              >
-                <span className="promptflow-template-name">{template.name}</span>
-                <span className="promptflow-template-desc">{template.description}</span>
-              </button>
-            ))}
+          {/* Search Input */}
+          <div className="promptflow-input-group">
+            <Search className="promptflow-input-icon" />
+            <input
+              ref={inputRef}
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search workflows..."
+              className="promptflow-input"
+              disabled={isLoading}
+            />
           </div>
-
-          {/* Query Input */}
-          <form onSubmit={handleSubmit} className="promptflow-query-form">
-            <div className="promptflow-input-group">
-              <Search className="promptflow-input-icon" />
-              <input
-                ref={inputRef}
-                type="text"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="Ask AI to do something..."
-                className="promptflow-input"
-                disabled={isLoading}
-              />
-              <button
-                type="submit"
-                className={clsx(
-                  'promptflow-btn promptflow-btn-primary',
-                  isLoading && 'promptflow-btn-loading'
-                )}
-                disabled={!query.trim() || isLoading}
-              >
-                {isLoading ? (
-                  <div className="promptflow-spinner" />
-                ) : (
-                  <Sparkles className="promptflow-icon" />
-                )}
-              </button>
-            </div>
-          </form>
 
           {/* Error Display */}
           {error && (
             <div className="promptflow-error">
-              <AlertTriangle className="promptflow-icon" />
               <span>{error}</span>
             </div>
           )}
 
-          {/* Action Plan Preview */}
-          {showPreview && actionPlan && (
-            <div className="promptflow-preview">
-              <div className="promptflow-preview-header">
-                <h3>Action Plan Preview</h3>
-                <div className="promptflow-confidence">
-                  Confidence: {Math.round(actionPlan.metadata.confidence * 100)}%
-                </div>
-              </div>
-              
-              <div className="promptflow-actions">
-                {actionPlan.actions.map((action, index) => (
-                  <div key={index} className="promptflow-action">
-                    <div className="promptflow-action-op">{action.op}</div>
-                    <div className="promptflow-action-params">
-                      {JSON.stringify(action.params, null, 2)}
-                    </div>
-                  </div>
-                ))}
-              </div>
+          {/* Loading State */}
+          {isLoading && (
+            <div className="promptflow-loading">
+              <div className="promptflow-spinner" />
+              <span>Loading workflows...</span>
+            </div>
+          )}
 
-              <div className="promptflow-preview-actions">
-                <button
-                  className="promptflow-btn promptflow-btn-secondary"
-                  onClick={() => setShowPreview(false)}
-                >
-                  Cancel
-                </button>
-                <button
-                  className="promptflow-btn promptflow-btn-primary"
-                  onClick={handleExecuteActionPlan}
-                >
-                  <Check className="promptflow-icon" />
-                  Execute
-                </button>
-              </div>
+          {/* Workflows List */}
+          {!isLoading && (
+            <div className="promptflow-workflows-list">
+              {filteredWorkflows.length === 0 ? (
+                <div className="promptflow-empty-state">
+                  <Sparkles className="promptflow-icon" style={{ opacity: 0.5 }} />
+                  <p>
+                    {searchQuery 
+                      ? 'No workflows found matching your search'
+                      : 'No enabled workflows found. Create workflows in the Playground.'}
+                  </p>
+                </div>
+              ) : (
+                filteredWorkflows.map((workflow) => {
+                  const shortcut = getWorkflowShortcut(workflow)
+                  const triggerTypes = getTriggerTypes(workflow)
+                  const isSelected = selectedWorkflow?.id === workflow.id
+
+                  return (
+                    <button
+                      key={workflow.id}
+                      className={clsx(
+                        'promptflow-workflow-item',
+                        isSelected && 'promptflow-workflow-item-selected'
+                      )}
+                      onClick={() => handleWorkflowClick(workflow)}
+                      onMouseEnter={() => setSelectedWorkflow(workflow)}
+                    >
+                      <div className="promptflow-workflow-header">
+                        <div className="promptflow-workflow-info">
+                          <h3 className="promptflow-workflow-name">{workflow.name}</h3>
+                          {workflow.description && (
+                            <p className="promptflow-workflow-description">
+                              {workflow.description}
+                            </p>
+                          )}
+                        </div>
+                        <Play className="promptflow-icon promptflow-icon-play" />
+                      </div>
+                      
+                      <div className="promptflow-workflow-meta">
+                        {shortcut && (
+                          <span className="promptflow-workflow-shortcut">
+                            <Clock className="promptflow-icon-small" />
+                            {shortcut}
+                          </span>
+                        )}
+                        {workflow.websiteConfig && workflow.websiteConfig.type !== 'all' && (
+                          <span className="promptflow-workflow-website">
+                            <Globe className="promptflow-icon-small" />
+                            {workflow.websiteConfig.type === 'specific' ? 'Specific sites' : 'Excluded sites'}
+                          </span>
+                        )}
+                        {workflow.steps && (
+                          <span className="promptflow-workflow-steps">
+                            {workflow.steps.length} step{workflow.steps.length !== 1 ? 's' : ''}
+                          </span>
+                        )}
+                      </div>
+
+                      {triggerTypes.length > 0 && (
+                        <div className="promptflow-workflow-triggers">
+                          {triggerTypes.map((type, idx) => (
+                            <span key={idx} className="promptflow-trigger-tag">
+                              {type}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </button>
+                  )
+                })
+              )}
             </div>
           )}
         </div>
 
-        {/* Context Info */}
-        <div className="promptflow-context-info">
-          <div className="promptflow-context-item">
-            <span className="promptflow-context-label">Selected:</span>
-            <span className="promptflow-context-value">
-              {context.selectedText ? `${context.selectedText.length} chars` : 'None'}
-            </span>
+        {/* Footer Info */}
+        <div className="promptflow-quickbar-footer">
+          <div className="promptflow-quickbar-hints">
+            <span>↑↓ Navigate</span>
+            <span>Enter Run</span>
+            <span>Esc Close</span>
           </div>
-          <div className="promptflow-context-item">
-            <span className="promptflow-context-label">Page:</span>
-            <span className="promptflow-context-value">
-              {context.pageContent ? 'Available' : 'None'}
-            </span>
-          </div>
-          <div className="promptflow-context-item">
-            <span className="promptflow-context-label">KB:</span>
-            <span className="promptflow-context-value">
-              {context.kbContent ? 'Available' : 'None'}
-            </span>
-          </div>
+          {filteredWorkflows.length > 0 && (
+            <div className="promptflow-workflow-count">
+              {filteredWorkflows.length} workflow{filteredWorkflows.length !== 1 ? 's' : ''}
+            </div>
+          )}
         </div>
       </div>
     </div>

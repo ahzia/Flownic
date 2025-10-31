@@ -1,61 +1,63 @@
 import React, { useState, useEffect } from 'react'
 import { createRoot } from 'react-dom/client'
 import { Quickbar } from './Quickbar'
-import { ActionPlan } from '@common/types'
+import { Workflow } from '@common/types'
 import './styles.css'
 
 const OverlayApp: React.FC = () => {
-  const [isQuickbarOpen, setIsQuickbarOpen] = useState(false)
-  const [, setCurrentActionPlan] = useState<ActionPlan | null>(null)
+  // Start with Quickbar open since we're being injected to show it
+  const [isQuickbarOpen, setIsQuickbarOpen] = useState(true)
 
   useEffect(() => {
-    // Listen for keyboard shortcut
-    const handleKeyDown = (e: KeyboardEvent) => {
-      // Check for Ctrl/Cmd + Shift + K
-      if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'K') {
-        e.preventDefault()
-        setIsQuickbarOpen(true)
-      }
-    }
-
-    // Listen for messages from background script
+    // Listen for messages from parent window or background script
     const handleMessage = (message: any) => {
       if (message.type === 'OPEN_QUICKBAR') {
         setIsQuickbarOpen(true)
+      } else if (message.type === 'CLOSE_QUICKBAR') {
+        setIsQuickbarOpen(false)
       }
     }
 
-    document.addEventListener('keydown', handleKeyDown)
+    // Listen from chrome.runtime (background script)
     chrome.runtime.onMessage.addListener(handleMessage)
 
+    // Listen from parent window (content script)
+    window.addEventListener('message', (event) => {
+      // Only accept messages from same origin (the extension)
+      if (event.data && typeof event.data === 'object') {
+        handleMessage(event.data)
+      }
+    })
+
     return () => {
-      document.removeEventListener('keydown', handleKeyDown)
       chrome.runtime.onMessage.removeListener(handleMessage)
+      window.removeEventListener('message', handleMessage as any)
     }
   }, [])
 
   const handleCloseQuickbar = () => {
     setIsQuickbarOpen(false)
-    setCurrentActionPlan(null)
+    // Also notify parent window to hide the overlay wrapper (if in iframe)
+    if (window.parent && window.parent !== window) {
+      window.parent.postMessage({ type: 'CLOSE_OVERLAY' }, '*')
+    }
   }
 
-  const handleActionPlanGenerated = async (actionPlan: ActionPlan) => {
-    setCurrentActionPlan(actionPlan)
-    
+  const handleWorkflowExecute = async (workflow: Workflow) => {
     try {
-      // Send action plan to background script for execution
+      // Send workflow to background script for execution
       const response = await chrome.runtime.sendMessage({
-        type: 'EXECUTE_ACTION_PLAN',
-        data: { actionPlan }
+        type: 'EXECUTE_WORKFLOW',
+        data: { workflow }
       })
 
-      if (response.success) {
-        console.log('Action plan executed successfully:', response.data)
+      if (response?.success) {
+        console.log('✅ Workflow executed successfully:', response.data)
       } else {
-        console.error('Failed to execute action plan:', response.error)
+        console.error('❌ Failed to execute workflow:', response?.error)
       }
     } catch (error) {
-      console.error('Error executing action plan:', error)
+      console.error('❌ Error executing workflow:', error)
     }
   }
 
@@ -63,7 +65,7 @@ const OverlayApp: React.FC = () => {
     <Quickbar
       isOpen={isQuickbarOpen}
       onClose={handleCloseQuickbar}
-      onActionPlanGenerated={handleActionPlanGenerated}
+      onWorkflowExecute={handleWorkflowExecute}
     />
   )
 }

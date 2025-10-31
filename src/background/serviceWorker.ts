@@ -273,3 +273,15 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   return true // Keep message channel open for async responses
 })
 
+// Handle keyboard commands (from manifest.json commands section)
+chrome.commands.onCommand.addListener((command) => {
+  if (command === 'open-quickbar') {
+    // Get the active tab and send message to content script
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      if (tabs[0]?.id) {
+        chrome.tabs.sendMessage(tabs[0].id, { type: 'OPEN_QUICKBAR' })
+      }
+    })
+  }
+})
+
