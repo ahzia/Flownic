@@ -1,10 +1,42 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { resolve } from 'path'
+import { copyFileSync, mkdirSync, existsSync } from 'fs'
+import { fileURLToPath } from 'url'
+import { dirname } from 'path'
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = dirname(__filename)
 
 export default defineConfig({
   plugins: [
     react(),
+    {
+      name: 'copy-icons',
+      closeBundle() {
+        // Copy icons from src to dist after build
+        const iconsSourceDir = resolve(__dirname, 'icons')
+        const iconsDestDir = resolve(__dirname, 'dist/icons')
+        
+        // Ensure icons directory exists in dist
+        if (!existsSync(iconsDestDir)) {
+          mkdirSync(iconsDestDir, { recursive: true })
+        }
+        
+        // Copy all icon files
+        const iconSizes = [16, 32, 48, 128]
+        iconSizes.forEach(size => {
+          const iconFile = `icon-${size}.png`
+          const srcPath = resolve(iconsSourceDir, iconFile)
+          const destPath = resolve(iconsDestDir, iconFile)
+          
+          if (existsSync(srcPath)) {
+            copyFileSync(srcPath, destPath)
+            console.log(`✅ Copied ${iconFile} to dist/icons/`)
+          }
+        })
+      }
+    },
     {
       name: 'inline-registry-chunks',
       generateBundle(options, bundle) {
