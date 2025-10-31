@@ -159,7 +159,7 @@
   color: var(--color-input-placeholder);
 }
 
-/* Buttons */
+/* Buttons - Enhanced with Premium Design */
 .promptflow-btn {
   display: inline-flex;
   align-items: center;
@@ -167,13 +167,14 @@
   gap: 6px;
   padding: 8px 16px;
   border: none;
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all var(--transition-normal);
   text-decoration: none;
   min-height: 36px;
+  position: relative;
 }
 
 .promptflow-btn:disabled {
@@ -184,34 +185,46 @@
 .promptflow-btn-primary {
   background: var(--color-button-primary);
   color: var(--color-text-inverse);
+  box-shadow: 0 2px 4px rgba(59, 130, 246, 0.2);
 }
 
 .promptflow-btn-primary:hover:not(:disabled) {
   background: var(--color-button-primary-hover);
+  box-shadow: 0 4px 8px rgba(59, 130, 246, 0.3);
+  transform: translateY(-1px);
 }
 
 .promptflow-btn-primary:active:not(:disabled) {
   background: var(--color-button-primary-active);
+  box-shadow: 0 1px 2px rgba(59, 130, 246, 0.2);
+  transform: translateY(0);
 }
 
 .promptflow-btn-secondary {
   background: var(--color-button-secondary);
   color: var(--color-text-primary);
   border: 1px solid var(--color-border-primary);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
 .promptflow-btn-secondary:hover:not(:disabled) {
   background: var(--color-button-secondary-hover);
+  border-color: var(--color-border-secondary);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+  transform: translateY(-1px);
 }
 
 .promptflow-btn-secondary:active:not(:disabled) {
   background: var(--color-button-secondary-active);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  transform: translateY(0);
 }
 
 .promptflow-btn-ghost {
   background: transparent;
   color: var(--color-text-secondary);
   padding: var(--space-2);
+  border-radius: var(--radius-md);
 }
 
 .promptflow-btn-ghost:hover:not(:disabled) {
@@ -381,83 +394,360 @@
   }
 }
 
-/* Popup specific styles */
+/* Popup specific styles - Premium Redesign */
 .promptflow-popup {
   width: 100%;
   height: 100%;
   display: flex;
   flex-direction: column;
-  background: white;
+  background: var(--color-background);
+  color: var(--color-text-primary);
+  overflow: hidden;
 }
 
+/* Header - Premium Branding */
 .promptflow-popup-header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 16px 20px;
-  border-bottom: 1px solid #e5e7eb;
-  background: #f9fafb;
+  justify-content: flex-start;
+  padding: var(--space-6) var(--space-6) var(--space-5);
+  background: linear-gradient(135deg, var(--color-surface) 0%, var(--color-surface-secondary) 100%);
+  border-bottom: 1px solid var(--color-border-primary);
+  position: relative;
 }
 
-.promptflow-popup-title {
+.promptflow-popup-header::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--color-border-secondary), transparent);
+}
+
+.promptflow-popup-brand {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 18px;
-  font-weight: 600;
-  color: #111827;
+  gap: var(--space-4);
+  flex: 1;
 }
 
+.promptflow-popup-logo {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.promptflow-logo-gradient {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  background: linear-gradient(135deg, var(--color-primary-500) 0%, var(--color-primary-600) 50%, var(--color-accent-500) 100%);
+  border-radius: 14px;
+  color: white;
+  box-shadow: 0 4px 20px rgba(59, 130, 246, 0.35), 0 0 0 1px rgba(59, 130, 246, 0.1);
+  position: relative;
+  overflow: hidden;
+}
+
+.promptflow-logo-gradient::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  animation: shimmer 3s infinite;
+}
+
+@keyframes shimmer {
+  0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+  100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+}
+
+.promptflow-logo-icon {
+  width: 24px;
+  height: 24px;
+  position: relative;
+  z-index: 1;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
+}
+
+.promptflow-popup-title-text {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.promptflow-popup-name {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+
+.promptflow-popup-tagline {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  font-weight: var(--font-weight-medium);
+  letter-spacing: 0.02em;
+  opacity: 0.85;
+}
+
+/* AI Status - Enhanced */
 .promptflow-ai-status {
   display: flex;
   align-items: center;
-  gap: 6px;
-  font-size: 12px;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  transition: all var(--transition-normal);
+  border: 1px solid transparent;
 }
 
-.promptflow-status-indicator {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
+.promptflow-ai-status.status-available {
+  background: linear-gradient(135deg, var(--color-success-50), var(--color-success-100));
+  color: var(--color-success-700);
+  border-color: var(--color-success-200);
+  box-shadow: 0 2px 8px rgba(34, 197, 94, 0.15);
+}
+
+[data-theme="dark"] .promptflow-ai-status.status-available {
+  background: linear-gradient(135deg, var(--color-success-900), var(--color-success-800));
+  color: var(--color-success-300);
+  border-color: var(--color-success-700);
+  box-shadow: 0 2px 8px rgba(34, 197, 94, 0.25);
+}
+
+.promptflow-ai-status.status-unavailable {
+  background: linear-gradient(135deg, var(--color-error-50), var(--color-error-100));
+  color: var(--color-error-700);
+  border-color: var(--color-error-200);
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.15);
+}
+
+[data-theme="dark"] .promptflow-ai-status.status-unavailable {
+  background: linear-gradient(135deg, var(--color-error-900), var(--color-error-800));
+  color: var(--color-error-300);
+  border-color: var(--color-error-700);
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.25);
+}
+
+.promptflow-status-indicator-wrapper {
+  position: relative;
+  width: 10px;
+  height: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.promptflow-status-indicator.available {
-  background: #10b981;
+.promptflow-status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+  position: relative;
+  z-index: 2;
+  animation: statusPulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
-.promptflow-status-indicator.unavailable {
-  background: #ef4444;
+.promptflow-status-ring {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border: 2px solid currentColor;
+  border-radius: 50%;
+  opacity: 0.4;
+  animation: statusRing 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes statusPulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.7; transform: scale(0.9); }
+}
+
+@keyframes statusRing {
+  0% { transform: scale(0.8); opacity: 0.4; }
+  50% { transform: scale(1.2); opacity: 0; }
+  100% { transform: scale(0.8); opacity: 0; }
 }
 
 .promptflow-status-text {
-  color: #6b7280;
-  font-weight: 500;
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: 0.02em;
 }
 
-.promptflow-quick-actions {
-  padding: 20px;
-  border-bottom: 1px solid #e5e7eb;
+/* Hero Section - Premium Action Buttons */
+.promptflow-hero-section {
+  padding: var(--space-6) var(--space-6) var(--space-5);
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border-primary);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
 }
 
-.promptflow-btn-large {
+.promptflow-hero-btn {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
   width: 100%;
-  padding: 16px;
-  font-size: 16px;
-  justify-content: space-between;
+  padding: var(--space-5) var(--space-6);
+  border: 1px solid transparent;
+  border-radius: var(--radius-2xl);
+  font-weight: var(--font-weight-medium);
+  transition: all var(--transition-normal);
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  text-align: left;
 }
 
-.promptflow-shortcut {
-  font-size: 12px;
+.promptflow-hero-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  transition: left 0.5s ease;
+}
+
+.promptflow-hero-btn:hover::before {
+  left: 100%;
+}
+
+.promptflow-hero-btn-primary {
+  background: linear-gradient(135deg, var(--color-primary-500), var(--color-primary-600));
+  color: white;
+  box-shadow: 0 4px 20px rgba(59, 130, 246, 0.35), 0 0 0 1px rgba(59, 130, 246, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  border-color: var(--color-primary-400);
+}
+
+.promptflow-hero-btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 28px rgba(59, 130, 246, 0.45), 0 0 0 1px rgba(59, 130, 246, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  background: linear-gradient(135deg, var(--color-primary-600), var(--color-primary-700));
+}
+
+.promptflow-hero-btn-primary:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 12px rgba(59, 130, 246, 0.3), 0 0 0 1px rgba(59, 130, 246, 0.15);
+}
+
+.promptflow-hero-btn-secondary {
+  background: var(--color-surface);
+  border: 1.5px solid var(--color-border-primary);
+  color: var(--color-text-primary);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+[data-theme="dark"] .promptflow-hero-btn-secondary {
+  background: var(--color-surface);
+  border-color: var(--color-border-primary);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.promptflow-hero-btn-secondary:hover {
+  background: var(--color-surface-secondary);
+  border-color: var(--color-primary-300);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(59, 130, 246, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+[data-theme="dark"] .promptflow-hero-btn-secondary:hover {
+  background: var(--color-surface-secondary);
+  border-color: var(--color-primary-600);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.promptflow-hero-btn-secondary:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+}
+
+.promptflow-hero-btn-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-xl);
+  flex-shrink: 0;
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(4px);
+}
+
+.promptflow-hero-btn-secondary .promptflow-hero-btn-icon {
+  background: var(--color-primary-50);
+  color: var(--color-primary-600);
+}
+
+[data-theme="dark"] .promptflow-hero-btn-secondary .promptflow-hero-btn-icon {
+  background: var(--color-primary-900);
+  color: var(--color-primary-400);
+}
+
+.promptflow-hero-btn-icon .promptflow-icon {
+  width: 20px;
+  height: 20px;
+}
+
+.promptflow-hero-btn-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.promptflow-hero-btn-title {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  line-height: 1.4;
+  letter-spacing: -0.01em;
+}
+
+.promptflow-hero-btn-subtitle {
+  font-size: var(--font-size-xs);
+  opacity: 0.8;
+  font-weight: var(--font-weight-normal);
+  line-height: 1.4;
+  margin-top: 1px;
+}
+
+.promptflow-hero-btn-arrow {
+  flex-shrink: 0;
   opacity: 0.7;
-  font-weight: 400;
+  transition: all var(--transition-fast);
 }
 
+.promptflow-hero-btn:hover .promptflow-hero-btn-arrow {
+  opacity: 1;
+  transform: translateX(4px);
+}
+
+.promptflow-hero-btn-arrow .promptflow-icon {
+  width: 18px;
+  height: 18px;
+}
+
+/* Tabs - Premium Design */
 .promptflow-tabs {
   display: flex;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid var(--color-border-primary);
+  background: var(--color-surface);
+  padding: 0 var(--space-5);
+  gap: var(--space-2);
 }
 
 .promptflow-tab {
@@ -465,175 +755,402 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  padding: 12px 8px;
+  gap: var(--space-2);
+  padding: var(--space-4) var(--space-5);
   border: none;
   background: transparent;
-  color: #6b7280;
-  font-size: 14px;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all var(--transition-normal);
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  position: relative;
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+}
+
+.promptflow-tab .promptflow-icon {
+  width: 16px;
+  height: 16px;
+  transition: transform var(--transition-fast);
 }
 
 .promptflow-tab:hover {
-  background: #f3f4f6;
-  color: #374151;
+  color: var(--color-text-primary);
+  background: var(--color-surface-secondary);
+}
+
+.promptflow-tab:hover .promptflow-icon {
+  transform: scale(1.1);
 }
 
 .promptflow-tab.active {
-  background: #dbeafe;
-  color: #1e40af;
-  border-bottom: 2px solid #3b82f6;
+  color: var(--color-primary-600);
+  border-bottom-color: var(--color-primary-500);
+  background: linear-gradient(180deg, transparent 0%, var(--color-primary-50) 100%);
+  font-weight: var(--font-weight-semibold);
+}
+
+[data-theme="dark"] .promptflow-tab.active {
+  color: var(--color-primary-400);
+  background: linear-gradient(180deg, transparent 0%, var(--color-primary-900) 100%);
+}
+
+.promptflow-tab.active::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 40%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--color-primary-500), transparent);
+  border-radius: 2px;
 }
 
 .promptflow-tab-content {
   flex: 1;
   overflow-y: auto;
-  padding: 20px;
+  padding: var(--space-6) var(--space-6) var(--space-5);
+  background: var(--color-background);
 }
 
-.promptflow-workflows-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 16px;
-}
-
-.promptflow-workflows-header h3 {
-  margin: 0;
-  font-size: 18px;
-  font-weight: 600;
-  color: #111827;
-}
-
-.promptflow-workflows-footer {
-  margin-top: 20px;
-  padding-top: 16px;
-  border-top: 1px solid #e5e7eb;
-  text-align: center;
-}
-
-.promptflow-workflows-footer p {
-  margin: 0;
-  font-size: 14px;
-  color: #6b7280;
-}
-
-.promptflow-setting-section {
-  margin-bottom: var(--space-6);
-  padding-bottom: var(--space-4);
-  border-bottom: 1px solid var(--color-border-primary);
-}
-
-.promptflow-setting-section:last-child {
-  border-bottom: none;
-  margin-bottom: 0;
-}
-
-.promptflow-setting-section h4 {
-  margin: 0 0 var(--space-3) 0;
+/* Section Headers - Premium Design */
+.promptflow-section-subtitle {
+  margin: var(--space-2) 0 0 0;
   font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-semibold);
   color: var(--color-text-secondary);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+  font-weight: var(--font-weight-normal);
+  line-height: 1.5;
 }
 
-.promptflow-workflows h3,
-.promptflow-history h3,
-.promptflow-settings h3 {
-  margin: 0 0 16px 0;
-  font-size: 16px;
-  font-weight: 600;
-  color: #111827;
+.promptflow-history-header,
+.promptflow-settings-header {
+  margin-bottom: var(--space-6);
+  padding-bottom: var(--space-5);
+  border-bottom: 1px solid var(--color-border-primary);
+  position: relative;
 }
 
-.promptflow-workflow-list,
+.promptflow-history-header::after,
+.promptflow-settings-header::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--color-border-secondary), transparent);
+}
+
+.promptflow-history-header h3,
+.promptflow-settings-header h3 {
+  margin: 0 0 var(--space-2) 0;
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+/* History List - Premium Design */
 .promptflow-history-list {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--space-3);
+  margin-bottom: var(--space-5);
 }
 
-.promptflow-workflow-item,
 .promptflow-history-item {
-  padding: 12px;
-  background: #f9fafb;
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-5) var(--space-6);
+  background: var(--color-surface);
+  border: 1.5px solid var(--color-border-primary);
+  border-radius: var(--radius-2xl);
+  transition: all var(--transition-normal);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  position: relative;
+  overflow: hidden;
 }
 
-.promptflow-workflow-item:hover,
+.promptflow-history-item::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: linear-gradient(180deg, var(--color-success-500), var(--color-success-400));
+  opacity: 0;
+  transition: opacity var(--transition-normal);
+}
+
 .promptflow-history-item:hover {
-  background: #f3f4f6;
-  border-color: #d1d5db;
+  background: var(--color-surface-secondary);
+  border-color: var(--color-primary-200);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transform: translateX(2px);
 }
 
-.promptflow-workflow-name,
+.promptflow-history-item:hover::before {
+  opacity: 1;
+}
+
+[data-theme="dark"] .promptflow-history-item::before {
+  background: linear-gradient(180deg, var(--color-success-500), var(--color-success-600));
+}
+
+.promptflow-history-status {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  background: linear-gradient(135deg, var(--color-success-50), var(--color-success-100));
+  border-radius: var(--radius-xl);
+  flex-shrink: 0;
+  border: 1.5px solid var(--color-success-200);
+  box-shadow: 0 2px 8px rgba(34, 197, 94, 0.15);
+}
+
+[data-theme="dark"] .promptflow-history-status {
+  background: linear-gradient(135deg, var(--color-success-900), var(--color-success-800));
+  border-color: var(--color-success-700);
+  box-shadow: 0 2px 6px rgba(34, 197, 94, 0.25);
+}
+
+.promptflow-history-icon {
+  width: 20px;
+  height: 20px;
+  color: var(--color-success-600);
+}
+
+[data-theme="dark"] .promptflow-history-icon {
+  color: var(--color-success-400);
+}
+
+.promptflow-history-content {
+  flex: 1;
+  min-width: 0;
+}
+
 .promptflow-history-action {
-  font-weight: 500;
-  color: #111827;
-  margin-bottom: 4px;
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-2);
+  font-size: var(--font-size-sm);
+  font-family: var(--font-family-mono);
+  letter-spacing: 0.03em;
+  line-height: 1.4;
 }
 
-.promptflow-workflow-desc,
 .promptflow-history-time {
-  font-size: 12px;
-  color: #6b7280;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  font-weight: var(--font-weight-medium);
 }
 
+.promptflow-history-time-icon {
+  width: 13px;
+  height: 13px;
+  opacity: 0.7;
+}
+
+.promptflow-history-footer {
+  text-align: center;
+  padding: var(--space-5) var(--space-4) 0;
+  margin-top: var(--space-5);
+  border-top: 1px solid var(--color-border-primary);
+}
+
+.promptflow-history-footer p {
+  margin: 0;
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+  font-style: italic;
+}
+
+/* Settings - Premium Design */
 .promptflow-settings {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: var(--space-6);
+}
+
+.promptflow-settings-section {
+  margin-bottom: var(--space-8);
+  padding-bottom: var(--space-8);
+  border-bottom: 1px solid var(--color-border-primary);
+  position: relative;
+}
+
+.promptflow-settings-section::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--color-border-secondary), transparent);
+}
+
+.promptflow-settings-section:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.promptflow-settings-section:last-child::after {
+  display: none;
+}
+
+.promptflow-settings-section-title {
+  margin: 0 0 var(--space-6) 0;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.promptflow-settings-section-title::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, var(--color-border-primary), transparent);
 }
 
 .promptflow-setting-group {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--space-3);
 }
 
 .promptflow-setting-label {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  font-size: 14px;
-  color: #374151;
+  align-items: flex-start;
+  gap: var(--space-4);
+  padding: var(--space-5) var(--space-6);
+  border-radius: var(--radius-2xl);
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  border: 1.5px solid transparent;
+  background: var(--color-surface);
 }
 
-.promptflow-setting-label input[type="checkbox"] {
-  margin-right: 8px;
+.promptflow-setting-label:hover {
+  background: var(--color-surface-secondary);
+  border-color: var(--color-border-primary);
+  transform: translateX(2px);
 }
 
-.promptflow-setting-label select {
-  padding: 4px 8px;
-  border: 1px solid #d1d5db;
-  border-radius: 4px;
-  font-size: 14px;
+.promptflow-checkbox {
+  width: 20px;
+  height: 20px;
+  margin-top: 2px;
+  cursor: pointer;
+  accent-color: var(--color-primary-500);
+  flex-shrink: 0;
+  border-radius: var(--radius-sm);
+  transition: all var(--transition-fast);
 }
 
+.promptflow-checkbox:checked {
+  box-shadow: 0 0 0 3px var(--color-primary-100);
+}
+
+[data-theme="dark"] .promptflow-checkbox:checked {
+  box-shadow: 0 0 0 3px var(--color-primary-900);
+}
+
+.promptflow-setting-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.promptflow-setting-name {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  line-height: 1.5;
+  letter-spacing: -0.01em;
+}
+
+.promptflow-setting-desc {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+  margin-top: 3px;
+  opacity: 0.85;
+}
+
+/* Footer - Premium Design */
 .promptflow-popup-footer {
+  padding: var(--space-5) var(--space-6) var(--space-5);
+  border-top: 1px solid var(--color-border-primary);
+  background: linear-gradient(180deg, var(--color-surface) 0%, var(--color-surface-secondary) 100%);
+  position: relative;
+  flex-shrink: 0;
+}
+
+.promptflow-popup-footer::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--color-border-secondary), transparent);
+}
+
+.promptflow-footer-content {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 20px;
-  border-top: 1px solid #e5e7eb;
-  background: #f9fafb;
-  font-size: 12px;
-  color: #6b7280;
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
 }
 
 .promptflow-version {
-  font-weight: 500;
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-secondary);
+  font-family: var(--font-family-mono);
+  letter-spacing: 0.02em;
 }
 
 .promptflow-privacy {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: var(--space-2);
+  font-weight: var(--font-weight-medium);
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-full);
+  background: var(--color-surface-tertiary);
+  border: 1px solid var(--color-border-primary);
+  transition: all var(--transition-fast);
+}
+
+.promptflow-privacy:hover {
+  background: var(--color-surface);
+  border-color: var(--color-border-secondary);
+}
+
+.promptflow-privacy .promptflow-icon {
+  width: 13px;
+  height: 13px;
+  color: var(--color-text-secondary);
+  opacity: 0.8;
 }
 
 /* Workflow Playground Styles */
