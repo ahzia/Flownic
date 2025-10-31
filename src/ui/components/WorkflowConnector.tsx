@@ -4,29 +4,67 @@ import './WorkflowConnector.css'
 interface WorkflowConnectorProps {
   fromId: string
   toId: string
+  fromX?: number
   fromY: number
+  toX?: number
   toY: number
-  x: number
-  width?: number
+  x?: number // Legacy support for vertical connectors
+  width?: number // Legacy support for vertical connectors
+  dashed?: boolean
+  label?: string
+  color?: string
 }
 
 export const WorkflowConnector: React.FC<WorkflowConnectorProps> = ({
-  fromId,
-  toId,
+  fromId: _fromId,
+  toId: _toId,
+  fromX,
   fromY,
+  toX,
   toY,
   x,
-  width = 200
+  width = 200,
+  dashed = false,
+  label: _label,
+  color
 }) => {
-  // Calculate connector path
-  const startX = x + width / 2
+  // Support both new (fromX/toX) and legacy (x/width) positioning
+  const startX = fromX !== undefined ? fromX : (x !== undefined ? x + width / 2 : 0)
   const startY = fromY
-  const endX = x + width / 2
+  const endX = toX !== undefined ? toX : (x !== undefined ? x + width / 2 : 0)
   const endY = toY
-  const midY = (startY + endY) / 2
 
-  // Create SVG path for the connector
-  const pathData = `M ${startX} ${startY} L ${startX} ${midY} L ${endX} ${midY} L ${endX} ${endY}`
+  // Calculate smooth bezier curve path
+  const dx = endX - startX
+  const dy = endY - startY
+  const isHorizontal = Math.abs(dx) > Math.abs(dy)
+  
+  // Calculate control points for smooth curves
+  // Use cubic bezier curves that start/end perpendicular to nodes for natural workflow look
+  let pathData: string
+  
+  if (isHorizontal) {
+    // Horizontal connection (e.g., context to task): smooth horizontal curve
+    // Control points create a gentle S-curve that starts and ends perpendicular
+    const curveDistance = Math.max(Math.abs(dx) * 0.3, 50) // Adaptive curve distance
+    const controlX1 = startX + curveDistance
+    const controlY1 = startY
+    const controlX2 = endX - curveDistance
+    const controlY2 = endY
+    pathData = `M ${startX} ${startY} C ${controlX1} ${controlY1}, ${controlX2} ${controlY2}, ${endX} ${endY}`
+  } else {
+    // Vertical connection (e.g., task to task): smooth vertical curve
+    // Control points create a gentle S-curve that starts and ends perpendicular
+    const curveDistance = Math.max(Math.abs(dy) * 0.3, 50) // Adaptive curve distance
+    const controlX1 = startX
+    const controlY1 = startY + curveDistance
+    const controlX2 = endX
+    const controlY2 = endY - curveDistance
+    pathData = `M ${startX} ${startY} C ${controlX1} ${controlY1}, ${controlX2} ${controlY2}, ${endX} ${endY}`
+  }
+
+  const strokeColor = color || 'var(--color-border-primary, #e5e7eb)'
+  const strokeDasharray = dashed ? '5,5' : 'none'
 
   return (
     <svg
@@ -34,34 +72,20 @@ export const WorkflowConnector: React.FC<WorkflowConnectorProps> = ({
       style={{
         position: 'absolute',
         left: 0,
-        top: Math.min(startY, endY),
+        top: 0,
         width: '100%',
-        height: Math.abs(endY - startY) + 40,
+        height: '100%',
         pointerEvents: 'none',
-        zIndex: 0
+        zIndex: 0,
+        overflow: 'visible'
       }}
     >
-      <defs>
-        <marker
-          id={`arrowhead-${fromId}-${toId}`}
-          markerWidth="10"
-          markerHeight="10"
-          refX="9"
-          refY="3"
-          orient="auto"
-        >
-          <polygon
-            points="0 0, 10 3, 0 6"
-            fill="var(--color-border-primary, #e5e7eb)"
-          />
-        </marker>
-      </defs>
       <path
         d={pathData}
-        stroke="var(--color-border-primary, #e5e7eb)"
-        strokeWidth="2"
+        stroke={strokeColor}
+        strokeWidth={dashed ? 1.5 : 2}
+        strokeDasharray={strokeDasharray}
         fill="none"
-        markerEnd={`url(#arrowhead-${fromId}-${toId})`}
         className="connector-line"
       />
     </svg>

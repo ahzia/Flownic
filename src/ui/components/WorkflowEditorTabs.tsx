@@ -6,7 +6,7 @@ import './DataPointsSidebar.css'
 import { ConfigTab, WorkflowConfig } from './ConfigTab'
 import { StepsEditor } from './StepsEditor'
 import { VisualWorkflowCanvas } from './VisualWorkflowCanvas'
-import { WorkflowStep, TaskTemplate, HandlerTemplate, DataPoint, WorkflowTrigger } from '@common/types'
+import { WorkflowStep, TaskTemplate, HandlerTemplate, DataPoint, WorkflowTrigger, KBEntry } from '@common/types'
 
 export type WorkflowEditorTab = 'config' | 'steps' | 'visual'
 
@@ -19,6 +19,9 @@ interface WorkflowEditorTabsProps {
   availableTasks: TaskTemplate[]
   availableHandlers: HandlerTemplate[]
   dataPoints: DataPoint[]
+  providerMetas?: { id: string; name: string; description: string; outputType: string }[]
+  kbEntries?: KBEntry[]
+  onToggleDataPoints?: () => void
   onAddStep: (type: 'task' | 'handler') => void
   onRemoveStep: (stepId: string) => void
   onUpdateStep: (stepId: string, updates: Partial<WorkflowStep>) => void
@@ -34,6 +37,9 @@ export const WorkflowEditorTabs: React.FC<WorkflowEditorTabsProps> = ({
   availableTasks,
   availableHandlers,
   dataPoints,
+  providerMetas = [],
+  kbEntries = [],
+  onToggleDataPoints,
   onAddStep,
   onRemoveStep,
   onUpdateStep,
@@ -92,6 +98,9 @@ export const WorkflowEditorTabs: React.FC<WorkflowEditorTabsProps> = ({
             availableTasks={availableTasks}
             availableHandlers={availableHandlers}
             dataPoints={dataPoints}
+            providerMetas={providerMetas}
+            kbEntries={kbEntries}
+            onToggleDataPoints={onToggleDataPoints}
             onAddStep={onAddStep}
             onRemoveStep={onRemoveStep}
             onUpdateStep={onUpdateStep}
