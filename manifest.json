@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "PromptFlow",
+  "name": "Flownic",
   "version": "0.1.0",
   "description": "Offline-first AI prompt workflows for Chrome using built-in AI APIs",
   "permissions": [
@@ -13,7 +13,7 @@
   "host_permissions": [],
   "action": {
     "default_popup": "src/ui/index.html",
-    "default_title": "PromptFlow - AI Workflows"
+    "default_title": "Flownic - AI Workflows"
   },
   "background": {
     "service_worker": "background/serviceWorker.js",
@@ -45,7 +45,7 @@
         "default": "Ctrl+Shift+K",
         "mac": "Command+Shift+K"
       },
-      "description": "Open PromptFlow Quickbar"
+      "description": "Open Flownic Quickbar"
     }
   }
 }

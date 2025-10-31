@@ -1,4 +1,4 @@
-console.log('🔧 PromptFlow Service Worker initialized')
+console.log('🔧 Flownic Service Worker initialized')
 
 // Import utilities for data point resolution and KB loading
 import { resolveDataPointReferences } from '@core/utils/DataPointResolver'

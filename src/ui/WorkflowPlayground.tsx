@@ -182,16 +182,16 @@ export const WorkflowPlayground: React.FC<WorkflowPlaygroundProps> = ({ onClose 
   // }
 
   return (
-    <div className="promptflow-playground">
+    <div className="flownic-playground">
       {/* Header */}
-      <div className="promptflow-playground-header">
-        <div className="promptflow-playground-title">
-          <Code className="promptflow-icon" />
+      <div className="flownic-playground-header">
+        <div className="flownic-playground-title">
+          <Code className="flownic-icon" />
           <span>Workflow Playground</span>
         </div>
-        <div className="promptflow-playground-actions">
+        <div className="flownic-playground-actions">
           <button
-            className="promptflow-btn promptflow-btn-secondary"
+            className="flownic-btn flownic-btn-secondary"
             onClick={onClose}
           >
             Back
@@ -199,52 +199,52 @@ export const WorkflowPlayground: React.FC<WorkflowPlaygroundProps> = ({ onClose 
         </div>
       </div>
 
-      <div className="promptflow-playground-content">
+      <div className="flownic-playground-content">
         {!isCreating ? (
           /* Workflow List */
-          <div className="promptflow-workflow-list">
-            <div className="promptflow-workflow-list-header">
+          <div className="flownic-workflow-list">
+            <div className="flownic-workflow-list-header">
               <h3>Your Workflows</h3>
               <button
-                className="promptflow-btn promptflow-btn-primary"
+                className="flownic-btn flownic-btn-primary"
                 onClick={startCreating}
               >
-                <Plus className="promptflow-icon" />
+                <Plus className="flownic-icon" />
                 Create Workflow
               </button>
             </div>
 
-            <div className="promptflow-workflow-grid">
+            <div className="flownic-workflow-grid">
               {workflows.map((workflow) => (
-                <div key={workflow.id} className="promptflow-workflow-card">
-                  <div className="promptflow-workflow-card-header">
+                <div key={workflow.id} className="flownic-workflow-card">
+                  <div className="flownic-workflow-card-header">
                     <h4>{workflow.name}</h4>
-                    <div className="promptflow-workflow-actions">
+                    <div className="flownic-workflow-actions">
                       <button
-                        className="promptflow-btn promptflow-btn-ghost"
+                        className="flownic-btn flownic-btn-ghost"
                         onClick={() => editWorkflow(workflow)}
                         title="Edit"
                       >
-                        <Settings className="promptflow-icon" />
+                        <Settings className="flownic-icon" />
                       </button>
                       <button
-                        className="promptflow-btn promptflow-btn-ghost"
+                        className="flownic-btn flownic-btn-ghost"
                         onClick={() => deleteWorkflow(workflow.id)}
                         title="Delete"
                       >
-                        <Trash2 className="promptflow-icon" />
+                        <Trash2 className="flownic-icon" />
                       </button>
                     </div>
                   </div>
-                  <p className="promptflow-workflow-description">{workflow.description}</p>
-                  <div className="promptflow-workflow-meta">
-                    <span className="promptflow-workflow-trigger">
-                      {workflow.triggers[0]?.type === 'onPageLoad' && <Globe className="promptflow-icon" />}
-                      {workflow.triggers[0]?.type === 'manual' && <Keyboard className="promptflow-icon" />}
-                      {workflow.triggers[0]?.type === 'schedule' && <Clock className="promptflow-icon" />}
+                  <p className="flownic-workflow-description">{workflow.description}</p>
+                  <div className="flownic-workflow-meta">
+                    <span className="flownic-workflow-trigger">
+                      {workflow.triggers[0]?.type === 'onPageLoad' && <Globe className="flownic-icon" />}
+                      {workflow.triggers[0]?.type === 'manual' && <Keyboard className="flownic-icon" />}
+                      {workflow.triggers[0]?.type === 'schedule' && <Clock className="flownic-icon" />}
                       {workflow.triggers[0]?.type || 'Manual'}
                     </span>
-                    <span className="promptflow-workflow-steps">
+                    <span className="flownic-workflow-steps">
                       {workflow.steps.length} step{workflow.steps.length !== 1 ? 's' : ''}
                     </span>
                   </div>
@@ -252,15 +252,15 @@ export const WorkflowPlayground: React.FC<WorkflowPlaygroundProps> = ({ onClose 
               ))}
 
               {workflows.length === 0 && (
-                <div className="promptflow-empty-state">
-                  <Code className="promptflow-icon promptflow-icon-large" />
+                <div className="flownic-empty-state">
+                  <Code className="flownic-icon flownic-icon-large" />
                   <h3>No workflows yet</h3>
                   <p>Create your first workflow to automate tasks across websites</p>
                   <button
-                    className="promptflow-btn promptflow-btn-primary"
+                    className="flownic-btn flownic-btn-primary"
                     onClick={startCreating}
                   >
-                    <Plus className="promptflow-icon" />
+                    <Plus className="flownic-icon" />
                     Create Your First Workflow
                   </button>
                 </div>
@@ -269,56 +269,56 @@ export const WorkflowPlayground: React.FC<WorkflowPlaygroundProps> = ({ onClose 
           </div>
         ) : (
           /* Workflow Editor */
-          <div className="promptflow-workflow-editor">
-            <div className="promptflow-editor-header">
+          <div className="flownic-workflow-editor">
+            <div className="flownic-editor-header">
               <h3>{selectedWorkflow ? 'Edit Workflow' : 'Create New Workflow'}</h3>
-              <div className="promptflow-editor-actions">
+              <div className="flownic-editor-actions">
                 <button
-                  className="promptflow-btn promptflow-btn-secondary"
+                  className="flownic-btn flownic-btn-secondary"
                   onClick={() => setIsCreating(false)}
                 >
                   Cancel
                 </button>
                 <button
-                  className="promptflow-btn promptflow-btn-primary"
+                  className="flownic-btn flownic-btn-primary"
                   onClick={saveWorkflow}
                 >
-                  <Save className="promptflow-icon" />
+                  <Save className="flownic-icon" />
                   Save Workflow
                 </button>
               </div>
             </div>
 
-            <div className="promptflow-editor-content">
+            <div className="flownic-editor-content">
               {/* Basic Info */}
-              <div className="promptflow-editor-section">
+              <div className="flownic-editor-section">
                 <h4>Basic Information</h4>
-                <div className="promptflow-form-group">
+                <div className="flownic-form-group">
                   <label>Workflow Name</label>
                   <input
                     type="text"
                     value={formData.name}
                     onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
                     placeholder="e.g., Medium Article Summarizer"
-                    className="promptflow-input"
+                    className="flownic-input"
                   />
                 </div>
-                <div className="promptflow-form-group">
+                <div className="flownic-form-group">
                   <label>Description</label>
                   <textarea
                     value={formData.description}
                     onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
                     placeholder="Describe what this workflow does..."
-                    className="promptflow-textarea"
+                    className="flownic-textarea"
                     rows={3}
                   />
                 </div>
               </div>
 
               {/* Trigger Configuration */}
-              <div className="promptflow-editor-section">
+              <div className="flownic-editor-section">
                 <h4>Trigger</h4>
-                <div className="promptflow-form-group">
+                <div className="flownic-form-group">
                   <label>When to run</label>
                   <select
                     value={formData.trigger.type}
@@ -326,7 +326,7 @@ export const WorkflowPlayground: React.FC<WorkflowPlaygroundProps> = ({ onClose 
                       ...prev,
                       trigger: { ...prev.trigger, type: e.target.value as any }
                     }))}
-                    className="promptflow-select"
+                    className="flownic-select"
                   >
                     <option value="manual">Manual (keyboard shortcut)</option>
                     <option value="onPageLoad">On page load</option>
@@ -336,7 +336,7 @@ export const WorkflowPlayground: React.FC<WorkflowPlaygroundProps> = ({ onClose 
                 </div>
 
                 {formData.trigger.type === 'manual' && (
-                  <div className="promptflow-form-group">
+                  <div className="flownic-form-group">
                     <label>Keyboard Shortcut</label>
                     <input
                       type="text"
@@ -346,13 +346,13 @@ export const WorkflowPlayground: React.FC<WorkflowPlaygroundProps> = ({ onClose 
                         trigger: { ...prev.trigger, shortcut: e.target.value }
                       }))}
                       placeholder="e.g., Ctrl+Shift+S"
-                      className="promptflow-input"
+                      className="flownic-input"
                     />
                   </div>
                 )}
 
                 {formData.trigger.type === 'onPageLoad' && (
-                  <div className="promptflow-form-group">
+                  <div className="flownic-form-group">
                     <label>Website Pattern</label>
                     <input
                       type="text"
@@ -362,14 +362,14 @@ export const WorkflowPlayground: React.FC<WorkflowPlaygroundProps> = ({ onClose 
                         trigger: { ...prev.trigger, pattern: e.target.value }
                       }))}
                       placeholder="e.g., medium.com, *.github.com"
-                      className="promptflow-input"
+                      className="flownic-input"
                     />
                     <small>Use * for wildcards. Leave empty for all sites.</small>
                   </div>
                 )}
 
                 {formData.trigger.type === 'onSelection' && (
-                  <div className="promptflow-form-group">
+                  <div className="flownic-form-group">
                     <label>CSS Selector (optional)</label>
                     <input
                       type="text"
@@ -379,56 +379,56 @@ export const WorkflowPlayground: React.FC<WorkflowPlaygroundProps> = ({ onClose 
                         trigger: { ...prev.trigger, selector: e.target.value }
                       }))}
                       placeholder="e.g., .article-content, #main"
-                      className="promptflow-input"
+                      className="flownic-input"
                     />
                   </div>
                 )}
               </div>
 
               {/* Workflow Steps */}
-              <div className="promptflow-editor-section">
-                <div className="promptflow-steps-header">
+              <div className="flownic-editor-section">
+                <div className="flownic-steps-header">
                   <h4>Workflow Steps</h4>
-                  <div className="promptflow-step-actions">
+                  <div className="flownic-step-actions">
                     <button
-                      className="promptflow-btn promptflow-btn-secondary"
+                      className="flownic-btn flownic-btn-secondary"
                       onClick={() => addStep('task')}
                     >
-                      <Plus className="promptflow-icon" />
+                      <Plus className="flownic-icon" />
                       Add Task
                     </button>
                     <button
-                      className="promptflow-btn promptflow-btn-secondary"
+                      className="flownic-btn flownic-btn-secondary"
                       onClick={() => addStep('handler')}
                     >
-                      <Plus className="promptflow-icon" />
+                      <Plus className="flownic-icon" />
                       Add Handler
                     </button>
                   </div>
                 </div>
 
-                <div className="promptflow-steps-list">
+                <div className="flownic-steps-list">
                   {formData.steps.map((step, index) => (
-                    <div key={step.id} className="promptflow-step">
-                      <div className="promptflow-step-header">
-                        <span className="promptflow-step-number">{index + 1}</span>
-                        <span className="promptflow-step-type">{step.type}</span>
+                    <div key={step.id} className="flownic-step">
+                      <div className="flownic-step-header">
+                        <span className="flownic-step-number">{index + 1}</span>
+                        <span className="flownic-step-type">{step.type}</span>
                         <button
-                          className="promptflow-btn promptflow-btn-ghost"
+                          className="flownic-btn flownic-btn-ghost"
                           onClick={() => removeStep(step.id)}
                         >
-                          <Trash2 className="promptflow-icon" />
+                          <Trash2 className="flownic-icon" />
                         </button>
                       </div>
 
                       {step.type === 'task' && (
-                        <div className="promptflow-step-content">
-                          <div className="promptflow-form-group">
+                        <div className="flownic-step-content">
+                          <div className="flownic-form-group">
                             <label>Task Template</label>
                             <select
                               value={step.taskId || ''}
                               onChange={(e) => updateStep(step.id, { taskId: e.target.value })}
-                              className="promptflow-select"
+                              className="flownic-select"
                             >
                               <option value="">Select a task...</option>
                               <option value="translation">Translation</option>
@@ -437,7 +437,7 @@ export const WorkflowPlayground: React.FC<WorkflowPlaygroundProps> = ({ onClose 
                             </select>
                           </div>
                           {step.taskId && (
-                            <div className="promptflow-task-preview">
+                            <div className="flownic-task-preview">
                               <h5>Task Selected:</h5>
                               <p>{step.taskId}</p>
                             </div>
@@ -446,13 +446,13 @@ export const WorkflowPlayground: React.FC<WorkflowPlaygroundProps> = ({ onClose 
                       )}
 
                       {step.type === 'handler' && (
-                        <div className="promptflow-step-content">
-                          <div className="promptflow-form-group">
+                        <div className="flownic-step-content">
+                          <div className="flownic-form-group">
                             <label>Handler</label>
                             <select
                               value={step.handlerId || ''}
                               onChange={(e) => updateStep(step.id, { handlerId: e.target.value })}
-                              className="promptflow-select"
+                              className="flownic-select"
                             >
                               <option value="">Select a handler...</option>
                               <option value="show_modal">Show Modal</option>
@@ -464,13 +464,13 @@ export const WorkflowPlayground: React.FC<WorkflowPlaygroundProps> = ({ onClose 
                         </div>
                       )}
 
-                      <div className="promptflow-form-group">
+                      <div className="flownic-form-group">
                         <label>Delay (seconds)</label>
                         <input
                           type="number"
                           value={step.delay || 0}
                           onChange={(e) => updateStep(step.id, { delay: parseInt(e.target.value) || 0 })}
-                          className="promptflow-input"
+                          className="flownic-input"
                           min="0"
                         />
                       </div>
@@ -478,7 +478,7 @@ export const WorkflowPlayground: React.FC<WorkflowPlaygroundProps> = ({ onClose 
                   ))}
 
                   {formData.steps.length === 0 && (
-                    <div className="promptflow-empty-steps">
+                    <div className="flownic-empty-steps">
                       <p>No steps yet. Add prompts and actions to build your workflow.</p>
                     </div>
                   )}
@@ -486,31 +486,31 @@ export const WorkflowPlayground: React.FC<WorkflowPlaygroundProps> = ({ onClose 
               </div>
 
               {/* Preview */}
-              <div className="promptflow-editor-section">
-                <div className="promptflow-preview-header">
+              <div className="flownic-editor-section">
+                <div className="flownic-preview-header">
                   <h4>Preview</h4>
                   <button
-                    className="promptflow-btn promptflow-btn-secondary"
+                    className="flownic-btn flownic-btn-secondary"
                     onClick={() => setShowPreview(!showPreview)}
                   >
-                    <Eye className="promptflow-icon" />
+                    <Eye className="flownic-icon" />
                     {showPreview ? 'Hide' : 'Show'} Preview
                   </button>
                 </div>
 
                 {showPreview && (
-                  <div className="promptflow-workflow-preview">
+                  <div className="flownic-workflow-preview">
                     <h5>{formData.name || 'Untitled Workflow'}</h5>
                     <p>{formData.description || 'No description'}</p>
-                    <div className="promptflow-preview-trigger">
+                    <div className="flownic-preview-trigger">
                       <strong>Trigger:</strong> {formData.trigger.type}
                       {formData.trigger.pattern && ` (${formData.trigger.pattern})`}
                       {formData.trigger.shortcut && ` (${formData.trigger.shortcut})`}
                     </div>
-                    <div className="promptflow-preview-steps">
+                    <div className="flownic-preview-steps">
                       <strong>Steps:</strong>
                       {formData.steps.map((step, index) => (
-                        <div key={step.id} className="promptflow-preview-step">
+                        <div key={step.id} className="flownic-preview-step">
                           {index + 1}. {step.type} - {step.taskId || step.handlerId}
                         </div>
                       ))}

@@ -16,18 +16,18 @@ export class ModalHelpers {
     
     const modal = document.createElement('div')
     modal.id = modalId
-    modal.className = 'promptflow-modal'
+    modal.className = 'flownic-modal'
     
     const { title, content, html = false, size = 'medium', closable = true } = config
     
     modal.innerHTML = `
-      <div class="promptflow-modal-overlay">
-        <div class="promptflow-modal-content promptflow-modal-${size}">
-          <div class="promptflow-modal-header">
-            <h3 class="promptflow-modal-title">${title}</h3>
-            ${closable ? '<button class="promptflow-modal-close">&times;</button>' : ''}
+      <div class="flownic-modal-overlay">
+        <div class="flownic-modal-content flownic-modal-${size}">
+          <div class="flownic-modal-header">
+            <h3 class="flownic-modal-title">${title}</h3>
+            ${closable ? '<button class="flownic-modal-close">&times;</button>' : ''}
           </div>
-          <div class="promptflow-modal-body">
+          <div class="flownic-modal-body">
             ${html ? content : `<pre>${content}</pre>`}
           </div>
         </div>
@@ -36,8 +36,8 @@ export class ModalHelpers {
 
     // Add event listeners
     if (closable) {
-      const closeBtn = modal.querySelector('.promptflow-modal-close')
-      const overlay = modal.querySelector('.promptflow-modal-overlay')
+      const closeBtn = modal.querySelector('.flownic-modal-close')
+      const overlay = modal.querySelector('.flownic-modal-overlay')
       
       closeBtn?.addEventListener('click', () => this.closeModal(modalId))
       overlay?.addEventListener('click', (e) => {
@@ -66,12 +66,12 @@ export class ModalHelpers {
   }
 
   private injectModalStyles(): void {
-    if (document.getElementById('promptflow-modal-styles')) return
+    if (document.getElementById('flownic-modal-styles')) return
 
     const style = document.createElement('style')
-    style.id = 'promptflow-modal-styles'
+    style.id = 'flownic-modal-styles'
     style.textContent = `
-      .promptflow-modal {
+      .flownic-modal {
         position: fixed;
         top: 0;
         left: 0;
@@ -81,7 +81,7 @@ export class ModalHelpers {
         font-family: var(--font-family-sans, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif);
       }
       
-      .promptflow-modal-overlay {
+      .flownic-modal-overlay {
         position: absolute;
         top: 0;
         left: 0;
@@ -93,7 +93,7 @@ export class ModalHelpers {
         justify-content: center;
       }
       
-      .promptflow-modal-content {
+      .flownic-modal-content {
         background: var(--color-surface, #ffffff);
         border-radius: var(--radius-xl, 12px);
         box-shadow: var(--color-shadow-xl, 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04));
@@ -103,11 +103,11 @@ export class ModalHelpers {
         border: 1px solid var(--color-border-primary, #e5e7eb);
       }
       
-      .promptflow-modal-small { width: 300px; }
-      .promptflow-modal-medium { width: 500px; }
-      .promptflow-modal-large { width: 800px; }
+      .flownic-modal-small { width: 300px; }
+      .flownic-modal-medium { width: 500px; }
+      .flownic-modal-large { width: 800px; }
       
-      .promptflow-modal-header {
+      .flownic-modal-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
@@ -115,14 +115,14 @@ export class ModalHelpers {
         border-bottom: 1px solid var(--color-border-primary, #e5e7eb);
       }
       
-      .promptflow-modal-title {
+      .flownic-modal-title {
         margin: 0;
         font-size: var(--font-size-lg, 18px);
         font-weight: var(--font-weight-semibold, 600);
         color: var(--color-text-primary, #111827);
       }
       
-      .promptflow-modal-close {
+      .flownic-modal-close {
         background: none;
         border: none;
         font-size: 24px;
@@ -138,17 +138,17 @@ export class ModalHelpers {
         border-radius: var(--radius-md, 4px);
       }
       
-      .promptflow-modal-close:hover {
+      .flownic-modal-close:hover {
         background: var(--color-surface-secondary, #f3f4f6);
         color: var(--color-text-primary, #374151);
       }
       
-      .promptflow-modal-body {
+      .flownic-modal-body {
         padding: var(--space-5, 20px);
         color: var(--color-text-primary, #374151);
       }
       
-      .promptflow-modal-body pre {
+      .flownic-modal-body pre {
         white-space: pre-wrap;
         word-wrap: break-word;
         margin: 0;

@@ -28,167 +28,167 @@ const PopupApp: React.FC = () => {
   }
 
   return (
-    <div className="promptflow-popup">
+    <div className="flownic-popup">
       {/* Header */}
-      <div className="promptflow-popup-header">
-        <div className="promptflow-popup-brand">
-          <div className="promptflow-popup-logo">
-            <div className="promptflow-logo-gradient">
-              <Sparkles className="promptflow-logo-icon" />
+      <div className="flownic-popup-header">
+        <div className="flownic-popup-brand">
+          <div className="flownic-popup-logo">
+            <div className="flownic-logo-gradient">
+              <Sparkles className="flownic-logo-icon" />
             </div>
           </div>
-          <div className="promptflow-popup-title-text">
-            <span className="promptflow-popup-name">PromptFlow</span>
-            <span className="promptflow-popup-tagline">AI-Powered Workflows</span>
+          <div className="flownic-popup-title-text">
+            <span className="flownic-popup-name">Flownic</span>
+            <span className="flownic-popup-tagline">AI-Powered Workflows</span>
           </div>
         </div>
       </div>
 
       {/* Hero Actions */}
-      <div className="promptflow-hero-section">
+      <div className="flownic-hero-section">
         <button
-          className="promptflow-hero-btn promptflow-hero-btn-primary"
+          className="flownic-hero-btn flownic-hero-btn-primary"
           onClick={handleOpenQuickbar}
         >
-          <div className="promptflow-hero-btn-icon">
-            <Zap className="promptflow-icon" />
+          <div className="flownic-hero-btn-icon">
+            <Zap className="flownic-icon" />
           </div>
-          <div className="promptflow-hero-btn-content">
-            <span className="promptflow-hero-btn-title">Open Quickbar</span>
-            <span className="promptflow-hero-btn-subtitle">Press ⌘⇧K to launch</span>
+          <div className="flownic-hero-btn-content">
+            <span className="flownic-hero-btn-title">Open Quickbar</span>
+            <span className="flownic-hero-btn-subtitle">Press ⌘⇧K to launch</span>
           </div>
-          <div className="promptflow-hero-btn-arrow">
-            <ArrowRight className="promptflow-icon" />
+          <div className="flownic-hero-btn-arrow">
+            <ArrowRight className="flownic-icon" />
           </div>
         </button>
         <button
-          className="promptflow-hero-btn promptflow-hero-btn-secondary"
+          className="flownic-hero-btn flownic-hero-btn-secondary"
           onClick={openPlayground}
         >
-          <div className="promptflow-hero-btn-icon">
-            <Code className="promptflow-icon" />
+          <div className="flownic-hero-btn-icon">
+            <Code className="flownic-icon" />
           </div>
-          <div className="promptflow-hero-btn-content">
-            <span className="promptflow-hero-btn-title">Workflow Playground</span>
-            <span className="promptflow-hero-btn-subtitle">Build & manage workflows</span>
+          <div className="flownic-hero-btn-content">
+            <span className="flownic-hero-btn-title">Workflow Playground</span>
+            <span className="flownic-hero-btn-subtitle">Build & manage workflows</span>
           </div>
-          <div className="promptflow-hero-btn-arrow">
-            <ArrowRight className="promptflow-icon" />
+          <div className="flownic-hero-btn-arrow">
+            <ArrowRight className="flownic-icon" />
           </div>
         </button>
       </div>
 
       {/* Tabs */}
-      <div className="promptflow-tabs">
+      <div className="flownic-tabs">
         <button
-          className={`promptflow-tab ${activeTab === 'history' ? 'active' : ''}`}
+          className={`flownic-tab ${activeTab === 'history' ? 'active' : ''}`}
           onClick={() => setActiveTab('history')}
         >
-          <History className="promptflow-icon" />
+          <History className="flownic-icon" />
           <span>History</span>
         </button>
         <button
-          className={`promptflow-tab ${activeTab === 'settings' ? 'active' : ''}`}
+          className={`flownic-tab ${activeTab === 'settings' ? 'active' : ''}`}
           onClick={() => setActiveTab('settings')}
         >
-          <Settings className="promptflow-icon" />
+          <Settings className="flownic-icon" />
           <span>Settings</span>
         </button>
       </div>
 
       {/* Tab Content */}
-      <div className="promptflow-tab-content">
+      <div className="flownic-tab-content">
         {activeTab === 'history' && (
-          <div className="promptflow-history">
-            <div className="promptflow-history-header">
+          <div className="flownic-history">
+            <div className="flownic-history-header">
               <h3>Recent Actions</h3>
-              <p className="promptflow-section-subtitle">Your workflow execution history</p>
+              <p className="flownic-section-subtitle">Your workflow execution history</p>
             </div>
-            <div className="promptflow-history-list">
-              <div className="promptflow-history-item">
-                <div className="promptflow-history-status">
-                  <CheckCircle2 className="promptflow-history-icon" />
+            <div className="flownic-history-list">
+              <div className="flownic-history-item">
+                <div className="flownic-history-status">
+                  <CheckCircle2 className="flownic-history-icon" />
                 </div>
-                <div className="promptflow-history-content">
-                  <div className="promptflow-history-action">SHOW_MODAL</div>
-                  <div className="promptflow-history-time">
-                    <Clock className="promptflow-history-time-icon" />
+                <div className="flownic-history-content">
+                  <div className="flownic-history-action">SHOW_MODAL</div>
+                  <div className="flownic-history-time">
+                    <Clock className="flownic-history-time-icon" />
                     <span>2 minutes ago</span>
                   </div>
                 </div>
               </div>
-              <div className="promptflow-history-item">
-                <div className="promptflow-history-status">
-                  <CheckCircle2 className="promptflow-history-icon" />
+              <div className="flownic-history-item">
+                <div className="flownic-history-status">
+                  <CheckCircle2 className="flownic-history-icon" />
                 </div>
-                <div className="promptflow-history-content">
-                  <div className="promptflow-history-action">INSERT_TEXT</div>
-                  <div className="promptflow-history-time">
-                    <Clock className="promptflow-history-time-icon" />
+                <div className="flownic-history-content">
+                  <div className="flownic-history-action">INSERT_TEXT</div>
+                  <div className="flownic-history-time">
+                    <Clock className="flownic-history-time-icon" />
                     <span>5 minutes ago</span>
                   </div>
                 </div>
               </div>
-              <div className="promptflow-history-item">
-                <div className="promptflow-history-status">
-                  <CheckCircle2 className="promptflow-history-icon" />
+              <div className="flownic-history-item">
+                <div className="flownic-history-status">
+                  <CheckCircle2 className="flownic-history-icon" />
                 </div>
-                <div className="promptflow-history-content">
-                  <div className="promptflow-history-action">SAVE_CAPTURE</div>
-                  <div className="promptflow-history-time">
-                    <Clock className="promptflow-history-time-icon" />
+                <div className="flownic-history-content">
+                  <div className="flownic-history-action">SAVE_CAPTURE</div>
+                  <div className="flownic-history-time">
+                    <Clock className="flownic-history-time-icon" />
                     <span>10 minutes ago</span>
                   </div>
                 </div>
               </div>
             </div>
-            <div className="promptflow-history-footer">
+            <div className="flownic-history-footer">
               <p>History is limited to recent actions</p>
             </div>
           </div>
         )}
 
         {activeTab === 'settings' && (
-          <div className="promptflow-settings">
-            <div className="promptflow-settings-header">
+          <div className="flownic-settings">
+            <div className="flownic-settings-header">
               <h3>Settings</h3>
-              <p className="promptflow-section-subtitle">Customize your experience</p>
+              <p className="flownic-section-subtitle">Customize your experience</p>
             </div>
             
-            <div className="promptflow-settings-section">
-              <h4 className="promptflow-settings-section-title">Preferences</h4>
-              <div className="promptflow-setting-group">
-                <label className="promptflow-setting-label">
-                  <input type="checkbox" defaultChecked className="promptflow-checkbox" />
-                  <span className="promptflow-setting-content">
-                    <span className="promptflow-setting-name">Show action preview</span>
-                    <span className="promptflow-setting-desc">Preview actions before execution</span>
+            <div className="flownic-settings-section">
+              <h4 className="flownic-settings-section-title">Preferences</h4>
+              <div className="flownic-setting-group">
+                <label className="flownic-setting-label">
+                  <input type="checkbox" defaultChecked className="flownic-checkbox" />
+                  <span className="flownic-setting-content">
+                    <span className="flownic-setting-name">Show action preview</span>
+                    <span className="flownic-setting-desc">Preview actions before execution</span>
                   </span>
                 </label>
               </div>
-              <div className="promptflow-setting-group">
-                <label className="promptflow-setting-label">
-                  <input type="checkbox" className="promptflow-checkbox" />
-                  <span className="promptflow-setting-content">
-                    <span className="promptflow-setting-name">Auto-confirm safe actions</span>
-                    <span className="promptflow-setting-desc">Skip confirmation for safe operations</span>
+              <div className="flownic-setting-group">
+                <label className="flownic-setting-label">
+                  <input type="checkbox" className="flownic-checkbox" />
+                  <span className="flownic-setting-content">
+                    <span className="flownic-setting-name">Auto-confirm safe actions</span>
+                    <span className="flownic-setting-desc">Skip confirmation for safe operations</span>
                   </span>
                 </label>
               </div>
-              <div className="promptflow-setting-group">
-                <label className="promptflow-setting-label">
-                  <input type="checkbox" defaultChecked className="promptflow-checkbox" />
-                  <span className="promptflow-setting-content">
-                    <span className="promptflow-setting-name">Enable notifications</span>
-                    <span className="promptflow-setting-desc">Receive workflow execution updates</span>
+              <div className="flownic-setting-group">
+                <label className="flownic-setting-label">
+                  <input type="checkbox" defaultChecked className="flownic-checkbox" />
+                  <span className="flownic-setting-content">
+                    <span className="flownic-setting-name">Enable notifications</span>
+                    <span className="flownic-setting-desc">Receive workflow execution updates</span>
                   </span>
                 </label>
               </div>
             </div>
 
-            <div className="promptflow-settings-section">
-              <h4 className="promptflow-settings-section-title">Appearance</h4>
-              <div className="promptflow-setting-group">
+            <div className="flownic-settings-section">
+              <h4 className="flownic-settings-section-title">Appearance</h4>
+              <div className="flownic-setting-group">
                 <ThemeSwitcher />
               </div>
             </div>
@@ -197,11 +197,11 @@ const PopupApp: React.FC = () => {
       </div>
 
       {/* Footer */}
-      <div className="promptflow-popup-footer">
-        <div className="promptflow-footer-content">
-          <div className="promptflow-version">v0.1.0</div>
-          <div className="promptflow-privacy">
-            <Lock className="promptflow-icon" />
+      <div className="flownic-popup-footer">
+        <div className="flownic-footer-content">
+          <div className="flownic-version">v0.1.0</div>
+          <div className="flownic-privacy">
+            <Lock className="flownic-icon" />
             <span>Offline-first</span>
           </div>
         </div>

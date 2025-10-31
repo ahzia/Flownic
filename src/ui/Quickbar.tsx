@@ -155,80 +155,80 @@ export const Quickbar: React.FC<QuickbarProps> = ({
   if (!isOpen) return null
 
   return (
-    <div className="promptflow-quickbar-overlay" onClick={onClose}>
+    <div className="flownic-quickbar-overlay" onClick={onClose}>
       <div 
         ref={quickbarRef}
-        className="promptflow-quickbar"
+        className="flownic-quickbar"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="promptflow-quickbar-header">
-          <div className="promptflow-quickbar-title">
-            <Sparkles className="promptflow-icon" />
-            <span>PromptFlow</span>
+        <div className="flownic-quickbar-header">
+          <div className="flownic-quickbar-title">
+            <Sparkles className="flownic-icon" />
+            <span>Flownic</span>
           </div>
-          <div className="promptflow-quickbar-actions">
+          <div className="flownic-quickbar-actions">
             <button
-              className="promptflow-btn promptflow-btn-ghost"
+              className="flownic-btn flownic-btn-ghost"
               onClick={() => {/* TODO: Open settings */}}
               title="Settings"
             >
-              <Settings className="promptflow-icon" />
+              <Settings className="flownic-icon" />
             </button>
             <button
-              className="promptflow-btn promptflow-btn-ghost"
+              className="flownic-btn flownic-btn-ghost"
               onClick={() => {/* TODO: Open history */}}
               title="History"
             >
-              <History className="promptflow-icon" />
+              <History className="flownic-icon" />
             </button>
             <button
-              className="promptflow-btn promptflow-btn-ghost"
+              className="flownic-btn flownic-btn-ghost"
               onClick={onClose}
               title="Close"
             >
-              <X className="promptflow-icon" />
+              <X className="flownic-icon" />
             </button>
           </div>
         </div>
 
         {/* Main Content */}
-        <div className="promptflow-quickbar-content">
+        <div className="flownic-quickbar-content">
           {/* Search Input */}
-          <div className="promptflow-input-group">
-            <Search className="promptflow-input-icon" />
+          <div className="flownic-input-group">
+            <Search className="flownic-input-icon" />
             <input
               ref={inputRef}
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search workflows..."
-              className="promptflow-input"
+              className="flownic-input"
               disabled={isLoading}
             />
           </div>
 
           {/* Error Display */}
           {error && (
-            <div className="promptflow-error">
+            <div className="flownic-error">
               <span>{error}</span>
             </div>
           )}
 
           {/* Loading State */}
           {isLoading && (
-            <div className="promptflow-loading">
-              <div className="promptflow-spinner" />
+            <div className="flownic-loading">
+              <div className="flownic-spinner" />
               <span>Loading workflows...</span>
             </div>
           )}
 
           {/* Workflows List */}
           {!isLoading && (
-            <div className="promptflow-workflows-list">
+            <div className="flownic-workflows-list">
               {filteredWorkflows.length === 0 ? (
-                <div className="promptflow-empty-state">
-                  <Sparkles className="promptflow-icon" style={{ opacity: 0.5 }} />
+                <div className="flownic-empty-state">
+                  <Sparkles className="flownic-icon" style={{ opacity: 0.5 }} />
                   <p>
                     {searchQuery 
                       ? 'No workflows found matching your search'
@@ -245,48 +245,48 @@ export const Quickbar: React.FC<QuickbarProps> = ({
                     <button
                       key={workflow.id}
                       className={clsx(
-                        'promptflow-workflow-item',
-                        isSelected && 'promptflow-workflow-item-selected'
+                        'flownic-workflow-item',
+                        isSelected && 'flownic-workflow-item-selected'
                       )}
                       onClick={() => handleWorkflowClick(workflow)}
                       onMouseEnter={() => setSelectedWorkflow(workflow)}
                     >
-                      <div className="promptflow-workflow-header">
-                        <div className="promptflow-workflow-info">
-                          <h3 className="promptflow-workflow-name">{workflow.name}</h3>
+                      <div className="flownic-workflow-header">
+                        <div className="flownic-workflow-info">
+                          <h3 className="flownic-workflow-name">{workflow.name}</h3>
                           {workflow.description && (
-                            <p className="promptflow-workflow-description">
+                            <p className="flownic-workflow-description">
                               {workflow.description}
                             </p>
                           )}
                         </div>
-                        <Play className="promptflow-icon promptflow-icon-play" />
+                        <Play className="flownic-icon flownic-icon-play" />
                       </div>
                       
-                      <div className="promptflow-workflow-meta">
+                      <div className="flownic-workflow-meta">
                         {shortcut && (
-                          <span className="promptflow-workflow-shortcut">
-                            <Clock className="promptflow-icon-small" />
+                          <span className="flownic-workflow-shortcut">
+                            <Clock className="flownic-icon-small" />
                             {shortcut}
                           </span>
                         )}
                         {workflow.websiteConfig && workflow.websiteConfig.type !== 'all' && (
-                          <span className="promptflow-workflow-website">
-                            <Globe className="promptflow-icon-small" />
+                          <span className="flownic-workflow-website">
+                            <Globe className="flownic-icon-small" />
                             {workflow.websiteConfig.type === 'specific' ? 'Specific sites' : 'Excluded sites'}
                           </span>
                         )}
                         {workflow.steps && (
-                          <span className="promptflow-workflow-steps">
+                          <span className="flownic-workflow-steps">
                             {workflow.steps.length} step{workflow.steps.length !== 1 ? 's' : ''}
                           </span>
                         )}
                       </div>
 
                       {triggerTypes.length > 0 && (
-                        <div className="promptflow-workflow-triggers">
+                        <div className="flownic-workflow-triggers">
                           {triggerTypes.map((type, idx) => (
-                            <span key={idx} className="promptflow-trigger-tag">
+                            <span key={idx} className="flownic-trigger-tag">
                               {type}
                             </span>
                           ))}
@@ -301,14 +301,14 @@ export const Quickbar: React.FC<QuickbarProps> = ({
         </div>
 
         {/* Footer Info */}
-        <div className="promptflow-quickbar-footer">
-          <div className="promptflow-quickbar-hints">
+        <div className="flownic-quickbar-footer">
+          <div className="flownic-quickbar-hints">
             <span>↑↓ Navigate</span>
             <span>Enter Run</span>
             <span>Esc Close</span>
           </div>
           {filteredWorkflows.length > 0 && (
-            <div className="promptflow-workflow-count">
+            <div className="flownic-workflow-count">
               {filteredWorkflows.length} workflow{filteredWorkflows.length !== 1 ? 's' : ''}
             </div>
           )}

@@ -1,4 +1,4 @@
-/* PromptFlow UI Styles */
+/* Flownic UI Styles */
 @import './theme.css';
 
 /* Reset and base styles */
@@ -6,7 +6,7 @@
   box-sizing: border-box;
 }
 
-.promptflow-quickbar-overlay {
+.flownic-quickbar-overlay {
   position: fixed;
   top: 0;
   left: 0;
@@ -24,7 +24,7 @@
   cursor: pointer;
 }
 
-.promptflow-quickbar {
+.flownic-quickbar {
   background: var(--color-surface);
   border-radius: var(--radius-xl);
   box-shadow: var(--color-shadow-xl);
@@ -38,7 +38,7 @@
 }
 
 /* Header */
-.promptflow-quickbar-header {
+.flownic-quickbar-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -47,7 +47,7 @@
   background: var(--color-surface-secondary);
 }
 
-.promptflow-quickbar-title {
+.flownic-quickbar-title {
   display: flex;
   align-items: center;
   gap: var(--space-2);
@@ -56,28 +56,28 @@
   color: var(--color-text-primary);
 }
 
-.promptflow-quickbar-actions {
+.flownic-quickbar-actions {
   display: flex;
   align-items: center;
   gap: 4px;
 }
 
 /* Content */
-.promptflow-quickbar-content {
+.flownic-quickbar-content {
   flex: 1;
   overflow-y: auto;
   padding: 20px;
 }
 
 /* Templates */
-.promptflow-templates {
+.flownic-templates {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   gap: 8px;
   margin-bottom: 20px;
 }
 
-.promptflow-template {
+.flownic-template {
   background: var(--color-surface-secondary);
   border: 1px solid var(--color-border-primary);
   border-radius: var(--radius-lg);
@@ -90,41 +90,41 @@
   gap: var(--space-1);
 }
 
-.promptflow-template:hover {
+.flownic-template:hover {
   background: var(--color-surface-tertiary);
   border-color: var(--color-border-secondary);
 }
 
-.promptflow-template-selected {
+.flownic-template-selected {
   background: var(--color-primary-100);
   border-color: var(--color-primary-500);
   color: var(--color-primary-900);
 }
 
-[data-theme="dark"] .promptflow-template-selected {
+[data-theme="dark"] .flownic-template-selected {
   background: var(--color-primary-900);
   border-color: var(--color-primary-500);
   color: var(--color-primary-100);
 }
 
-.promptflow-template-name {
+.flownic-template-name {
   font-weight: var(--font-weight-medium);
   font-size: var(--font-size-sm);
   color: var(--color-text-primary);
 }
 
-.promptflow-template-desc {
+.flownic-template-desc {
   font-size: var(--font-size-xs);
   color: var(--color-text-secondary);
   line-height: 1.3;
 }
 
 /* Query Form */
-.promptflow-query-form {
+.flownic-query-form {
   margin-bottom: 16px;
 }
 
-.promptflow-input-group {
+.flownic-input-group {
   display: flex;
   align-items: center;
   background: var(--color-input-background);
@@ -134,18 +134,18 @@
   transition: border-color var(--transition-fast);
 }
 
-.promptflow-input-group:focus-within {
+.flownic-input-group:focus-within {
   border-color: var(--color-border-focus);
 }
 
-.promptflow-input-icon {
+.flownic-input-icon {
   width: 20px;
   height: 20px;
   color: var(--color-text-tertiary);
   margin: 0 var(--space-3);
 }
 
-.promptflow-input {
+.flownic-input {
   flex: 1;
   border: none;
   outline: none;
@@ -155,12 +155,12 @@
   color: var(--color-input-text);
 }
 
-.promptflow-input::placeholder {
+.flownic-input::placeholder {
   color: var(--color-input-placeholder);
 }
 
 /* Buttons - Enhanced with Premium Design */
-.promptflow-btn {
+.flownic-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -177,90 +177,90 @@
   position: relative;
 }
 
-.promptflow-btn:disabled {
+.flownic-btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
 
-.promptflow-btn-primary {
+.flownic-btn-primary {
   background: var(--color-button-primary);
   color: var(--color-text-inverse);
   box-shadow: 0 2px 4px rgba(59, 130, 246, 0.2);
 }
 
-.promptflow-btn-primary:hover:not(:disabled) {
+.flownic-btn-primary:hover:not(:disabled) {
   background: var(--color-button-primary-hover);
   box-shadow: 0 4px 8px rgba(59, 130, 246, 0.3);
   transform: translateY(-1px);
 }
 
-.promptflow-btn-primary:active:not(:disabled) {
+.flownic-btn-primary:active:not(:disabled) {
   background: var(--color-button-primary-active);
   box-shadow: 0 1px 2px rgba(59, 130, 246, 0.2);
   transform: translateY(0);
 }
 
-.promptflow-btn-secondary {
+.flownic-btn-secondary {
   background: var(--color-button-secondary);
   color: var(--color-text-primary);
   border: 1px solid var(--color-border-primary);
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
-.promptflow-btn-secondary:hover:not(:disabled) {
+.flownic-btn-secondary:hover:not(:disabled) {
   background: var(--color-button-secondary-hover);
   border-color: var(--color-border-secondary);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
   transform: translateY(-1px);
 }
 
-.promptflow-btn-secondary:active:not(:disabled) {
+.flownic-btn-secondary:active:not(:disabled) {
   background: var(--color-button-secondary-active);
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
   transform: translateY(0);
 }
 
-.promptflow-btn-ghost {
+.flownic-btn-ghost {
   background: transparent;
   color: var(--color-text-secondary);
   padding: var(--space-2);
   border-radius: var(--radius-md);
 }
 
-.promptflow-btn-ghost:hover:not(:disabled) {
+.flownic-btn-ghost:hover:not(:disabled) {
   background: var(--color-surface-secondary);
   color: var(--color-text-primary);
 }
 
-.promptflow-btn-loading {
+.flownic-btn-loading {
   position: relative;
 }
 
 /* Spinner */
-.promptflow-spinner {
+.flownic-spinner {
   width: 16px;
   height: 16px;
   border: 2px solid transparent;
   border-top: 2px solid currentColor;
   border-radius: 50%;
-  animation: promptflow-spin 1s linear infinite;
+  animation: flownic-spin 1s linear infinite;
 }
 
-@keyframes promptflow-spin {
+@keyframes flownic-spin {
   to {
     transform: rotate(360deg);
   }
 }
 
 /* Icons */
-.promptflow-icon {
+.flownic-icon {
   width: 16px;
   height: 16px;
   flex-shrink: 0;
 }
 
 /* Error */
-.promptflow-error {
+.flownic-error {
   display: flex;
   align-items: center;
   gap: var(--space-2);
@@ -273,14 +273,14 @@
   margin-bottom: var(--space-4);
 }
 
-[data-theme="dark"] .promptflow-error {
+[data-theme="dark"] .flownic-error {
   background: var(--color-error-900);
   border-color: var(--color-error-800);
   color: var(--color-error-300);
 }
 
 /* Preview */
-.promptflow-preview {
+.flownic-preview {
   background: var(--color-surface-secondary);
   border: 1px solid var(--color-border-primary);
   border-radius: var(--radius-lg);
@@ -288,21 +288,21 @@
   margin-bottom: var(--space-4);
 }
 
-.promptflow-preview-header {
+.flownic-preview-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   margin-bottom: var(--space-3);
 }
 
-.promptflow-preview-header h3 {
+.flownic-preview-header h3 {
   margin: 0;
   font-size: var(--font-size-base);
   font-weight: var(--font-weight-semibold);
   color: var(--color-text-primary);
 }
 
-.promptflow-confidence {
+.flownic-confidence {
   font-size: var(--font-size-xs);
   color: var(--color-text-secondary);
   background: var(--color-surface-tertiary);
@@ -310,11 +310,11 @@
   border-radius: var(--radius-sm);
 }
 
-.promptflow-actions {
+.flownic-actions {
   margin-bottom: 16px;
 }
 
-.promptflow-action {
+.flownic-action {
   background: var(--color-surface);
   border: 1px solid var(--color-border-primary);
   border-radius: var(--radius-md);
@@ -322,18 +322,18 @@
   margin-bottom: var(--space-2);
 }
 
-.promptflow-action:last-child {
+.flownic-action:last-child {
   margin-bottom: 0;
 }
 
-.promptflow-action-op {
+.flownic-action-op {
   font-weight: var(--font-weight-semibold);
   color: var(--color-primary-500);
   margin-bottom: var(--space-1);
   font-size: var(--font-size-sm);
 }
 
-.promptflow-action-params {
+.flownic-action-params {
   font-family: var(--font-family-mono);
   font-size: var(--font-size-xs);
   color: var(--color-text-primary);
@@ -344,14 +344,14 @@
   word-break: break-word;
 }
 
-.promptflow-preview-actions {
+.flownic-preview-actions {
   display: flex;
   gap: 8px;
   justify-content: flex-end;
 }
 
 /* Context Info */
-.promptflow-context-info {
+.flownic-context-info {
   display: flex;
   align-items: center;
   gap: 16px;
@@ -362,32 +362,32 @@
   color: #6b7280;
 }
 
-.promptflow-context-item {
+.flownic-context-item {
   display: flex;
   align-items: center;
   gap: 4px;
 }
 
-.promptflow-context-label {
+.flownic-context-label {
   font-weight: 500;
 }
 
-.promptflow-context-value {
+.flownic-context-value {
   color: #374151;
 }
 
 /* Responsive */
 @media (max-width: 640px) {
-  .promptflow-quickbar {
+  .flownic-quickbar {
     width: 95%;
     margin: 0 2.5%;
   }
   
-  .promptflow-templates {
+  .flownic-templates {
     grid-template-columns: 1fr;
   }
   
-  .promptflow-context-info {
+  .flownic-context-info {
     flex-direction: column;
     gap: 8px;
     align-items: flex-start;
@@ -395,7 +395,7 @@
 }
 
 /* Popup specific styles - Premium Redesign */
-.promptflow-popup {
+.flownic-popup {
   width: 100%;
   height: 100%;
   display: flex;
@@ -406,7 +406,7 @@
 }
 
 /* Header - Premium Branding */
-.promptflow-popup-header {
+.flownic-popup-header {
   display: flex;
   align-items: center;
   justify-content: flex-start;
@@ -416,7 +416,7 @@
   position: relative;
 }
 
-.promptflow-popup-header::after {
+.flownic-popup-header::after {
   content: '';
   position: absolute;
   bottom: 0;
@@ -426,19 +426,19 @@
   background: linear-gradient(90deg, transparent, var(--color-border-secondary), transparent);
 }
 
-.promptflow-popup-brand {
+.flownic-popup-brand {
   display: flex;
   align-items: center;
   gap: var(--space-4);
   flex: 1;
 }
 
-.promptflow-popup-logo {
+.flownic-popup-logo {
   position: relative;
   flex-shrink: 0;
 }
 
-.promptflow-logo-gradient {
+.flownic-logo-gradient {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -452,7 +452,7 @@
   overflow: hidden;
 }
 
-.promptflow-logo-gradient::before {
+.flownic-logo-gradient::before {
   content: '';
   position: absolute;
   top: -50%;
@@ -468,7 +468,7 @@
   100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
 }
 
-.promptflow-logo-icon {
+.flownic-logo-icon {
   width: 24px;
   height: 24px;
   position: relative;
@@ -476,14 +476,14 @@
   filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
 }
 
-.promptflow-popup-title-text {
+.flownic-popup-title-text {
   display: flex;
   flex-direction: column;
   gap: 3px;
   min-width: 0;
 }
 
-.promptflow-popup-name {
+.flownic-popup-name {
   font-size: var(--font-size-xl);
   font-weight: var(--font-weight-bold);
   color: var(--color-text-primary);
@@ -491,7 +491,7 @@
   letter-spacing: -0.02em;
 }
 
-.promptflow-popup-tagline {
+.flownic-popup-tagline {
   font-size: var(--font-size-xs);
   color: var(--color-text-secondary);
   font-weight: var(--font-weight-medium);
@@ -500,7 +500,7 @@
 }
 
 /* AI Status - Enhanced */
-.promptflow-ai-status {
+.flownic-ai-status {
   display: flex;
   align-items: center;
   gap: var(--space-2);
@@ -512,35 +512,35 @@
   border: 1px solid transparent;
 }
 
-.promptflow-ai-status.status-available {
+.flownic-ai-status.status-available {
   background: linear-gradient(135deg, var(--color-success-50), var(--color-success-100));
   color: var(--color-success-700);
   border-color: var(--color-success-200);
   box-shadow: 0 2px 8px rgba(34, 197, 94, 0.15);
 }
 
-[data-theme="dark"] .promptflow-ai-status.status-available {
+[data-theme="dark"] .flownic-ai-status.status-available {
   background: linear-gradient(135deg, var(--color-success-900), var(--color-success-800));
   color: var(--color-success-300);
   border-color: var(--color-success-700);
   box-shadow: 0 2px 8px rgba(34, 197, 94, 0.25);
 }
 
-.promptflow-ai-status.status-unavailable {
+.flownic-ai-status.status-unavailable {
   background: linear-gradient(135deg, var(--color-error-50), var(--color-error-100));
   color: var(--color-error-700);
   border-color: var(--color-error-200);
   box-shadow: 0 2px 8px rgba(239, 68, 68, 0.15);
 }
 
-[data-theme="dark"] .promptflow-ai-status.status-unavailable {
+[data-theme="dark"] .flownic-ai-status.status-unavailable {
   background: linear-gradient(135deg, var(--color-error-900), var(--color-error-800));
   color: var(--color-error-300);
   border-color: var(--color-error-700);
   box-shadow: 0 2px 8px rgba(239, 68, 68, 0.25);
 }
 
-.promptflow-status-indicator-wrapper {
+.flownic-status-indicator-wrapper {
   position: relative;
   width: 10px;
   height: 10px;
@@ -549,7 +549,7 @@
   justify-content: center;
 }
 
-.promptflow-status-dot {
+.flownic-status-dot {
   width: 8px;
   height: 8px;
   border-radius: 50%;
@@ -559,7 +559,7 @@
   animation: statusPulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
-.promptflow-status-ring {
+.flownic-status-ring {
   position: absolute;
   width: 14px;
   height: 14px;
@@ -580,13 +580,13 @@
   100% { transform: scale(0.8); opacity: 0; }
 }
 
-.promptflow-status-text {
+.flownic-status-text {
   font-weight: var(--font-weight-semibold);
   letter-spacing: 0.02em;
 }
 
 /* Hero Section - Premium Action Buttons */
-.promptflow-hero-section {
+.flownic-hero-section {
   padding: var(--space-6) var(--space-6) var(--space-5);
   background: var(--color-surface);
   border-bottom: 1px solid var(--color-border-primary);
@@ -595,7 +595,7 @@
   gap: var(--space-3);
 }
 
-.promptflow-hero-btn {
+.flownic-hero-btn {
   display: flex;
   align-items: center;
   gap: var(--space-4);
@@ -611,7 +611,7 @@
   text-align: left;
 }
 
-.promptflow-hero-btn::before {
+.flownic-hero-btn::before {
   content: '';
   position: absolute;
   top: 0;
@@ -622,60 +622,60 @@
   transition: left 0.5s ease;
 }
 
-.promptflow-hero-btn:hover::before {
+.flownic-hero-btn:hover::before {
   left: 100%;
 }
 
-.promptflow-hero-btn-primary {
+.flownic-hero-btn-primary {
   background: linear-gradient(135deg, var(--color-primary-500), var(--color-primary-600));
   color: white;
   box-shadow: 0 4px 20px rgba(59, 130, 246, 0.35), 0 0 0 1px rgba(59, 130, 246, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.2);
   border-color: var(--color-primary-400);
 }
 
-.promptflow-hero-btn-primary:hover {
+.flownic-hero-btn-primary:hover {
   transform: translateY(-2px);
   box-shadow: 0 8px 28px rgba(59, 130, 246, 0.45), 0 0 0 1px rgba(59, 130, 246, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.25);
   background: linear-gradient(135deg, var(--color-primary-600), var(--color-primary-700));
 }
 
-.promptflow-hero-btn-primary:active {
+.flownic-hero-btn-primary:active {
   transform: translateY(0);
   box-shadow: 0 2px 12px rgba(59, 130, 246, 0.3), 0 0 0 1px rgba(59, 130, 246, 0.15);
 }
 
-.promptflow-hero-btn-secondary {
+.flownic-hero-btn-secondary {
   background: var(--color-surface);
   border: 1.5px solid var(--color-border-primary);
   color: var(--color-text-primary);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.8);
 }
 
-[data-theme="dark"] .promptflow-hero-btn-secondary {
+[data-theme="dark"] .flownic-hero-btn-secondary {
   background: var(--color-surface);
   border-color: var(--color-border-primary);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.05);
 }
 
-.promptflow-hero-btn-secondary:hover {
+.flownic-hero-btn-secondary:hover {
   background: var(--color-surface-secondary);
   border-color: var(--color-primary-300);
   transform: translateY(-1px);
   box-shadow: 0 4px 16px rgba(59, 130, 246, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.9);
 }
 
-[data-theme="dark"] .promptflow-hero-btn-secondary:hover {
+[data-theme="dark"] .flownic-hero-btn-secondary:hover {
   background: var(--color-surface-secondary);
   border-color: var(--color-primary-600);
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
-.promptflow-hero-btn-secondary:active {
+.flownic-hero-btn-secondary:active {
   transform: translateY(0);
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
 }
 
-.promptflow-hero-btn-icon {
+.flownic-hero-btn-icon {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -687,22 +687,22 @@
   backdrop-filter: blur(4px);
 }
 
-.promptflow-hero-btn-secondary .promptflow-hero-btn-icon {
+.flownic-hero-btn-secondary .flownic-hero-btn-icon {
   background: var(--color-primary-50);
   color: var(--color-primary-600);
 }
 
-[data-theme="dark"] .promptflow-hero-btn-secondary .promptflow-hero-btn-icon {
+[data-theme="dark"] .flownic-hero-btn-secondary .flownic-hero-btn-icon {
   background: var(--color-primary-900);
   color: var(--color-primary-400);
 }
 
-.promptflow-hero-btn-icon .promptflow-icon {
+.flownic-hero-btn-icon .flownic-icon {
   width: 20px;
   height: 20px;
 }
 
-.promptflow-hero-btn-content {
+.flownic-hero-btn-content {
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -710,14 +710,14 @@
   min-width: 0;
 }
 
-.promptflow-hero-btn-title {
+.flownic-hero-btn-title {
   font-size: var(--font-size-base);
   font-weight: var(--font-weight-semibold);
   line-height: 1.4;
   letter-spacing: -0.01em;
 }
 
-.promptflow-hero-btn-subtitle {
+.flownic-hero-btn-subtitle {
   font-size: var(--font-size-xs);
   opacity: 0.8;
   font-weight: var(--font-weight-normal);
@@ -725,24 +725,24 @@
   margin-top: 1px;
 }
 
-.promptflow-hero-btn-arrow {
+.flownic-hero-btn-arrow {
   flex-shrink: 0;
   opacity: 0.7;
   transition: all var(--transition-fast);
 }
 
-.promptflow-hero-btn:hover .promptflow-hero-btn-arrow {
+.flownic-hero-btn:hover .flownic-hero-btn-arrow {
   opacity: 1;
   transform: translateX(4px);
 }
 
-.promptflow-hero-btn-arrow .promptflow-icon {
+.flownic-hero-btn-arrow .flownic-icon {
   width: 18px;
   height: 18px;
 }
 
 /* Tabs - Premium Design */
-.promptflow-tabs {
+.flownic-tabs {
   display: flex;
   border-bottom: 1px solid var(--color-border-primary);
   background: var(--color-surface);
@@ -750,7 +750,7 @@
   gap: var(--space-2);
 }
 
-.promptflow-tab {
+.flownic-tab {
   flex: 1;
   display: flex;
   align-items: center;
@@ -770,34 +770,34 @@
   border-radius: var(--radius-lg) var(--radius-lg) 0 0;
 }
 
-.promptflow-tab .promptflow-icon {
+.flownic-tab .flownic-icon {
   width: 16px;
   height: 16px;
   transition: transform var(--transition-fast);
 }
 
-.promptflow-tab:hover {
+.flownic-tab:hover {
   color: var(--color-text-primary);
   background: var(--color-surface-secondary);
 }
 
-.promptflow-tab:hover .promptflow-icon {
+.flownic-tab:hover .flownic-icon {
   transform: scale(1.1);
 }
 
-.promptflow-tab.active {
+.flownic-tab.active {
   color: var(--color-primary-600);
   border-bottom-color: var(--color-primary-500);
   background: linear-gradient(180deg, transparent 0%, var(--color-primary-50) 100%);
   font-weight: var(--font-weight-semibold);
 }
 
-[data-theme="dark"] .promptflow-tab.active {
+[data-theme="dark"] .flownic-tab.active {
   color: var(--color-primary-400);
   background: linear-gradient(180deg, transparent 0%, var(--color-primary-900) 100%);
 }
 
-.promptflow-tab.active::after {
+.flownic-tab.active::after {
   content: '';
   position: absolute;
   bottom: -1px;
@@ -809,7 +809,7 @@
   border-radius: 2px;
 }
 
-.promptflow-tab-content {
+.flownic-tab-content {
   flex: 1;
   overflow-y: auto;
   padding: var(--space-6) var(--space-6) var(--space-5);
@@ -817,7 +817,7 @@
 }
 
 /* Section Headers - Premium Design */
-.promptflow-section-subtitle {
+.flownic-section-subtitle {
   margin: var(--space-2) 0 0 0;
   font-size: var(--font-size-sm);
   color: var(--color-text-secondary);
@@ -825,16 +825,16 @@
   line-height: 1.5;
 }
 
-.promptflow-history-header,
-.promptflow-settings-header {
+.flownic-history-header,
+.flownic-settings-header {
   margin-bottom: var(--space-6);
   padding-bottom: var(--space-5);
   border-bottom: 1px solid var(--color-border-primary);
   position: relative;
 }
 
-.promptflow-history-header::after,
-.promptflow-settings-header::after {
+.flownic-history-header::after,
+.flownic-settings-header::after {
   content: '';
   position: absolute;
   bottom: 0;
@@ -844,8 +844,8 @@
   background: linear-gradient(90deg, transparent, var(--color-border-secondary), transparent);
 }
 
-.promptflow-history-header h3,
-.promptflow-settings-header h3 {
+.flownic-history-header h3,
+.flownic-settings-header h3 {
   margin: 0 0 var(--space-2) 0;
   font-size: var(--font-size-2xl);
   font-weight: var(--font-weight-bold);
@@ -855,14 +855,14 @@
 }
 
 /* History List - Premium Design */
-.promptflow-history-list {
+.flownic-history-list {
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
   margin-bottom: var(--space-5);
 }
 
-.promptflow-history-item {
+.flownic-history-item {
   display: flex;
   align-items: center;
   gap: var(--space-4);
@@ -876,7 +876,7 @@
   overflow: hidden;
 }
 
-.promptflow-history-item::before {
+.flownic-history-item::before {
   content: '';
   position: absolute;
   left: 0;
@@ -888,22 +888,22 @@
   transition: opacity var(--transition-normal);
 }
 
-.promptflow-history-item:hover {
+.flownic-history-item:hover {
   background: var(--color-surface-secondary);
   border-color: var(--color-primary-200);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
   transform: translateX(2px);
 }
 
-.promptflow-history-item:hover::before {
+.flownic-history-item:hover::before {
   opacity: 1;
 }
 
-[data-theme="dark"] .promptflow-history-item::before {
+[data-theme="dark"] .flownic-history-item::before {
   background: linear-gradient(180deg, var(--color-success-500), var(--color-success-600));
 }
 
-.promptflow-history-status {
+.flownic-history-status {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -916,28 +916,28 @@
   box-shadow: 0 2px 8px rgba(34, 197, 94, 0.15);
 }
 
-[data-theme="dark"] .promptflow-history-status {
+[data-theme="dark"] .flownic-history-status {
   background: linear-gradient(135deg, var(--color-success-900), var(--color-success-800));
   border-color: var(--color-success-700);
   box-shadow: 0 2px 6px rgba(34, 197, 94, 0.25);
 }
 
-.promptflow-history-icon {
+.flownic-history-icon {
   width: 20px;
   height: 20px;
   color: var(--color-success-600);
 }
 
-[data-theme="dark"] .promptflow-history-icon {
+[data-theme="dark"] .flownic-history-icon {
   color: var(--color-success-400);
 }
 
-.promptflow-history-content {
+.flownic-history-content {
   flex: 1;
   min-width: 0;
 }
 
-.promptflow-history-action {
+.flownic-history-action {
   font-weight: var(--font-weight-semibold);
   color: var(--color-text-primary);
   margin-bottom: var(--space-2);
@@ -947,7 +947,7 @@
   line-height: 1.4;
 }
 
-.promptflow-history-time {
+.flownic-history-time {
   display: flex;
   align-items: center;
   gap: var(--space-2);
@@ -956,20 +956,20 @@
   font-weight: var(--font-weight-medium);
 }
 
-.promptflow-history-time-icon {
+.flownic-history-time-icon {
   width: 13px;
   height: 13px;
   opacity: 0.7;
 }
 
-.promptflow-history-footer {
+.flownic-history-footer {
   text-align: center;
   padding: var(--space-5) var(--space-4) 0;
   margin-top: var(--space-5);
   border-top: 1px solid var(--color-border-primary);
 }
 
-.promptflow-history-footer p {
+.flownic-history-footer p {
   margin: 0;
   font-size: var(--font-size-xs);
   color: var(--color-text-tertiary);
@@ -977,20 +977,20 @@
 }
 
 /* Settings - Premium Design */
-.promptflow-settings {
+.flownic-settings {
   display: flex;
   flex-direction: column;
   gap: var(--space-6);
 }
 
-.promptflow-settings-section {
+.flownic-settings-section {
   margin-bottom: var(--space-8);
   padding-bottom: var(--space-8);
   border-bottom: 1px solid var(--color-border-primary);
   position: relative;
 }
 
-.promptflow-settings-section::after {
+.flownic-settings-section::after {
   content: '';
   position: absolute;
   bottom: 0;
@@ -1000,17 +1000,17 @@
   background: linear-gradient(90deg, transparent, var(--color-border-secondary), transparent);
 }
 
-.promptflow-settings-section:last-child {
+.flownic-settings-section:last-child {
   border-bottom: none;
   margin-bottom: 0;
   padding-bottom: 0;
 }
 
-.promptflow-settings-section:last-child::after {
+.flownic-settings-section:last-child::after {
   display: none;
 }
 
-.promptflow-settings-section-title {
+.flownic-settings-section-title {
   margin: 0 0 var(--space-6) 0;
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-bold);
@@ -1022,20 +1022,20 @@
   gap: var(--space-3);
 }
 
-.promptflow-settings-section-title::after {
+.flownic-settings-section-title::after {
   content: '';
   flex: 1;
   height: 1px;
   background: linear-gradient(90deg, var(--color-border-primary), transparent);
 }
 
-.promptflow-setting-group {
+.flownic-setting-group {
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
 }
 
-.promptflow-setting-label {
+.flownic-setting-label {
   display: flex;
   align-items: flex-start;
   gap: var(--space-4);
@@ -1047,13 +1047,13 @@
   background: var(--color-surface);
 }
 
-.promptflow-setting-label:hover {
+.flownic-setting-label:hover {
   background: var(--color-surface-secondary);
   border-color: var(--color-border-primary);
   transform: translateX(2px);
 }
 
-.promptflow-checkbox {
+.flownic-checkbox {
   width: 20px;
   height: 20px;
   margin-top: 2px;
@@ -1064,22 +1064,22 @@
   transition: all var(--transition-fast);
 }
 
-.promptflow-checkbox:checked {
+.flownic-checkbox:checked {
   box-shadow: 0 0 0 3px var(--color-primary-100);
 }
 
-[data-theme="dark"] .promptflow-checkbox:checked {
+[data-theme="dark"] .flownic-checkbox:checked {
   box-shadow: 0 0 0 3px var(--color-primary-900);
 }
 
-.promptflow-setting-content {
+.flownic-setting-content {
   flex: 1;
   display: flex;
   flex-direction: column;
   gap: var(--space-1);
 }
 
-.promptflow-setting-name {
+.flownic-setting-name {
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-semibold);
   color: var(--color-text-primary);
@@ -1087,7 +1087,7 @@
   letter-spacing: -0.01em;
 }
 
-.promptflow-setting-desc {
+.flownic-setting-desc {
   font-size: var(--font-size-xs);
   color: var(--color-text-secondary);
   line-height: 1.5;
@@ -1096,7 +1096,7 @@
 }
 
 /* Footer - Premium Design */
-.promptflow-popup-footer {
+.flownic-popup-footer {
   padding: var(--space-5) var(--space-6) var(--space-5);
   border-top: 1px solid var(--color-border-primary);
   background: linear-gradient(180deg, var(--color-surface) 0%, var(--color-surface-secondary) 100%);
@@ -1104,7 +1104,7 @@
   flex-shrink: 0;
 }
 
-.promptflow-popup-footer::before {
+.flownic-popup-footer::before {
   content: '';
   position: absolute;
   top: 0;
@@ -1114,7 +1114,7 @@
   background: linear-gradient(90deg, transparent, var(--color-border-secondary), transparent);
 }
 
-.promptflow-footer-content {
+.flownic-footer-content {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -1122,14 +1122,14 @@
   color: var(--color-text-secondary);
 }
 
-.promptflow-version {
+.flownic-version {
   font-weight: var(--font-weight-semibold);
   color: var(--color-text-secondary);
   font-family: var(--font-family-mono);
   letter-spacing: 0.02em;
 }
 
-.promptflow-privacy {
+.flownic-privacy {
   display: flex;
   align-items: center;
   gap: var(--space-2);
@@ -1141,12 +1141,12 @@
   transition: all var(--transition-fast);
 }
 
-.promptflow-privacy:hover {
+.flownic-privacy:hover {
   background: var(--color-surface);
   border-color: var(--color-border-secondary);
 }
 
-.promptflow-privacy .promptflow-icon {
+.flownic-privacy .flownic-icon {
   width: 13px;
   height: 13px;
   color: var(--color-text-secondary);
@@ -1154,7 +1154,7 @@
 }
 
 /* Workflow Playground Styles */
-.promptflow-playground {
+.flownic-playground {
   width: 100%;
   height: 100%;
   display: flex;
@@ -1162,7 +1162,7 @@
   background: white;
 }
 
-.promptflow-playground-header {
+.flownic-playground-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -1171,7 +1171,7 @@
   background: #f9fafb;
 }
 
-.promptflow-playground-title {
+.flownic-playground-title {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -1180,34 +1180,34 @@
   color: #111827;
 }
 
-.promptflow-playground-content {
+.flownic-playground-content {
   flex: 1;
   overflow-y: auto;
   padding: 20px;
 }
 
 /* Workflow List */
-.promptflow-workflow-list-header {
+.flownic-workflow-list-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   margin-bottom: 20px;
 }
 
-.promptflow-workflow-list-header h3 {
+.flownic-workflow-list-header h3 {
   margin: 0;
   font-size: 20px;
   font-weight: 600;
   color: #111827;
 }
 
-.promptflow-workflow-grid {
+.flownic-workflow-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 16px;
 }
 
-.promptflow-workflow-card {
+.flownic-workflow-card {
   background: #f9fafb;
   border: 1px solid #e5e7eb;
   border-radius: 8px;
@@ -1216,38 +1216,38 @@
   cursor: pointer;
 }
 
-.promptflow-workflow-card:hover {
+.flownic-workflow-card:hover {
   background: #f3f4f6;
   border-color: #d1d5db;
 }
 
-.promptflow-workflow-card-header {
+.flownic-workflow-card-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   margin-bottom: 8px;
 }
 
-.promptflow-workflow-card-header h4 {
+.flownic-workflow-card-header h4 {
   margin: 0;
   font-size: 16px;
   font-weight: 600;
   color: #111827;
 }
 
-.promptflow-workflow-actions {
+.flownic-workflow-actions {
   display: flex;
   gap: 4px;
 }
 
-.promptflow-workflow-description {
+.flownic-workflow-description {
   margin: 0 0 12px 0;
   font-size: 14px;
   color: #6b7280;
   line-height: 1.4;
 }
 
-.promptflow-workflow-meta {
+.flownic-workflow-meta {
   display: flex;
   align-items: center;
   gap: 12px;
@@ -1255,79 +1255,79 @@
   color: #6b7280;
 }
 
-.promptflow-workflow-trigger,
-.promptflow-workflow-steps {
+.flownic-workflow-trigger,
+.flownic-workflow-steps {
   display: flex;
   align-items: center;
   gap: 4px;
 }
 
 /* Empty State */
-.promptflow-empty-state {
+.flownic-empty-state {
   grid-column: 1 / -1;
   text-align: center;
   padding: 40px 20px;
   color: #6b7280;
 }
 
-.promptflow-icon-large {
+.flownic-icon-large {
   width: 48px;
   height: 48px;
   margin: 0 auto 16px;
   opacity: 0.5;
 }
 
-.promptflow-empty-state h3 {
+.flownic-empty-state h3 {
   margin: 0 0 8px 0;
   font-size: 18px;
   font-weight: 600;
   color: #374151;
 }
 
-.promptflow-empty-state p {
+.flownic-empty-state p {
   margin: 0 0 20px 0;
   font-size: 14px;
 }
 
 /* Workflow Editor */
-.promptflow-workflow-editor {
+.flownic-workflow-editor {
   max-width: 800px;
   margin: 0 auto;
 }
 
-.promptflow-editor-header {
+.flownic-editor-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   margin-bottom: 24px;
 }
 
-.promptflow-editor-header h3 {
+.flownic-editor-header h3 {
   margin: 0;
   font-size: 20px;
   font-weight: 600;
   color: #111827;
 }
 
-.promptflow-editor-actions {
+.flownic-editor-actions {
   display: flex;
   gap: 8px;
 }
 
-.promptflow-editor-content {
+.flownic-editor-content {
   display: flex;
   flex-direction: column;
   gap: 24px;
 }
 
-.promptflow-editor-section {
+.flownic-editor-section {
   background: #f9fafb;
   border: 1px solid #e5e7eb;
   border-radius: 8px;
   padding: 20px;
 }
 
-.promptflow-editor-section h4 {
+.flownic-editor-section h4 {
   margin: 0 0 16px 0;
   font-size: 16px;
   font-weight: 600;
@@ -1335,15 +1335,15 @@
 }
 
 /* Form Elements */
-.promptflow-form-group {
+.flownic-form-group {
   margin-bottom: 16px;
 }
 
-.promptflow-form-group:last-child {
+.flownic-form-group:last-child {
   margin-bottom: 0;
 }
 
-.promptflow-form-group label {
+.flownic-form-group label {
   display: block;
   margin-bottom: 6px;
   font-size: 14px;
@@ -1351,7 +1351,7 @@
   color: #374151;
 }
 
-.promptflow-textarea {
+.flownic-textarea {
   width: 100%;
   padding: 8px 12px;
   border: 1px solid #d1d5db;
@@ -1362,13 +1362,13 @@
   min-height: 80px;
 }
 
-.promptflow-textarea:focus {
+.flownic-textarea:focus {
   outline: none;
   border-color: #3b82f6;
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
-.promptflow-select {
+.flownic-select {
   width: 100%;
   padding: 8px 12px;
   border: 1px solid #d1d5db;
@@ -1377,13 +1377,13 @@
   background: white;
 }
 
-.promptflow-select:focus {
+.flownic-select:focus {
   outline: none;
   border-color: #3b82f6;
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
-.promptflow-form-group small {
+.flownic-form-group small {
   display: block;
   margin-top: 4px;
   font-size: 12px;
@@ -1391,43 +1391,43 @@
 }
 
 /* Steps */
-.promptflow-steps-header {
+.flownic-steps-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   margin-bottom: 16px;
 }
 
-.promptflow-steps-header h4 {
+.flownic-steps-header h4 {
   margin: 0;
 }
 
-.promptflow-step-actions {
+.flownic-step-actions {
   display: flex;
   gap: 8px;
 }
 
-.promptflow-steps-list {
+.flownic-steps-list {
   display: flex;
   flex-direction: column;
   gap: 16px;
 }
 
-.promptflow-step {
+.flownic-step {
   background: white;
   border: 1px solid #e5e7eb;
   border-radius: 6px;
   padding: 16px;
 }
 
-.promptflow-step-header {
+.flownic-step-header {
   display: flex;
   align-items: center;
   gap: 12px;
   margin-bottom: 12px;
 }
 
-.promptflow-step-number {
+.flownic-step-number {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1440,7 +1440,7 @@
   font-weight: 600;
 }
 
-.promptflow-step-type {
+.flownic-step-type {
   padding: 4px 8px;
   background: #dbeafe;
   color: #1e40af;
@@ -1450,11 +1450,11 @@
   text-transform: uppercase;
 }
 
-.promptflow-step-content {
+.flownic-step-content {
   margin-bottom: 12px;
 }
 
-.promptflow-prompt-preview {
+.flownic-prompt-preview {
   background: #f3f4f6;
   border: 1px solid #e5e7eb;
   border-radius: 4px;
@@ -1462,7 +1462,7 @@
   margin-top: 8px;
 }
 
-.promptflow-prompt-preview h5 {
+.flownic-prompt-preview h5 {
   margin: 0 0 8px 0;
   font-size: 12px;
   font-weight: 600;
@@ -1470,14 +1470,14 @@
   text-transform: uppercase;
 }
 
-.promptflow-prompt-preview p {
+.flownic-prompt-preview p {
   margin: 0;
   font-size: 13px;
   color: #6b7280;
   line-height: 1.4;
 }
 
-.promptflow-empty-steps {
+.flownic-empty-steps {
   text-align: center;
   padding: 20px;
   color: #6b7280;
@@ -1485,44 +1485,44 @@
 }
 
 /* Preview */
-.promptflow-preview-header {
+.flownic-preview-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   margin-bottom: 16px;
 }
 
-.promptflow-preview-header h4 {
+.flownic-preview-header h4 {
   margin: 0;
 }
 
-.promptflow-workflow-preview {
+.flownic-workflow-preview {
   background: white;
   border: 1px solid #e5e7eb;
   border-radius: 6px;
   padding: 16px;
 }
 
-.promptflow-workflow-preview h5 {
+.flownic-workflow-preview h5 {
   margin: 0 0 8px 0;
   font-size: 16px;
   font-weight: 600;
   color: #111827;
 }
 
-.promptflow-workflow-preview p {
+.flownic-workflow-preview p {
   margin: 0 0 12px 0;
   font-size: 14px;
   color: #6b7280;
 }
 
-.promptflow-preview-trigger,
-.promptflow-preview-steps {
+.flownic-preview-trigger,
+.flownic-preview-steps {
   margin-bottom: 8px;
   font-size: 14px;
 }
 
-.promptflow-preview-step {
+.flownic-preview-step {
   margin-left: 16px;
   font-size: 13px;
   color: #6b7280;
@@ -1937,72 +1937,72 @@
 
 /* Dark mode support */
 @media (prefers-color-scheme: dark) {
-  .promptflow-quickbar {
+  .flownic-quickbar {
     background: #1f2937;
     color: #f9fafb;
   }
   
-  .promptflow-quickbar-header {
+  .flownic-quickbar-header {
     background: #111827;
     border-color: #374151;
   }
   
-  .promptflow-quickbar-title {
+  .flownic-quickbar-title {
     color: #f9fafb;
   }
   
-  .promptflow-template {
+  .flownic-template {
     background: #374151;
     border-color: #4b5563;
     color: #f9fafb;
   }
   
-  .promptflow-template:hover {
+  .flownic-template:hover {
     background: #4b5563;
   }
   
-  .promptflow-template-selected {
+  .flownic-template-selected {
     background: #1e3a8a;
     border-color: #3b82f6;
     color: #dbeafe;
   }
   
-  .promptflow-input-group {
+  .flownic-input-group {
     background: #374151;
     border-color: #4b5563;
   }
   
-  .promptflow-input {
+  .flownic-input {
     color: #f9fafb;
   }
   
-  .promptflow-input::placeholder {
+  .flownic-input::placeholder {
     color: #9ca3af;
   }
   
-  .promptflow-preview {
+  .flownic-preview {
     background: #111827;
     border-color: #374151;
   }
   
-  .promptflow-action {
+  .flownic-action {
     background: #374151;
     border-color: #4b5563;
   }
   
-  .promptflow-action-params {
+  .flownic-action-params {
     background: #1f2937;
     color: #f9fafb;
   }
   
-  .promptflow-context-info {
+  .flownic-context-info {
     background: #111827;
     border-color: #374151;
   }
 }
 
 /* Workflows List Styles */
-.promptflow-workflows-list {
+.flownic-workflows-list {
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
@@ -2011,7 +2011,7 @@
   overflow-y: auto;
 }
 
-.promptflow-workflow-item {
+.flownic-workflow-item {
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
@@ -2025,43 +2025,43 @@
   position: relative;
 }
 
-.promptflow-workflow-item:hover {
+.flownic-workflow-item:hover {
   background: var(--color-surface-tertiary);
   border-color: var(--color-border-secondary);
   transform: translateY(-1px);
   box-shadow: var(--color-shadow-md);
 }
 
-.promptflow-workflow-item-selected {
+.flownic-workflow-item-selected {
   background: var(--color-primary-50);
   border-color: var(--color-primary-500);
 }
 
-[data-theme="dark"] .promptflow-workflow-item-selected {
+[data-theme="dark"] .flownic-workflow-item-selected {
   background: var(--color-primary-900);
   border-color: var(--color-primary-500);
 }
 
-.promptflow-workflow-header {
+.flownic-workflow-header {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   gap: var(--space-3);
 }
 
-.promptflow-workflow-info {
+.flownic-workflow-info {
   flex: 1;
   min-width: 0;
 }
 
-.promptflow-workflow-name {
+.flownic-workflow-name {
   margin: 0 0 var(--space-1) 0;
   font-size: var(--font-size-base);
   font-weight: var(--font-weight-semibold);
   color: var(--color-text-primary);
 }
 
-.promptflow-workflow-description {
+.flownic-workflow-description {
   margin: 0;
   font-size: var(--font-size-sm);
   color: var(--color-text-secondary);
@@ -2073,7 +2073,7 @@
   -webkit-box-orient: vertical;
 }
 
-.promptflow-icon-play {
+.flownic-icon-play {
   width: 20px;
   height: 20px;
   color: var(--color-primary-500);
@@ -2082,11 +2082,11 @@
   transition: opacity var(--transition-fast);
 }
 
-.promptflow-workflow-item:hover .promptflow-icon-play {
+.flownic-workflow-item:hover .flownic-icon-play {
   opacity: 1;
 }
 
-.promptflow-workflow-meta {
+.flownic-workflow-meta {
   display: flex;
   align-items: center;
   gap: var(--space-3);
@@ -2095,26 +2095,26 @@
   color: var(--color-text-tertiary);
 }
 
-.promptflow-workflow-shortcut,
-.promptflow-workflow-website,
-.promptflow-workflow-steps {
+.flownic-workflow-shortcut,
+.flownic-workflow-website,
+.flownic-workflow-steps {
   display: inline-flex;
   align-items: center;
   gap: var(--space-1);
 }
 
-.promptflow-icon-small {
+.flownic-icon-small {
   width: 12px;
   height: 12px;
 }
 
-.promptflow-workflow-triggers {
+.flownic-workflow-triggers {
   display: flex;
   gap: var(--space-1);
   flex-wrap: wrap;
 }
 
-.promptflow-trigger-tag {
+.flownic-trigger-tag {
   display: inline-block;
   padding: 2px 8px;
   background: var(--color-surface-tertiary);
@@ -2125,7 +2125,7 @@
 }
 
 /* Empty State */
-.promptflow-empty-state {
+.flownic-empty-state {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -2135,20 +2135,20 @@
   color: var(--color-text-secondary);
 }
 
-.promptflow-empty-state .promptflow-icon {
+.flownic-empty-state .flownic-icon {
   width: 48px;
   height: 48px;
   margin-bottom: var(--space-4);
 }
 
-.promptflow-empty-state p {
+.flownic-empty-state p {
   margin: 0;
   font-size: var(--font-size-sm);
   line-height: 1.5;
 }
 
 /* Loading State */
-.promptflow-loading {
+.flownic-loading {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -2158,13 +2158,13 @@
   color: var(--color-text-secondary);
 }
 
-.promptflow-loading .promptflow-spinner {
+.flownic-loading .flownic-spinner {
   width: 24px;
   height: 24px;
 }
 
 /* Footer */
-.promptflow-quickbar-footer {
+.flownic-quickbar-footer {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -2175,12 +2175,12 @@
   color: var(--color-text-secondary);
 }
 
-.promptflow-quickbar-hints {
+.flownic-quickbar-hints {
   display: flex;
   gap: var(--space-4);
 }
 
-.promptflow-workflow-count {
+.flownic-workflow-count {
   font-weight: var(--font-weight-medium);
   color: var(--color-text-primary);
 }
