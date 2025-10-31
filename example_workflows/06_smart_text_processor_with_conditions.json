@@ -1,0 +1,73 @@
+{
+  "id": "workflow_smart_text_processor",
+  "name": "Smart Multi-Language Text Processor",
+  "description": "Intelligently processes selected text: detects language, translates only if not English, and shows results. Demonstrates conditional step execution (simplified - no length checks).",
+  "version": "1.0.0",
+  "enabled": true,
+  "createdAt": 1761900000000,
+  "updatedAt": 1761900000000,
+  "dataPoints": [],
+  "websiteConfig": {
+    "type": "all",
+    "patterns": ""
+  },
+  "triggers": [
+    {
+      "type": "onSelection"
+    },
+    {
+      "type": "manual",
+      "shortcut": "ctrl+shift+p"
+    }
+  ],
+  "steps": [
+    {
+      "id": "step_detect_language",
+      "type": "task",
+      "taskId": "language_detection",
+      "delay": 0,
+      "condition": "\"${selected_text.text}\" != \"\"",
+      "input": {
+        "text": "${selected_text.text}"
+      }
+    },
+    {
+      "id": "step_translate_if_not_english",
+      "type": "task",
+      "taskId": "translation",
+      "delay": 0,
+      "condition": "\"${step_detect_language_output.languageCode}\" != \"en\" && \"${selected_text.text}\" != \"\"",
+      "input": {
+        "text": "${selected_text.text}",
+        "sourceLanguage": "${step_detect_language_output.languageCode}",
+        "targetLanguage": "en"
+      }
+    },
+    {
+      "id": "step_create_result_summary",
+      "type": "task",
+      "taskId": "custom_prompt",
+      "delay": 0,
+      "condition": "",
+      "input": {
+        "prompt": "Create a formatted summary report of the text processing results.\n\nUse the following information:\n\n**Detected Language:** ${step_detect_language_output.languageCode}\n\n**Original Text:** ${selected_text.text}\n\n**Translation:** ${step_translate_if_not_english_output.translatedText}\n\nInstructions:\n- If the Detected Language field is empty, note that language detection was not performed.\n- If the Translation field is empty, note that translation was skipped (text was already in English).\n- Format the report as a clear, organized document with distinct sections.\n- Only include sections that have content - if a section is empty, note why it was skipped.\n- Keep the report concise and professional.",
+        "context": "You are formatting a text processing report. Use the available data points to create a comprehensive summary."
+      }
+    },
+    {
+      "id": "step_show_results",
+      "type": "handler",
+      "handlerId": "show_modal",
+      "delay": 0,
+      "condition": "",
+      "input": {
+        "title": "Smart Text Processing Results",
+        "content": "${step_create_result_summary_output.response}",
+        "size": "large",
+        "closable": true
+      }
+    }
+  ]
+}
+
+

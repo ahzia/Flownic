@@ -1,0 +1,62 @@
+{
+  "id": "workflow_1761700940403",
+  "name": "Summerize Medium Article in German",
+  "description": "This workflow can summarize any English-medium article in German",
+  "version": "1.0.0",
+  "enabled": true,
+  "createdAt": 1761700940403,
+  "updatedAt": 1761700940403,
+  "dataPoints": [],
+  "websiteConfig": {
+    "type": "specific",
+    "patterns": "medium.com\nmedium.com/*\n*.medium.com\n*.medium.com/*"
+  },
+  "triggers": [
+    {
+      "type": "manual",
+      "shortcut": "ctrl+shift+s"
+    }
+  ],
+  "steps": [
+    {
+      "condition": "",
+      "delay": 0,
+      "id": "step_1761700510650",
+      "input": {
+        "format": "plain-text",
+        "length": "medium",
+        "text": "${extracted_text.text}",
+        "type": "key-points"
+      },
+      "taskId": "summarizer",
+      "type": "task"
+    },
+    {
+      "condition": "",
+      "delay": 0,
+      "id": "step_1761700684093",
+      "input": {
+        "sourceLanguage": "en",
+        "targetLanguage": "de",
+        "text": "${step_1761700510650_output.summary}"
+      },
+      "taskId": "translation",
+      "type": "task"
+    },
+    {
+      "condition": "",
+      "delay": 0,
+      "handlerId": "show_modal",
+      "id": "step_1761700823142",
+      "input": {
+        "closable": true,
+        "content": "${step_1761700684093_output.translatedText}",
+        "size": "medium",
+        "title": "Summerized in German"
+      },
+      "type": "handler"
+    }
+  ]
+}
+
+
