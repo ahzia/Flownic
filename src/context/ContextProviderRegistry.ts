@@ -24,6 +24,13 @@ export class ContextProviderRegistry {
       outputType: (p as any).outputType
     }))
   }
+
+  /**
+   * Get all context provider IDs (for normalization/token interpolation)
+   */
+  getAllIds(): string[] {
+    return this.providers.map(p => (p as any).id)
+  }
 }
 
 

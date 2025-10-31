@@ -1,4 +1,6 @@
 // Theme management utilities
+import { storage } from '@utils/storage'
+
 export type Theme = 'light' | 'dark' | 'auto'
 
 export class ThemeManager {
@@ -7,7 +9,7 @@ export class ThemeManager {
   private listeners: Set<(theme: Theme) => void> = new Set()
 
   private constructor() {
-    this.loadTheme()
+    this.loadTheme().catch(console.error)
     this.setupSystemThemeListener()
   }
 
@@ -18,20 +20,19 @@ export class ThemeManager {
     return ThemeManager.instance
   }
 
-  private loadTheme(): void {
-    // Load theme from storage
-    chrome.storage.local.get(['theme'], (result) => {
-      if (result.theme) {
-        this.setTheme(result.theme as Theme)
-      } else {
-        // Default to system preference
-        this.setTheme('auto')
-      }
-    })
+  private async loadTheme(): Promise<void> {
+    // Load theme from storage using StorageManager
+    const storedTheme = await storage.get<Theme>('theme')
+    if (storedTheme) {
+      this.setTheme(storedTheme)
+    } else {
+      // Default to system preference
+      this.setTheme('auto')
+    }
   }
 
   public initialize(): void {
-    this.loadTheme()
+    this.loadTheme().catch(console.error)
   }
 
   private setupSystemThemeListener(): void {
@@ -49,7 +50,7 @@ export class ThemeManager {
   setTheme(theme: Theme): void {
     this.currentTheme = theme
     this.applyTheme()
-    this.saveTheme()
+    this.saveTheme().catch(console.error)
     this.notifyListeners()
   }
 
@@ -78,8 +79,8 @@ export class ThemeManager {
     root.classList.add(`theme-${effectiveTheme}`)
   }
 
-  private saveTheme(): void {
-    chrome.storage.local.set({ theme: this.currentTheme })
+  private async saveTheme(): Promise<void> {
+    await storage.set('theme', this.currentTheme)
   }
 
   addListener(callback: (theme: Theme) => void): () => void {

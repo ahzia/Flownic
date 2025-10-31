@@ -1,49 +1,32 @@
 console.log('🔧 PromptFlow Service Worker initialized')
 
-// Workflow storage
+// Import utilities for data point resolution and KB loading
+import { resolveDataPointReferences } from '@core/utils/DataPointResolver'
+import { loadKBDataPoints } from '@core/utils/KBLoader'
+import { storage } from '@utils/storage'
+
+// Workflow storage - using StorageManager for consistency
 async function getStoredWorkflows(): Promise<any[]> {
-  return new Promise((resolve) => {
-    chrome.storage.local.get(['workflows'], (result) => {
-      resolve(result.workflows || [])
-    })
-  })
+  return (await storage.get<any[]>('workflows')) || []
 }
 
 async function saveWorkflow(workflow: any): Promise<void> {
-  return new Promise((resolve, reject) => {
-    getStoredWorkflows().then((workflows) => {
-      const existingIndex = workflows.findIndex((w: any) => w.id === workflow.id)
-      
-      if (existingIndex >= 0) {
-        workflows[existingIndex] = workflow
-      } else {
-        workflows.push(workflow)
-      }
-      
-      chrome.storage.local.set({ workflows }, () => {
-        if (chrome.runtime.lastError) {
-          reject(new Error(chrome.runtime.lastError.message))
-        } else {
-          resolve()
-        }
-      })
-    })
-  })
+  const workflows = await getStoredWorkflows()
+  const existingIndex = workflows.findIndex((w: any) => w.id === workflow.id)
+  
+  if (existingIndex >= 0) {
+    workflows[existingIndex] = workflow
+  } else {
+    workflows.push(workflow)
+  }
+  
+  await storage.set('workflows', workflows)
 }
 
 async function deleteWorkflow(workflowId: string): Promise<void> {
-  return new Promise((resolve, reject) => {
-    getStoredWorkflows().then((workflows) => {
-      const filtered = workflows.filter((w: any) => w.id !== workflowId)
-      chrome.storage.local.set({ workflows: filtered }, () => {
-        if (chrome.runtime.lastError) {
-          reject(new Error(chrome.runtime.lastError.message))
-        } else {
-          resolve()
-        }
-      })
-    })
-  })
+  const workflows = await getStoredWorkflows()
+  const filtered = workflows.filter((w: any) => w.id !== workflowId)
+  await storage.set('workflows', filtered)
 }
 
 // Track executing workflows to prevent duplicate executions
@@ -84,9 +67,19 @@ async function executeWorkflow(workflow: any, tabId: number): Promise<any> {
     const kbDataPoints = await loadKBDataPoints()
     console.log('📚 Loaded KB data points:', kbDataPoints.length)
     
+    // Convert DataPoint[] to any[] for compatibility
+    const kbDataPointsAny = kbDataPoints.map(dp => ({
+      id: dp.id,
+      name: dp.name,
+      type: dp.type,
+      value: dp.value,
+      source: (dp as any).source || 'kb',
+      timestamp: (dp as any).timestamp || Date.now()
+    }))
+    
     // Step 2: Execute workflow steps
     const results: any[] = []
-    const dataPoints: any[] = [...contextDataPoints, ...kbDataPoints]
+    const dataPoints: any[] = [...contextDataPoints, ...kbDataPointsAny]
     
     for (const step of workflow.steps || []) {
       try {
@@ -158,249 +151,7 @@ async function executeWorkflow(workflow: any, tabId: number): Promise<any> {
   }
 }
 
-// Load KB entries from storage and convert to data points
-async function loadKBDataPoints(): Promise<any[]> {
-  return new Promise((resolve) => {
-    chrome.storage.local.get(['kbEntries'], (result) => {
-      const kbEntries = (result.kbEntries || []) as Array<{
-        id: string
-        name: string
-        content: string
-        type: string
-        tags: string[]
-        createdAt: number
-        updatedAt: number
-      }>
-      
-      const dataPoints = kbEntries.map(entry => ({
-        id: `kb_${entry.id}`, // Match the format used in UI: kb_${entry.id}
-        name: `KB: ${entry.name}`,
-        type: 'context',
-        value: {
-          text: entry.content,
-          title: entry.name,
-          source: 'kb'
-        },
-        source: 'kb',
-        timestamp: entry.updatedAt || entry.createdAt || Date.now()
-      }))
-      
-      resolve(dataPoints)
-    })
-  })
-}
-
-// Import token interpolation (will be bundled)
-// We'll inline this to avoid module issues in service worker
-function interpolateTextWithDataPoints(text: string, dataPoints: any[]): string {
-  if (typeof text !== 'string') {
-    return String(text ?? '')
-  }
-  
-  const tokenRegex = /\$\{([a-zA-Z0-9_\-]+)(?:\.([a-zA-Z0-9_\-]+|__raw__))?\}/g
-  const tokens: string[] = []
-  let match
-  
-  // Reset regex lastIndex
-  tokenRegex.lastIndex = 0
-  while ((match = tokenRegex.exec(text)) !== null) {
-    const fullToken = match[0]
-    if (!tokens.includes(fullToken)) {
-      tokens.push(fullToken)
-    }
-  }
-  
-  if (tokens.length === 0) {
-    return text // No tokens to interpolate
-  }
-  
-  console.log(`🔍 Interpolating ${tokens.length} token(s) in text. Available data points:`, dataPoints.map((dp: any) => dp.id))
-  
-  let result = text
-  for (const token of tokens) {
-    const tokenMatch = token.match(/\$\{([a-zA-Z0-9_\-]+)(?:\.([a-zA-Z0-9_\-]+|__raw__))?\}/)
-    if (!tokenMatch) continue
-    
-    const [, dataPointId, field] = tokenMatch
-    console.log(`🔍 Looking for data point: ${dataPointId} (field: ${field || 'none'})`)
-    
-    let dataPoint = dataPoints.find((dp: any) => dp.id === dataPointId)
-    
-    // If not found, try normalized formats
-    if (!dataPoint) {
-      // Try 1: If it's an output ID with timestamp, try normalized format
-      if (dataPointId.includes('_output_')) {
-        const stepId = dataPointId.split('_output_')[0]
-        const normalizedId = `${stepId}_output`
-        console.log(`🔄 Trying normalized output ID: ${normalizedId}`)
-        dataPoint = dataPoints.find((dp: any) => dp.id === normalizedId)
-      }
-      
-      // Try 2: If it's a context provider with timestamp (e.g., extracted_text_123456), try stable ID
-      if (!dataPoint) {
-        const contextProviderIds = ['selected_text', 'extracted_text', 'page_content', 'kb_']
-        for (const providerId of contextProviderIds) {
-          if (dataPointId.startsWith(providerId) && dataPointId !== providerId) {
-            // Extract the base ID (handle kb_ specially as it might be kb_kb_xxx)
-            let baseId = providerId
-            if (providerId === 'kb_') {
-              // Handle kb_kb_xxx or kb_xxx format
-              // Try to match actual KB entry IDs (kb_kb_<entryId> or kb_<entryId>)
-              // First try the exact match, then try without the timestamp part
-              if (dataPointId.startsWith('kb_kb_')) {
-                // Format: kb_kb_<entryId>_<timestamp> or kb_kb_<entryId>
-                const parts = dataPointId.split('_')
-                // Try kb_kb_<entryId> (first 3 parts)
-                if (parts.length >= 3) {
-                  baseId = parts.slice(0, 3).join('_')
-                  console.log(`🔄 Trying KB ID: ${baseId}`)
-                  dataPoint = dataPoints.find((dp: any) => dp.id === baseId || dp.id.startsWith(baseId + '_'))
-                  if (dataPoint) break
-                }
-              } else if (dataPointId.startsWith('kb_')) {
-                // Format: kb_<entryId>_<timestamp> or kb_<entryId>
-                const parts = dataPointId.split('_')
-                if (parts.length >= 2) {
-                  baseId = parts.slice(0, 2).join('_')
-                  console.log(`🔄 Trying KB ID: ${baseId}`)
-                  dataPoint = dataPoints.find((dp: any) => dp.id === baseId || dp.id.startsWith(baseId + '_'))
-                  if (dataPoint) break
-                }
-              }
-              // Continue to other providers if KB matching didn't work
-              continue
-            } else {
-              // For others, just take the part before the timestamp
-              baseId = dataPointId.split('_').slice(0, -1).join('_')
-            }
-            
-            console.log(`🔄 Trying normalized context ID: ${baseId}`)
-            dataPoint = dataPoints.find((dp: any) => dp.id === baseId)
-            if (dataPoint) break
-            
-            // Also try the stable provider ID (e.g., extracted_text_xxx -> extracted_text)
-            if (providerId !== 'kb_') {
-              console.log(`🔄 Trying stable provider ID: ${providerId}`)
-              dataPoint = dataPoints.find((dp: any) => dp.id === providerId)
-              if (dataPoint) break
-            }
-          }
-        }
-      }
-    }
-    
-    if (!dataPoint) {
-      console.warn(`⚠️ Token interpolation: Data point not found: ${dataPointId}`)
-      console.warn(`📋 Available data point IDs:`, dataPoints.map((dp: any) => dp.id))
-      // Keep the token as-is if data point not found (will show in UI)
-      continue
-    }
-    
-    console.log(`✅ Found data point: ${dataPointId}`, dataPoint)
-    
-    let resolved: string
-    if (field === '__raw__') {
-      if (typeof dataPoint.value === 'object' && dataPoint.value !== null) {
-        resolved = JSON.stringify(dataPoint.value, null, 2)
-      } else {
-        resolved = String(dataPoint.value ?? '')
-      }
-    } else if (field && dataPoint.value && typeof dataPoint.value === 'object') {
-      const fieldValue = dataPoint.value[field]
-      if (fieldValue !== null && fieldValue !== undefined) {
-        if (typeof fieldValue !== 'string' && typeof fieldValue !== 'number' && typeof fieldValue !== 'boolean') {
-          resolved = JSON.stringify(fieldValue, null, 2)
-        } else {
-          resolved = String(fieldValue)
-        }
-      } else {
-        resolved = ''
-      }
-    } else {
-      if (typeof dataPoint.value === 'object' && dataPoint.value !== null) {
-        resolved = JSON.stringify(dataPoint.value, null, 2)
-      } else {
-        resolved = String(dataPoint.value ?? '')
-      }
-    }
-    
-    result = result.replace(new RegExp(token.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), resolved)
-  }
-  
-  return result
-}
-
-function resolveDataPointReferences(input: any, dataPoints: any[]): any {
-  // Handle strings - interpolate tokens if present
-  if (typeof input === 'string') {
-    return interpolateTextWithDataPoints(input, dataPoints)
-  }
-  
-  if (typeof input !== 'object' || input === null) {
-    return input
-  }
-  
-  if (input.type === 'data_point') {
-    console.log('🔍 Resolving data point reference:', input.dataPointId, 'field:', input.field)
-    console.log('📋 Available data points:', dataPoints.map(dp => ({ id: dp.id, name: dp.name })))
-    
-    const dataPoint = dataPoints.find(dp => dp.id === input.dataPointId)
-    if (!dataPoint) {
-      console.warn(`⚠️ Data point not found: ${input.dataPointId}`)
-      console.warn('Available data point IDs:', dataPoints.map(dp => dp.id))
-      return null
-    }
-    
-    console.log('✅ Found data point:', { id: dataPoint.id, value: dataPoint.value })
-    
-    // Handle raw JSON option
-    if (input.field === '__raw__') {
-      if (typeof dataPoint.value === 'object' && dataPoint.value !== null) {
-        console.log('📤 Returning raw JSON object:', dataPoint.value)
-        // Return as JSON string for display in modal
-        return JSON.stringify(dataPoint.value, null, 2)
-      }
-      // If not an object, return as-is
-      return dataPoint.value
-    }
-    
-    if (input.field && dataPoint.value && typeof dataPoint.value === 'object') {
-      const fieldValue = dataPoint.value[input.field]
-      console.log(`🔑 Extracted field '${input.field}':`, fieldValue)
-      
-      // If field value is an object/array, stringify it
-      if (fieldValue !== null && fieldValue !== undefined && typeof fieldValue !== 'string' && typeof fieldValue !== 'number' && typeof fieldValue !== 'boolean') {
-        return JSON.stringify(fieldValue, null, 2)
-      }
-      
-      return fieldValue || null
-    }
-    
-    // If value is an object but no field specified, return JSON string
-    if (typeof dataPoint.value === 'object' && dataPoint.value !== null) {
-      const jsonValue = JSON.stringify(dataPoint.value, null, 2)
-      console.log('📤 Returning JSON stringified value:', jsonValue)
-      return jsonValue
-    }
-    
-    // If value is a string, return it directly
-    console.log('📤 Returning primitive value:', dataPoint.value)
-    return dataPoint.value
-  }
-  
-  // Recursively resolve nested objects and strings
-  const resolved: any = {}
-  for (const [key, value] of Object.entries(input)) {
-    // If value is a string, interpolate it; if object, recurse
-    if (typeof value === 'string') {
-      resolved[key] = interpolateTextWithDataPoints(value, dataPoints)
-    } else {
-      resolved[key] = resolveDataPointReferences(value, dataPoints)
-    }
-  }
-  
-  return resolved
-}
+// KB loading and data point resolution are now imported from utilities above
 
 async function executeTaskInContent(step: any, input: any, tabId: number): Promise<any> {
   try {

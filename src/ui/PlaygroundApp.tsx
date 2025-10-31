@@ -288,9 +288,12 @@ export const PlaygroundApp: React.FC = () => {
     // Map to track step outputs
     const stepOutputMap: Record<string, string> = {}
     
+    // Get context provider IDs from registry
+    const contextProviderIds = new ContextProviderRegistry().getAllIds()
+    
     normalized.steps = normalized.steps.map((step: WorkflowStep, index: number) => {
       const normalizedStep = { ...step }
-      normalizedStep.input = normalizeDataPointReferences(step.input, stepOutputMap, index)
+      normalizedStep.input = normalizeDataPointReferences(step.input, stepOutputMap, index, contextProviderIds)
       
       // Map this step's output ID for future steps
       if (step.type === 'task' && step.id) {
@@ -303,7 +306,7 @@ export const PlaygroundApp: React.FC = () => {
     return normalized
   }
   
-  const normalizeDataPointReferences = (input: any, stepOutputMap: Record<string, string>, currentStepIndex: number): any => {
+  const normalizeDataPointReferences = (input: any, stepOutputMap: Record<string, string>, currentStepIndex: number, contextProviderIds: string[]): any => {
     if (typeof input !== 'object' || input === null) {
       return input
     }
@@ -312,23 +315,15 @@ export const PlaygroundApp: React.FC = () => {
     if (input.type === 'data_point') {
       const dataPointId = input.dataPointId
       
-      // Check if it's a context provider (starts with context provider ID)
-      if (dataPointId.startsWith('selected_text') || dataPointId === 'selected_text') {
+      // Check if it's a context provider (use registry IDs dynamically)
+      const matchingProviderId = contextProviderIds.find((pid: string) => 
+        dataPointId.startsWith(pid) || dataPointId === pid
+      )
+      
+      if (matchingProviderId) {
         return {
           type: 'data_point',
-          dataPointId: 'selected_text', // Stable runtime ID
-          field: input.field
-        }
-      } else if (dataPointId.startsWith('page_content') || dataPointId === 'page_content') {
-        return {
-          type: 'data_point',
-          dataPointId: 'page_content',
-          field: input.field
-        }
-      } else if (dataPointId.startsWith('extracted_text') || dataPointId === 'extracted_text') {
-        return {
-          type: 'data_point',
-          dataPointId: 'extracted_text',
+          dataPointId: matchingProviderId, // Stable runtime ID from registry
           field: input.field
         }
       }
@@ -352,7 +347,7 @@ export const PlaygroundApp: React.FC = () => {
     // Recursively normalize nested objects
     const normalized: any = {}
     for (const [key, value] of Object.entries(input)) {
-      normalized[key] = normalizeDataPointReferences(value, stepOutputMap, currentStepIndex)
+      normalized[key] = normalizeDataPointReferences(value, stepOutputMap, currentStepIndex, contextProviderIds)
     }
     
     return normalized

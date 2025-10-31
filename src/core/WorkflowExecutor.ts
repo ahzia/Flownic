@@ -11,6 +11,7 @@ import {
 import { DataPointManager } from './DataPointManager'
 import { TaskRegistry } from './TaskRegistry'
 import { HandlerRegistry } from './HandlerRegistry'
+import { interpolateTextWithDataPoints } from './utils/TokenInterpolation'
 
 export class WorkflowExecutor {
   private dataPointManager: DataPointManager
@@ -148,8 +149,10 @@ export class WorkflowExecutor {
   
   private async resolveStepInput(input: StepInput, context: ExecutionContext): Promise<any> {
     const resolved: any = {}
+    const allDataPoints = Array.from(context.dataPoints.values())
     
     for (const [key, value] of Object.entries(input)) {
+      // Handle data point references (old format)
       if (this.isDataPointReference(value)) {
         const dataPoint = context.dataPoints.get(value.dataPointId)
         if (!dataPoint) {
@@ -167,7 +170,17 @@ export class WorkflowExecutor {
         } else {
           resolved[key] = dataPoint.value
         }
-      } else {
+      }
+      // Handle strings with token interpolation (new format)
+      else if (typeof value === 'string') {
+        resolved[key] = interpolateTextWithDataPoints(value, allDataPoints)
+      }
+      // Handle nested objects recursively
+      else if (typeof value === 'object' && value !== null) {
+        resolved[key] = await this.resolveStepInput(value as StepInput, context)
+      }
+      // Handle primitives
+      else {
         resolved[key] = value
       }
     }

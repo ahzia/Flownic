@@ -1,30 +1,25 @@
 import { KBEntry } from '@common/types'
+import { storage } from './storage'
 
 const KB_KEY = 'kbEntries'
 
 export async function getKBEntries(): Promise<KBEntry[]> {
-  return new Promise((resolve) => {
-    chrome.storage.local.get([KB_KEY], (result) => {
-      resolve((result[KB_KEY] as KBEntry[]) || [])
-    })
-  })
+  return (await storage.get<KBEntry[]>(KB_KEY)) || []
 }
 
 export async function saveKBEntry(entry: KBEntry): Promise<void> {
   const entries = await getKBEntries()
   const idx = entries.findIndex(e => e.id === entry.id)
-  if (idx >= 0) entries[idx] = entry
-  else entries.push(entry)
-  return new Promise((resolve) => {
-    chrome.storage.local.set({ [KB_KEY]: entries }, () => resolve())
-  })
+  if (idx >= 0) {
+    entries[idx] = entry
+  } else {
+    entries.push(entry)
+  }
+  await storage.set(KB_KEY, entries)
 }
 
 export async function deleteKBEntry(entryId: string): Promise<void> {
   const entries = await getKBEntries()
   const filtered = entries.filter(e => e.id !== entryId)
-  return new Promise((resolve) => {
-    chrome.storage.local.set({ [KB_KEY]: filtered }, () => resolve())
-  })
+  await storage.set(KB_KEY, filtered)
 }
-
