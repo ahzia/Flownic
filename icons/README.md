@@ -15,9 +15,13 @@ This directory should contain the extension icons in the following sizes:
 - Consider both light and dark backgrounds
 - Follow Chrome extension icon guidelines
 
+## Logo
+
+The main logo is available as `flownic-logo.svg` - a colorful, modern sparkles design with gradient effects.
+
 ## Temporary Icons
 
-For development, you can create simple placeholder icons or use a design tool to generate them. The icons should represent the PromptFlow brand and AI/automation theme.
+For development, you can create simple placeholder icons or use a design tool to generate them. The icons should represent the Flownic brand and AI/automation theme.
 
 ## Recommended Tools
 
