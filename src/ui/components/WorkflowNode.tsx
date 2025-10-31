@@ -16,13 +16,15 @@ export interface WorkflowNodeData {
 
 interface WorkflowNodeProps {
   node: WorkflowNodeData
-  onClick: () => void
+  onClick?: () => void
+  onDoubleClick?: () => void
   onDelete?: () => void
 }
 
 export const WorkflowNode: React.FC<WorkflowNodeProps> = ({
   node,
   onClick,
+  onDoubleClick,
   onDelete
 }) => {
   const getBorderColor = () => {
@@ -58,6 +60,7 @@ export const WorkflowNode: React.FC<WorkflowNodeProps> = ({
     <div
       className={`workflow-node workflow-node-${node.type} ${node.selected ? 'selected' : ''}`}
       onClick={onClick}
+      onDoubleClick={onDoubleClick}
       style={{
         borderColor: getBorderColor(),
         backgroundColor: getBackgroundColor()
