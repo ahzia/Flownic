@@ -15,6 +15,7 @@ import './NodeConfigurationModal.css'
 interface VisualWorkflowCanvasProps {
   steps: WorkflowStep[]
   trigger: WorkflowTrigger
+  websiteConfig?: { type: 'all' | 'specific' | 'exclude'; patterns: string }
   availableTasks: TaskTemplate[]
   availableHandlers: HandlerTemplate[]
   dataPoints: DataPoint[]
@@ -25,6 +26,7 @@ interface VisualWorkflowCanvasProps {
   onRemoveStep: (stepId: string) => void
   onUpdateStep: (stepId: string, updates: Partial<WorkflowStep>) => void
   onUpdateTrigger?: (trigger: WorkflowTrigger) => void
+  onUpdateWebsiteConfig?: (config: { type: 'all' | 'specific' | 'exclude'; patterns: string }) => void
 }
 
 interface NodePosition {
@@ -45,6 +47,7 @@ interface StepDependencies {
 export const VisualWorkflowCanvas: React.FC<VisualWorkflowCanvasProps> = ({
   steps,
   trigger,
+  websiteConfig,
   availableTasks,
   availableHandlers,
   dataPoints,
@@ -54,7 +57,8 @@ export const VisualWorkflowCanvas: React.FC<VisualWorkflowCanvasProps> = ({
   onAddStep,
   onRemoveStep,
   onUpdateStep,
-  onUpdateTrigger
+  onUpdateTrigger,
+  onUpdateWebsiteConfig
 }) => {
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null)
   const [nodePositions, setNodePositions] = useState<Map<string, NodePosition>>(new Map())
@@ -734,6 +738,7 @@ export const VisualWorkflowCanvas: React.FC<VisualWorkflowCanvasProps> = ({
           nodeType={selectedNode.type}
           step={selectedNode.step}
           trigger={selectedNode.trigger}
+          websiteConfig={websiteConfig}
           taskTemplate={selectedNode.taskTemplate}
           handlerTemplate={selectedNode.handlerTemplate}
           availableTasks={availableTasks}
@@ -741,6 +746,7 @@ export const VisualWorkflowCanvas: React.FC<VisualWorkflowCanvasProps> = ({
           dataPoints={dataPoints}
           onUpdateStep={selectedNode.type !== 'trigger' ? handleUpdateStep : undefined}
           onUpdateTrigger={selectedNode.type === 'trigger' && onUpdateTrigger ? onUpdateTrigger : undefined}
+          onUpdateWebsiteConfig={selectedNode.type === 'trigger' && onUpdateWebsiteConfig ? onUpdateWebsiteConfig : undefined}
         />
       )}
     </div>

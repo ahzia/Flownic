@@ -95,6 +95,7 @@ export const WorkflowEditorTabs: React.FC<WorkflowEditorTabsProps> = ({
           <VisualWorkflowCanvas
             steps={steps}
             trigger={config.trigger}
+            websiteConfig={config.websiteConfig}
             availableTasks={availableTasks}
             availableHandlers={availableHandlers}
             dataPoints={dataPoints}
@@ -105,6 +106,7 @@ export const WorkflowEditorTabs: React.FC<WorkflowEditorTabsProps> = ({
             onRemoveStep={onRemoveStep}
             onUpdateStep={onUpdateStep}
             onUpdateTrigger={onUpdateTrigger}
+            onUpdateWebsiteConfig={(websiteConfig) => onConfigChange({ websiteConfig })}
           />
         )}
       </div>
