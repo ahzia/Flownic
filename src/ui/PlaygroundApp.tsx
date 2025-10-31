@@ -5,6 +5,7 @@ import {
   AlertCircle, CheckCircle, Database
 } from 'lucide-react'
 import { Workflow, WorkflowStep, DataPoint, TaskTemplate, HandlerTemplate, WorkflowTrigger } from '@common/types'
+import { migrateWorkflowToTokenNotation, needsMigration } from '@utils/workflowMigration'
 import { ToastContainer, useToast } from './components/Toast'
 import { StepsEditor } from '@ui/components/StepsEditor'
 import { TriggerConfigSection } from '@ui/components/TriggerConfigSection'
@@ -139,7 +140,20 @@ export const PlaygroundApp: React.FC = () => {
       console.log('GET_WORKFLOWS response:', response)
       
       if (response && response.success) {
-        const workflows = response.data || []
+        const workflows = (response.data || []).map((w: Workflow) => {
+          // Auto-migrate old format workflows to token notation
+          if (needsMigration(w)) {
+            console.log(`🔄 Migrating workflow ${w.id} to token notation`)
+            const migrated = migrateWorkflowToTokenNotation(w)
+            // Save migrated version back
+            chrome.runtime.sendMessage({
+              type: 'SAVE_WORKFLOW',
+              data: { workflow: migrated }
+            }).catch(err => console.warn('Failed to save migrated workflow:', err))
+            return migrated
+          }
+          return w
+        })
         console.log('Loaded workflows count:', workflows.length)
         console.log('Loaded workflows:', workflows.map((w: Workflow) => ({ id: w.id, name: w.name })))
         setWorkflows(workflows)
@@ -282,76 +296,6 @@ export const PlaygroundApp: React.FC = () => {
   }
 
   // Normalize data point references: map dynamic playground IDs to stable runtime IDs
-  const normalizeWorkflowDataPointReferences = (workflow: Workflow): Workflow => {
-    const normalized = JSON.parse(JSON.stringify(workflow)) // Deep clone
-    
-    // Map to track step outputs
-    const stepOutputMap: Record<string, string> = {}
-    
-    // Get context provider IDs from registry
-    const contextProviderIds = new ContextProviderRegistry().getAllIds()
-    
-    normalized.steps = normalized.steps.map((step: WorkflowStep, index: number) => {
-      const normalizedStep = { ...step }
-      normalizedStep.input = normalizeDataPointReferences(step.input, stepOutputMap, index, contextProviderIds)
-      
-      // Map this step's output ID for future steps
-      if (step.type === 'task' && step.id) {
-        stepOutputMap[step.id] = `${step.id}_output`
-      }
-      
-      return normalizedStep
-    })
-    
-    return normalized
-  }
-  
-  const normalizeDataPointReferences = (input: any, stepOutputMap: Record<string, string>, currentStepIndex: number, contextProviderIds: string[]): any => {
-    if (typeof input !== 'object' || input === null) {
-      return input
-    }
-    
-    // If this is a data point reference
-    if (input.type === 'data_point') {
-      const dataPointId = input.dataPointId
-      
-      // Check if it's a context provider (use registry IDs dynamically)
-      const matchingProviderId = contextProviderIds.find((pid: string) => 
-        dataPointId.startsWith(pid) || dataPointId === pid
-      )
-      
-      if (matchingProviderId) {
-        return {
-          type: 'data_point',
-          dataPointId: matchingProviderId, // Stable runtime ID from registry
-          field: input.field
-        }
-      }
-      // Check if it's a task output from a previous step
-      else if (dataPointId.includes('_output_')) {
-        // Extract the step ID from the output ID
-        const stepId = dataPointId.split('_output_')[0]
-        const normalizedOutputId = stepOutputMap[stepId] || `${stepId}_output`
-        
-        return {
-          type: 'data_point',
-          dataPointId: normalizedOutputId,
-          field: input.field
-        }
-      }
-      
-      // Return as-is if we can't normalize
-      return input
-    }
-    
-    // Recursively normalize nested objects
-    const normalized: any = {}
-    for (const [key, value] of Object.entries(input)) {
-      normalized[key] = normalizeDataPointReferences(value, stepOutputMap, currentStepIndex, contextProviderIds)
-    }
-    
-    return normalized
-  }
 
   const saveWorkflow = async () => {
     try {
@@ -391,15 +335,14 @@ export const PlaygroundApp: React.FC = () => {
         websiteConfig: formData.websiteConfig
       }
 
-      // Normalize data point references to use stable IDs
-      const normalizedWorkflow = normalizeWorkflowDataPointReferences(workflow)
-      console.log('Sending workflow to background:', normalizedWorkflow)
+      // Workflow is already in token notation format
+      console.log('Sending workflow to background:', workflow)
 
       // Send message with timeout
       const response = await Promise.race([
         chrome.runtime.sendMessage({
           type: 'SAVE_WORKFLOW',
-          data: { workflow: normalizedWorkflow }
+          data: { workflow }
         }),
         new Promise((_, reject) => 
           setTimeout(() => reject(new Error('Save timeout: No response from background script')), 5000)
@@ -414,7 +357,7 @@ export const PlaygroundApp: React.FC = () => {
         console.log('Save successful, reloading workflows...')
         toast.success('Workflow saved successfully!')
         await loadWorkflows()
-        setSelectedWorkflow(normalizedWorkflow)
+        setSelectedWorkflow(workflow)
         setIsCreating(false)
       } else {
         const errorMsg = response?.error || 'Unknown error'

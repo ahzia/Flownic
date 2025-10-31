@@ -129,9 +129,14 @@ export interface WorkflowStep {
 }
 
 export interface StepInput {
-  [key: string]: DataPointReference | string | number | boolean
+  // Values should be primitives - strings may contain ${...} tokens for data point references
+  [key: string]: string | number | boolean
 }
 
+/**
+ * @deprecated Use token notation instead: "${dataPointId.field}" or "${dataPointId}"
+ * This interface is kept for backward compatibility during migration
+ */
 export interface DataPointReference {
   type: 'data_point'
   dataPointId: string

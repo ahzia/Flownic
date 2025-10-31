@@ -25,11 +25,33 @@ export const TokenAutocomplete: React.FC<TokenAutocompleteProps> = ({
     const handleInput = (e: Event) => {
       const target = e.target as HTMLTextAreaElement | HTMLInputElement
       const cursorPos = target.selectionStart || 0
-      const textBeforeCursor = target.value.substring(0, cursorPos)
+      const fullText = target.value
+      const textBeforeCursor = fullText.substring(0, cursorPos)
       
       // Check if user is typing ${ or . after a token start
       const lastDollar = textBeforeCursor.lastIndexOf('${')
       if (lastDollar === -1) {
+        setShowDropdown(false)
+        setInsertPosition(null)
+        return
+      }
+      
+      // Check if the token is closed - find the next } after the ${
+      // We need to check if there's a closing brace between the ${ and cursor position
+      const textAfterDollarStart = textBeforeCursor.substring(lastDollar + 2)
+      const closingBraceBeforeCursor = textAfterDollarStart.indexOf('}')
+      
+      // If there's a closing brace before the cursor, we're outside the token
+      if (closingBraceBeforeCursor !== -1) {
+        setShowDropdown(false)
+        setInsertPosition(null)
+        return
+      }
+      
+      // Also check if cursor is after a closing brace in the full text
+      const textFromDollar = fullText.substring(lastDollar)
+      const nextClosingBrace = textFromDollar.indexOf('}')
+      if (nextClosingBrace !== -1 && (cursorPos - lastDollar) > nextClosingBrace) {
         setShowDropdown(false)
         setInsertPosition(null)
         return

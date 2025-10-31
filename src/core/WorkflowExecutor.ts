@@ -5,13 +5,12 @@ import {
   StepResult, 
   ExecutionContext, 
   DataPoint,
-  StepInput,
-  DataPointReference
+  StepInput
 } from '@common/types'
 import { DataPointManager } from './DataPointManager'
 import { TaskRegistry } from './TaskRegistry'
 import { HandlerRegistry } from './HandlerRegistry'
-import { interpolateTextWithDataPoints } from './utils/TokenInterpolation'
+import { resolveDataPointReferences } from './utils/DataPointResolver'
 
 export class WorkflowExecutor {
   private dataPointManager: DataPointManager
@@ -148,48 +147,9 @@ export class WorkflowExecutor {
   }
   
   private async resolveStepInput(input: StepInput, context: ExecutionContext): Promise<any> {
-    const resolved: any = {}
     const allDataPoints = Array.from(context.dataPoints.values())
-    
-    for (const [key, value] of Object.entries(input)) {
-      // Handle data point references (old format)
-      if (this.isDataPointReference(value)) {
-        const dataPoint = context.dataPoints.get(value.dataPointId)
-        if (!dataPoint) {
-          throw new Error(`Data point '${value.dataPointId}' not found`)
-        }
-        
-        if (value.field) {
-          // Extract specific field from structured data point
-          if (typeof dataPoint.value === 'object' && dataPoint.value !== null) {
-            const obj = dataPoint.value as Record<string, any>
-            resolved[key] = obj[value.field]
-          } else {
-            throw new Error(`Cannot extract field '${value.field}' from non-object data point`)
-          }
-        } else {
-          resolved[key] = dataPoint.value
-        }
-      }
-      // Handle strings with token interpolation (new format)
-      else if (typeof value === 'string') {
-        resolved[key] = interpolateTextWithDataPoints(value, allDataPoints)
-      }
-      // Handle nested objects recursively
-      else if (typeof value === 'object' && value !== null) {
-        resolved[key] = await this.resolveStepInput(value as StepInput, context)
-      }
-      // Handle primitives
-      else {
-        resolved[key] = value
-      }
-    }
-    
-    return resolved
-  }
-  
-  private isDataPointReference(value: any): value is DataPointReference {
-    return value && typeof value === 'object' && value.type === 'data_point'
+    // Use the centralized resolver which handles token interpolation
+    return resolveDataPointReferences(input, allDataPoints)
   }
   
   private async retryStep(step: WorkflowStep, context: ExecutionContext, retryConfig: any): Promise<StepResult> {
