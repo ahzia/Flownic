@@ -1,0 +1,51 @@
+{
+  "id": "workflow_1761755559059",
+  "name": "Summerize job description",
+  "description": "This workflow summarizes the job description, making it ready to be used for generating cover latter or updating cv",
+  "version": "1.0.0",
+  "enabled": true,
+  "createdAt": 1761755559059,
+  "updatedAt": 1761755593114,
+  "dataPoints": [],
+  "websiteConfig": {
+    "type": "all",
+    "patterns": ""
+  },
+  "triggers": [
+    {
+      "type": "manual",
+      "shortcut": "ctrl+shift+c"
+    }
+  ],
+  "steps": [
+    {
+      "condition": "",
+      "delay": 0,
+      "id": "step_1761755217788",
+      "input": {
+        "context": "summarizes the job description, making it ready to be used for generating a cover latter or updating a CV.",
+        "format": "plain-text",
+        "length": "long",
+        "text": "${extracted_text.text}",
+        "type": "teaser"
+      },
+      "taskId": "summarizer",
+      "type": "task"
+    },
+    {
+      "condition": "",
+      "delay": 0,
+      "handlerId": "show_modal",
+      "id": "step_1761755442636",
+      "input": {
+        "closable": true,
+        "content": "${step_1761755217788_output.summary}",
+        "size": "large",
+        "title": "Job Description Summery"
+      },
+      "type": "handler"
+    }
+  ]
+}
+
+

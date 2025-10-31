@@ -1,0 +1,56 @@
+{
+  "id": "workflow_1761672915561",
+  "name": "Selected Text to English",
+  "description": "",
+  "version": "1.0.0",
+  "enabled": true,
+  "createdAt": 1761672915561,
+  "updatedAt": 1761673164491,
+  "dataPoints": [],
+  "websiteConfig": {
+    "type": "all",
+    "patterns": "medium.com\n*.medium.com"
+  },
+  "triggers": [
+    {
+      "type": "onSelection"
+    }
+  ],
+  "steps": [
+    {
+      "condition": "",
+      "delay": 0,
+      "id": "step_1761672816603",
+      "input": {
+        "text": "${selected_text.text}"
+      },
+      "taskId": "language_detection",
+      "type": "task"
+    },
+    {
+      "condition": "",
+      "delay": 0,
+      "id": "step_1761672837200",
+      "input": {
+        "sourceLanguage": "${step_1761672816603_output.languageCode}",
+        "targetLanguage": "en",
+        "text": "${selected_text.text}"
+      },
+      "taskId": "translation",
+      "type": "task"
+    },
+    {
+      "condition": "",
+      "delay": 0,
+      "handlerId": "show_modal",
+      "id": "step_1761672871660",
+      "input": {
+        "content": "${step_1761672837200_output.translatedText}",
+        "title": "Text translated to English"
+      },
+      "type": "handler"
+    }
+  ]
+}
+
+
