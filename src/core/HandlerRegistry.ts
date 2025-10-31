@@ -7,7 +7,8 @@ import {
   ModifyCSSHandler,
   ParseTableToCSVHandler,
   SaveCaptureHandler,
-  ReplaceSelectedTextHandler
+  ReplaceSelectedTextHandler,
+  SaveToKBHandler
 } from '@handlers/templates'
 
 export class HandlerRegistry {
@@ -27,6 +28,7 @@ export class HandlerRegistry {
     this.registerHandler(new ParseTableToCSVHandler())
     this.registerHandler(new SaveCaptureHandler())
     this.registerHandler(new ReplaceSelectedTextHandler())
+    this.registerHandler(new SaveToKBHandler())
   }
   
   registerHandler(handler: BaseHandler): void {
