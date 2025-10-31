@@ -33,6 +33,36 @@ async function deleteWorkflow(workflowId: string): Promise<void> {
 // Track executing workflows to prevent duplicate executions
 const executingWorkflows = new Set<string>()
 
+// Generate workflow using AI Prompt API
+async function generateWorkflowAI(prompt: string): Promise<string> {
+  try {
+    // Check if Chrome LanguageModel API is available
+    if (typeof (globalThis as any).LanguageModel === 'undefined') {
+      throw new Error('Chrome LanguageModel API is not available')
+    }
+
+    // Check availability
+    const availability = await (globalThis as any).LanguageModel.availability({})
+    if (availability === 'unavailable') {
+      throw new Error('Chrome LanguageModel is not available on this device')
+    }
+
+    // Create session
+    const session = await (globalThis as any).LanguageModel.create({})
+
+    // Call prompt
+    const response = await session.prompt(prompt, {})
+
+    // Clean up
+    session.destroy()
+
+    return response || ''
+  } catch (error) {
+    console.error('Error generating workflow with AI:', error)
+    throw error
+  }
+}
+
 async function executeWorkflow(workflow: any, tabId: number): Promise<any> {
   const workflowId = workflow.id || `workflow_${Date.now()}`
   
@@ -279,6 +309,18 @@ async function handleMessage(message: any, sender: chrome.runtime.MessageSender,
         }
         
         executeWorkflow(data.workflow, tabId)
+          .then((result) => {
+            sendResponse({ success: true, data: result })
+          })
+          .catch((error) => {
+            sendResponse({ success: false, error: error.message })
+          })
+        
+        return true // Keep channel open for async response
+      
+      case 'GENERATE_WORKFLOW_AI':
+        // Handle AI workflow generation via Prompt API
+        generateWorkflowAI(data.prompt)
           .then((result) => {
             sendResponse({ success: true, data: result })
           })

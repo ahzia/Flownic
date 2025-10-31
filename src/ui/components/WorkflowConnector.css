@@ -11,3 +11,12 @@
   stroke-width: 3;
 }
 
+.connector-label {
+  font-family: var(--font-family-base, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif);
+  fill: var(--color-text-secondary, #6b7280);
+  paint-order: stroke fill;
+  stroke: var(--color-surface-primary, #ffffff);
+  stroke-width: 3;
+  stroke-linejoin: round;
+}
+

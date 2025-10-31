@@ -6,9 +6,13 @@ import {
 } from 'lucide-react'
 import { Workflow, WorkflowStep, DataPoint, TaskTemplate, HandlerTemplate, WorkflowTrigger } from '@common/types'
 import { migrateWorkflowToTokenNotation, needsMigration } from '@utils/workflowMigration'
+import { extractTokens, parseToken } from '@utils/tokenUtils'
+import { repairWorkflow } from '@core/utils/WorkflowRepair'
+import { WorkflowValidator } from '@core/utils/WorkflowValidator'
 import { ToastContainer, useToast } from './components/Toast'
 import { DataPointsSidebar } from '@ui/components/DataPointsSidebar'
 import { WorkflowEditorTabs, WorkflowEditorTab } from '@ui/components/WorkflowEditorTabs'
+import { AIWorkflowGeneratorModal } from '@ui/components/AIWorkflowGeneratorModal'
 import { KnowledgeBasePanel } from '@ui/components/KnowledgeBasePanel'
 import { KBEntry } from '@common/types'
 import { getKBEntries } from '@utils/kb'
@@ -35,6 +39,7 @@ export const PlaygroundApp: React.FC = () => {
   const [providerMetas, setProviderMetas] = useState<{ id: string; name: string; description: string; outputType: string }[]>([])
   const [kbEntries, setKbEntries] = useState<KBEntry[]>([])
   const [showKBManager, setShowKBManager] = useState(false)
+  const [showAIGenerator, setShowAIGenerator] = useState(false)
 
   // Form state for creating/editing workflows
   const [formData, setFormData] = useState({
@@ -226,24 +231,47 @@ export const PlaygroundApp: React.FC = () => {
     }
   }
 
-  const collectReferencedDataPointIds = (obj: any, acc: Set<string>) => {
-    if (!obj || typeof obj !== 'object') return
-    if (obj.type === 'data_point' && typeof obj.dataPointId === 'string') {
-      acc.add(obj.dataPointId)
-    }
-    for (const value of Object.values(obj)) {
-      if (value && typeof value === 'object') {
-        collectReferencedDataPointIds(value, acc)
+  const collectReferencedDataPointIdsFromTokens = (obj: any, acc: Set<string>) => {
+    if (typeof obj === 'string') {
+      // Extract tokens from string using token utils
+      const tokens = extractTokens(obj)
+      for (const token of tokens) {
+        const parsed = parseToken(token)
+        if (parsed) {
+          acc.add(parsed.dataPointId)
+        }
+      }
+    } else if (Array.isArray(obj)) {
+      obj.forEach(item => collectReferencedDataPointIdsFromTokens(item, acc))
+    } else if (obj && typeof obj === 'object') {
+      // Also check for legacy DataPointReference format (for backward compatibility)
+      if (obj.type === 'data_point' && typeof obj.dataPointId === 'string') {
+        acc.add(obj.dataPointId)
+      }
+      // Recurse into object values
+      for (const value of Object.values(obj)) {
+        if (value && typeof value === 'object') {
+          collectReferencedDataPointIdsFromTokens(value, acc)
+        } else if (typeof value === 'string') {
+          collectReferencedDataPointIdsFromTokens(value, acc)
+        }
       }
     }
   }
 
   const hydrateContextProviderDataPoints = async (workflow: Workflow) => {
     try {
-      // Gather all referenced dataPointIds across all step inputs
+      // Gather all referenced dataPointIds from tokens in step inputs and conditions
       const referenced = new Set<string>()
       for (const step of workflow.steps) {
-        collectReferencedDataPointIds(step.input, referenced)
+        // Check step input
+        if (step.input) {
+          collectReferencedDataPointIdsFromTokens(step.input, referenced)
+        }
+        // Check step condition
+        if (step.condition && typeof step.condition === 'string') {
+          collectReferencedDataPointIdsFromTokens(step.condition, referenced)
+        }
       }
 
       // Determine provider ids dynamically from registry metadata, with safe fallbacks
@@ -254,17 +282,47 @@ export const PlaygroundApp: React.FC = () => {
       )
 
       const missingProviderIds: string[] = []
+      const missingKBIds: string[] = []
+
       referenced.forEach(id => {
-        if (providerIds.has(id)) {
-          const exists = dataPoints.some(dp => dp.id === id)
-          if (!exists) missingProviderIds.push(id)
+        // Check if it's a KB entry (starts with kb_)
+        if (id.startsWith('kb_')) {
+          const kbId = id.replace('kb_', '')
+          const exists = dataPoints.some(dp => dp.id === id || dp.id.startsWith(id + '_'))
+          if (!exists) {
+            missingKBIds.push(kbId)
+          }
+        }
+        // Check if it's a context provider (not a step output or KB)
+        else if (providerIds.has(id) && !id.includes('_output')) {
+          const exists = dataPoints.some(dp => dp.id === id || dp.id.startsWith(id + '_'))
+          if (!exists) {
+            missingProviderIds.push(id)
+          }
         }
       })
 
-      if (missingProviderIds.length === 0) return
+      // Add missing KB entries to data points
+      if (missingKBIds.length > 0) {
+        missingKBIds.forEach(kbId => {
+          const kbEntry = kbEntries.find(kb => kb.id === kbId)
+          if (kbEntry) {
+            addDataPoint({
+              id: `kb_${kbEntry.id}`,
+              name: `KB: ${kbEntry.name}`,
+              type: 'context',
+              value: { text: kbEntry.content, title: kbEntry.name, source: 'kb' },
+              source: 'kb',
+              timestamp: Date.now()
+            })
+          }
+        })
+      }
 
-      // Simulate gather for each missing provider (reuses existing gatherContextData UX)
-      await Promise.all(missingProviderIds.map(pid => gatherContextData(pid, true)))
+      // Add missing context providers
+      if (missingProviderIds.length > 0) {
+        await Promise.all(missingProviderIds.map(pid => gatherContextData(pid, true)))
+      }
     } catch (e) {
       console.warn('Hydration of context provider data points failed:', e)
     }
@@ -506,27 +564,6 @@ export const PlaygroundApp: React.FC = () => {
     }))
   }
 
-  const startCreating = () => {
-    setFormData({
-      name: '',
-      description: '',
-      trigger: {
-        type: 'manual',
-        pattern: '',
-        selector: '',
-        schedule: '',
-        shortcut: ''
-      },
-      websiteConfig: {
-        type: 'all',
-        patterns: ''
-      },
-      steps: []
-    })
-    setSelectedWorkflow(null)
-    setIsCreating(true)
-  }
-
   const editWorkflow = (workflow: Workflow) => {
     setFormData({
       name: workflow.name,
@@ -588,10 +625,48 @@ export const PlaygroundApp: React.FC = () => {
         const reader = new FileReader()
         reader.onload = (e) => {
           try {
-            const workflow = JSON.parse(e.target?.result as string)
+            let workflow = JSON.parse(e.target?.result as string)
+            
+            // Migrate if needed
+            if (needsMigration(workflow)) {
+              workflow = migrateWorkflowToTokenNotation(workflow)
+              toast.info('Workflow migrated to token notation')
+            }
+            
+            // Repair broken step output references
+            const repairResult = repairWorkflow(workflow)
+            if (repairResult.repaired) {
+              workflow = repairResult.workflow
+              toast.success(`Repaired ${repairResult.fixedCount} step output reference(s)`)
+              
+              // Show repair suggestions
+              if (repairResult.suggestions.length > 0) {
+                const suggestionsList = repairResult.suggestions
+                  .slice(0, 3)
+                  .map(s => `• ${s.field}: ${s.reason}`)
+                  .join('\n')
+                console.log('🔧 Repair suggestions:', suggestionsList)
+              }
+            }
+            
+            // Validate workflow
+            const validator = new WorkflowValidator()
+            const validationResult = validator.validateWorkflow(workflow)
+            
+            if (validationResult.errors.length > 0) {
+              const errorCount = validationResult.errors.length
+              const warningCount = validationResult.warnings.length
+              toast.warning(`Imported workflow has ${errorCount} error(s) and ${warningCount} warning(s). Please review before saving.`)
+              console.warn('Validation errors:', validationResult.errors)
+              console.warn('Validation warnings:', validationResult.warnings)
+            } else if (validationResult.warnings.length > 0) {
+              toast.info(`Imported workflow has ${validationResult.warnings.length} warning(s)`)
+            }
+            
             editWorkflow(workflow)
           } catch (error) {
-            alert('Invalid workflow file')
+            toast.error('Invalid workflow file')
+            console.error('Error importing workflow:', error)
           }
         }
         reader.readAsText(file)
@@ -665,7 +740,7 @@ export const PlaygroundApp: React.FC = () => {
               Manage Knowledge Base
             </button>
 
-            <button className="btn btn-primary" onClick={startCreating}>
+            <button className="btn btn-primary" onClick={() => setShowAIGenerator(true)}>
               <Plus className="icon" />
               Create Workflow
             </button>
@@ -685,7 +760,7 @@ export const PlaygroundApp: React.FC = () => {
                 }
               </p>
               {!searchQuery && filterType === 'all' && (
-                <button className="btn btn-primary" onClick={startCreating}>
+                <button className="btn btn-primary" onClick={() => setShowAIGenerator(true)}>
                   <Plus className="icon" />
                   Create Your First Workflow
                 </button>
@@ -793,6 +868,21 @@ export const PlaygroundApp: React.FC = () => {
             </div>
           </div>
         )}
+
+        {/* AI Workflow Generator Modal */}
+        <AIWorkflowGeneratorModal
+          isOpen={showAIGenerator}
+          onClose={() => setShowAIGenerator(false)}
+          onWorkflowGenerated={(workflow) => {
+            editWorkflow(workflow)
+            setShowAIGenerator(false)
+            toast.success('Workflow generated successfully! You can now review and edit it.')
+          }}
+          onManualCreate={() => {
+            setIsCreating(true)
+            setShowAIGenerator(false)
+          }}
+        />
       </div>
     )
   }
@@ -865,6 +955,9 @@ export const PlaygroundApp: React.FC = () => {
             availableTasks={availableTasks}
             availableHandlers={availableHandlers}
             dataPoints={dataPoints}
+            providerMetas={providerMetas}
+            kbEntries={kbEntries}
+            onToggleDataPoints={() => setShowDataPoints(!showDataPoints)}
             onAddStep={addStep}
             onRemoveStep={removeStep}
             onUpdateStep={updateStep}
