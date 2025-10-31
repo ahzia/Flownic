@@ -1,23 +1,91 @@
+/* Premium Workflow Node - Glass Morphism */
 .workflow-node {
   position: relative;
-  min-width: 200px;
-  max-width: 280px;
-  padding: var(--space-4);
+  min-width: 220px;
+  max-width: 300px;
+  padding: var(--space-5, 1.25rem);
   border: 2px solid;
-  border-radius: var(--radius-lg);
-  background: var(--color-surface);
+  border-radius: var(--radius-xl, 16px);
+  background: linear-gradient(135deg, 
+    var(--color-surface, #ffffff) 0%, 
+    rgba(255, 255, 255, 0.95) 100%
+  );
+  backdrop-filter: blur(12px) saturate(180%);
+  -webkit-backdrop-filter: blur(12px) saturate(180%);
   cursor: pointer;
-  transition: all var(--transition-normal);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 
+    0 4px 16px rgba(0, 0, 0, 0.08),
+    0 2px 8px rgba(0, 0, 0, 0.04),
+    0 0 0 1px rgba(255, 255, 255, 0.6) inset;
+  overflow: hidden;
+}
+
+.workflow-node::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, 
+    transparent,
+    currentColor,
+    transparent
+  );
+  opacity: 0.6;
+  transition: opacity 0.3s ease;
+}
+
+[data-theme="dark"] .workflow-node {
+  background: linear-gradient(135deg, 
+    var(--color-surface, #1e293b) 0%, 
+    rgba(30, 41, 59, 0.95) 100%
+  );
+  box-shadow: 
+    0 4px 16px rgba(0, 0, 0, 0.4),
+    0 2px 8px rgba(0, 0, 0, 0.3),
+    0 0 0 1px rgba(255, 255, 255, 0.08) inset;
 }
 
 .workflow-node:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: 
+    0 8px 24px rgba(0, 0, 0, 0.12),
+    0 4px 12px rgba(0, 0, 0, 0.08),
+    0 0 0 1px rgba(255, 255, 255, 0.7) inset,
+    0 0 40px rgba(59, 130, 246, 0.15);
+}
+
+[data-theme="dark"] .workflow-node:hover {
+  box-shadow: 
+    0 8px 24px rgba(0, 0, 0, 0.5),
+    0 4px 12px rgba(0, 0, 0, 0.4),
+    0 0 0 1px rgba(255, 255, 255, 0.12) inset,
+    0 0 40px rgba(59, 130, 246, 0.25);
+}
+
+.workflow-node:hover::before {
+  opacity: 1;
 }
 
 .workflow-node.selected {
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+  box-shadow: 
+    0 0 0 4px rgba(59, 130, 246, 0.3),
+    0 8px 24px rgba(59, 130, 246, 0.2),
+    0 4px 12px rgba(59, 130, 246, 0.15),
+    0 0 0 1px rgba(255, 255, 255, 0.7) inset,
+    0 0 60px rgba(59, 130, 246, 0.25);
+  transform: scale(1.03);
+}
+
+[data-theme="dark"] .workflow-node.selected {
+  box-shadow: 
+    0 0 0 4px rgba(96, 165, 250, 0.4),
+    0 8px 24px rgba(59, 130, 246, 0.3),
+    0 4px 12px rgba(59, 130, 246, 0.25),
+    0 0 0 1px rgba(255, 255, 255, 0.12) inset,
+    0 0 60px rgba(59, 130, 246, 0.35);
 }
 
 .workflow-node-header {
@@ -30,11 +98,45 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
-  border-radius: var(--radius-md);
-  background: rgba(255, 255, 255, 0.5);
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-lg, 12px);
+  background: linear-gradient(135deg, 
+    rgba(255, 255, 255, 0.8) 0%, 
+    rgba(255, 255, 255, 0.6) 100%
+  );
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1.5px solid rgba(255, 255, 255, 0.5);
+  box-shadow: 
+    0 2px 8px rgba(0, 0, 0, 0.08),
+    0 0 0 1px rgba(255, 255, 255, 0.5) inset;
   flex-shrink: 0;
+  transition: all 0.3s ease;
+}
+
+[data-theme="dark"] .workflow-node-icon {
+  background: linear-gradient(135deg, 
+    rgba(30, 41, 59, 0.8) 0%, 
+    rgba(15, 23, 42, 0.6) 100%
+  );
+  border-color: rgba(255, 255, 255, 0.1);
+  box-shadow: 
+    0 2px 8px rgba(0, 0, 0, 0.3),
+    0 0 0 1px rgba(255, 255, 255, 0.08) inset;
+}
+
+.workflow-node:hover .workflow-node-icon {
+  transform: scale(1.1);
+  box-shadow: 
+    0 4px 12px rgba(0, 0, 0, 0.12),
+    0 0 0 1px rgba(255, 255, 255, 0.7) inset;
+}
+
+[data-theme="dark"] .workflow-node:hover .workflow-node-icon {
+  box-shadow: 
+    0 4px 12px rgba(0, 0, 0, 0.5),
+    0 0 0 1px rgba(255, 255, 255, 0.12) inset;
 }
 
 .workflow-node-info {
@@ -52,36 +154,95 @@
 
 .workflow-node-type-badge,
 .workflow-node-trigger-badge {
-  display: inline-block;
-  font-size: var(--font-size-xs);
-  padding: 2px 6px;
-  border-radius: var(--radius-sm);
-  background: var(--color-surface-secondary);
-  color: var(--color-text-secondary);
+  display: inline-flex;
+  align-items: center;
+  font-size: var(--font-size-xs, 0.75rem);
+  padding: var(--space-1, 0.25rem) var(--space-3, 0.75rem);
+  border-radius: var(--radius-full, 9999px);
+  background: linear-gradient(135deg, 
+    rgba(59, 130, 246, 0.1) 0%, 
+    rgba(59, 130, 246, 0.05) 100%
+  );
+  color: var(--color-primary-600, #2563eb);
   text-transform: capitalize;
+  font-weight: var(--font-weight-semibold, 600);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  letter-spacing: 0.02em;
+}
+
+[data-theme="dark"] .workflow-node-type-badge,
+[data-theme="dark"] .workflow-node-trigger-badge {
+  background: linear-gradient(135deg, 
+    rgba(59, 130, 246, 0.2) 0%, 
+    rgba(59, 130, 246, 0.1) 100%
+  );
+  color: var(--color-primary-400, #60a5fa);
+  border-color: rgba(96, 165, 250, 0.3);
 }
 
 .workflow-node-delete {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 24px;
-  height: 24px;
+  width: 28px;
+  height: 28px;
   border: none;
-  background: transparent;
-  border-radius: var(--radius-md);
+  background: linear-gradient(135deg, 
+    rgba(255, 255, 255, 0.6) 0%, 
+    rgba(255, 255, 255, 0.4) 100%
+  );
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-radius: var(--radius-lg, 12px);
   color: var(--color-text-secondary);
   cursor: pointer;
-  transition: all var(--transition-normal);
-  font-size: 20px;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  font-size: 18px;
   line-height: 1;
   padding: 0;
   flex-shrink: 0;
+  border: 1.5px solid rgba(226, 232, 240, 0.5);
+  box-shadow: 
+    0 2px 6px rgba(0, 0, 0, 0.06),
+    0 0 0 1px rgba(255, 255, 255, 0.5) inset;
+}
+
+[data-theme="dark"] .workflow-node-delete {
+  background: linear-gradient(135deg, 
+    rgba(30, 41, 59, 0.6) 0%, 
+    rgba(15, 23, 42, 0.4) 100%
+  );
+  border-color: rgba(51, 65, 85, 0.5);
+  box-shadow: 
+    0 2px 6px rgba(0, 0, 0, 0.3),
+    0 0 0 1px rgba(255, 255, 255, 0.08) inset;
 }
 
 .workflow-node-delete:hover {
-  background: var(--color-error-50);
-  color: var(--color-error);
+  background: linear-gradient(135deg, 
+    var(--color-error-50, #fef2f2) 0%, 
+    rgba(254, 242, 242, 0.8) 100%
+  );
+  color: var(--color-error-600, #dc2626);
+  transform: scale(1.1);
+  border-color: var(--color-error-300, #fca5a5);
+  box-shadow: 
+    0 4px 12px rgba(239, 68, 68, 0.2),
+    0 0 0 1px rgba(255, 255, 255, 0.7) inset;
+}
+
+[data-theme="dark"] .workflow-node-delete:hover {
+  background: linear-gradient(135deg, 
+    rgba(239, 68, 68, 0.2) 0%, 
+    rgba(220, 38, 38, 0.15) 100%
+  );
+  color: var(--color-error-400, #f87171);
+  border-color: rgba(248, 113, 113, 0.4);
+  box-shadow: 
+    0 4px 12px rgba(239, 68, 68, 0.3),
+    0 0 0 1px rgba(255, 255, 255, 0.12) inset;
 }
 
 .workflow-node-condition {
