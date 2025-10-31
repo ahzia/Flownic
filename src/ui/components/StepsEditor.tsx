@@ -1,7 +1,8 @@
-import React from 'react'
+import React, { useRef } from 'react'
 import { Plus, Trash2, Info } from 'lucide-react'
 import { WorkflowStep, TaskTemplate, HandlerTemplate, DataPoint } from '@common/types'
 import { TaskInputUI } from './TaskInputUI'
+import { TokenAutocomplete } from './TokenAutocomplete'
 
 interface StepsEditorProps {
   steps: WorkflowStep[]
@@ -11,6 +12,41 @@ interface StepsEditorProps {
   onAddStep: (type: 'task' | 'handler') => void
   onRemoveStep: (stepId: string) => void
   onUpdateStep: (stepId: string, updates: Partial<WorkflowStep>) => void
+}
+
+// Separate component for condition input with autocomplete
+interface ConditionInputProps {
+  value: string
+  onChange: (value: string) => void
+  dataPoints: DataPoint[]
+  placeholder?: string
+}
+
+const ConditionInput: React.FC<ConditionInputProps> = ({
+  value,
+  onChange,
+  dataPoints,
+  placeholder
+}) => {
+  const inputRef = useRef<HTMLInputElement>(null)
+
+  return (
+    <div style={{ position: 'relative' }}>
+      <input
+        ref={inputRef}
+        type="text"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="form-input"
+        placeholder={placeholder}
+      />
+      <TokenAutocomplete
+        textareaRef={inputRef}
+        dataPoints={dataPoints}
+        onInsert={(text) => onChange(text)}
+      />
+    </div>
+  )
 }
 
 export const StepsEditor: React.FC<StepsEditorProps> = ({
@@ -116,6 +152,25 @@ export const StepsEditor: React.FC<StepsEditorProps> = ({
                   )}
                 </>
               )}
+
+              <div className="form-group">
+                <label>
+                  Condition (optional)
+                  <span className="form-hint" title="Boolean expression to determine if this step runs. Use ${dataPointId.field} to reference data points. Examples: '${selected_text.text}'.length > 0, '${step_output.languageCode}' == 'en'">
+                    <Info className="icon-small" />
+                  </span>
+                </label>
+                <ConditionInput
+                  value={step.condition || ''}
+                  onChange={(value) => onUpdateStep(step.id, { condition: value })}
+                  dataPoints={dataPoints}
+                  placeholder='e.g., "${selected_text.text}" != ""'
+                />
+                <div className="form-hint-text">
+                  Supports: ==, !=, &gt;, &gt;=, &lt;, &lt;=, &&, ||, !
+                  <br />Examples: {'"${selected_text.text}"'} != "", {'"${lang}"'} == "en", {'"${score}"'} &gt; 0.5
+                </div>
+              </div>
 
               <div className="form-group">
                 <label>Delay (seconds)</label>

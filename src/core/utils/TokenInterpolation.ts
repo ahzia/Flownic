@@ -95,13 +95,18 @@ function resolveToken(token: string, dataPoints: DataPoint[]): string {
   if (!matchedId) {
     console.warn(`⚠️ Token interpolation: Data point not found: ${dataPointId}`)
     console.warn(`📋 Available data point IDs:`, availableIds)
-    return token // Return original token if data point not found
+    // Return empty string instead of literal token to prevent tokens from appearing in AI output
+    // This happens when a step was skipped (due to condition) or data point doesn't exist
+    return ''
   }
   
   const dataPoint = dataPoints.find(dp => dp.id === matchedId)
   if (!dataPoint) {
-    return token
+    // Return empty string instead of literal token
+    return ''
   }
+  
+  console.log(`🔍 Token resolution for ${token}: found dataPoint id=${matchedId}, value type=${typeof dataPoint.value}, hasField=${!!field}`)
   
   // Handle __raw__ field
   if (field === '__raw__') {
@@ -114,6 +119,7 @@ function resolveToken(token: string, dataPoints: DataPoint[]): string {
   // Handle specific field
   if (field && dataPoint.value && typeof dataPoint.value === 'object') {
     const fieldValue = (dataPoint.value as Record<string, any>)[field]
+    console.log(`🔍 Field access: ${matchedId}.${field} = ${fieldValue !== null && fieldValue !== undefined ? `"${String(fieldValue).substring(0, 50)}..." (type: ${typeof fieldValue})` : 'undefined/null'}`)
     if (fieldValue !== null && fieldValue !== undefined) {
       // Stringify objects/arrays, return primitives as strings
       if (typeof fieldValue !== 'string' && typeof fieldValue !== 'number' && typeof fieldValue !== 'boolean') {
@@ -121,6 +127,9 @@ function resolveToken(token: string, dataPoints: DataPoint[]): string {
       }
       return String(fieldValue)
     }
+    // Field not found in data point - return empty string instead of token
+    console.warn(`⚠️ Field ${field} not found in data point ${matchedId}, returning empty string`)
+    return ''
   }
   
   // No field specified or field not found - return entire value

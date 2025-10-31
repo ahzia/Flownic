@@ -3,6 +3,7 @@ console.log('🔧 PromptFlow Service Worker initialized')
 // Import utilities for data point resolution and KB loading
 import { resolveDataPointReferences } from '@core/utils/DataPointResolver'
 import { loadKBDataPoints } from '@core/utils/KBLoader'
+import { evaluateCondition } from '@core/utils/ConditionEvaluator'
 import { storage } from '@utils/storage'
 
 // Workflow storage - using StorageManager for consistency
@@ -83,6 +84,37 @@ async function executeWorkflow(workflow: any, tabId: number): Promise<any> {
     
     for (const step of workflow.steps || []) {
       try {
+        // Check step condition before executing
+        if (step.condition) {
+          console.log(`🔍 Evaluating condition for step ${step.id}: "${step.condition}"`)
+          console.log(`📊 Available data points:`, dataPoints.map(dp => ({ id: dp.id, hasValue: !!dp.value })))
+          const shouldExecute = evaluateCondition(step.condition, dataPoints)
+          console.log(`🔍 Condition result for step ${step.id}: ${shouldExecute}`)
+          if (!shouldExecute) {
+            console.log(`⏭️ Step ${step.id} skipped due to condition: "${step.condition}"`)
+            results.push({
+              stepId: step.id,
+              type: step.type,
+              skipped: true,
+              reason: 'condition_false',
+              result: {
+                success: true,
+                skipped: true
+              }
+            })
+            continue
+          }
+          console.log(`✅ Step ${step.id} condition passed: "${step.condition}"`)
+        } else {
+          console.log(`➡️ Step ${step.id} has no condition, executing...`)
+        }
+        
+        // Apply delay if specified
+        if (step.delay && step.delay > 0) {
+          console.log(`⏳ Waiting ${step.delay} seconds before step ${step.id}`)
+          await new Promise(resolve => setTimeout(resolve, step.delay! * 1000))
+        }
+        
         // Resolve input data points
         const resolvedInput = resolveDataPointReferences(step.input, dataPoints)
         console.log(`📝 Step ${step.id} resolved input:`, resolvedInput)
@@ -111,7 +143,9 @@ async function executeWorkflow(workflow: any, tabId: number): Promise<any> {
           })
         } else if (step.type === 'handler') {
           // Execute handler in content script
+          console.log(`🎬 About to execute handler ${step.handlerId} for step ${step.id}`)
           const handlerResult = await executeHandlerInContent(step, resolvedInput, tabId)
+          console.log(`✅ Handler ${step.handlerId} completed for step ${step.id}:`, handlerResult)
           
           results.push({
             stepId: step.id,
