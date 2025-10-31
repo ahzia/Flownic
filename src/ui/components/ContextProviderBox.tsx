@@ -78,7 +78,7 @@ export const ContextProviderBox: React.FC<ContextProviderBoxProps> = ({
           <Database className="icon" size={20} />
         </div>
         <div className="workflow-node-info">
-          <div className="workflow-node-label">Data Sources</div>
+          <div className="workflow-node-label">Context Providers</div>
         </div>
       </div>
       
