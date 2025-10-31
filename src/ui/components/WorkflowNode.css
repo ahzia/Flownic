@@ -1,0 +1,113 @@
+.workflow-node {
+  position: relative;
+  min-width: 200px;
+  max-width: 280px;
+  padding: var(--space-4);
+  border: 2px solid;
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.workflow-node:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.workflow-node.selected {
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+}
+
+.workflow-node-header {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+}
+
+.workflow-node-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.5);
+  flex-shrink: 0;
+}
+
+.workflow-node-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.workflow-node-label {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-1);
+  word-break: break-word;
+}
+
+.workflow-node-type-badge,
+.workflow-node-trigger-badge {
+  display: inline-block;
+  font-size: var(--font-size-xs);
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-secondary);
+  color: var(--color-text-secondary);
+  text-transform: capitalize;
+}
+
+.workflow-node-delete {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border: none;
+  background: transparent;
+  border-radius: var(--radius-md);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  font-size: 20px;
+  line-height: 1;
+  padding: 0;
+  flex-shrink: 0;
+}
+
+.workflow-node-delete:hover {
+  background: var(--color-error-50);
+  color: var(--color-error);
+}
+
+.workflow-node-condition {
+  margin-top: var(--space-2);
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--color-border-primary);
+}
+
+.condition-indicator {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+/* Node type specific styles */
+.workflow-node-trigger {
+  border-width: 3px;
+}
+
+.workflow-node-task {
+  border-width: 2px;
+}
+
+.workflow-node-handler {
+  border-width: 2px;
+}
+

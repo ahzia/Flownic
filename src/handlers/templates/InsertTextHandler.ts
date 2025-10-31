@@ -7,6 +7,7 @@ export class InsertTextHandler extends BaseHandler {
   readonly description = 'Insert, append, prepend, or replace text in form fields or contentEditable elements'
   readonly category = 'ui'
   readonly permissions = ['writeDom']
+  readonly icon = 'Type'
   
   readonly inputSchema = {
     type: 'object',

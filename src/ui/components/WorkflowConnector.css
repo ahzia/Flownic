@@ -1,0 +1,13 @@
+.workflow-connector {
+  overflow: visible;
+}
+
+.connector-line {
+  transition: stroke var(--transition-normal);
+}
+
+.workflow-connector:hover .connector-line {
+  stroke: var(--color-primary);
+  stroke-width: 3;
+}
+

@@ -7,6 +7,7 @@ export class ProofreaderTask extends BaseTask {
   readonly description = 'Check and correct grammar, spelling, and punctuation using Chrome Proofreader API'
   readonly category = 'text'
   readonly apiType = 'proofreader' as const
+  readonly icon = 'CheckCircle'
   
   readonly inputSchema = {
     type: 'object',

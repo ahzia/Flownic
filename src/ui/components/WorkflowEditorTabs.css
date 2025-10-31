@@ -1,0 +1,51 @@
+.workflow-editor-tabs {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.workflow-editor-tab-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--space-6);
+}
+
+.visual-tab-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  height: 100%;
+}
+
+.placeholder-content {
+  text-align: center;
+  max-width: 400px;
+  padding: var(--space-8);
+}
+
+.placeholder-icon {
+  margin-bottom: var(--space-4);
+  color: var(--color-text-secondary);
+  opacity: 0.5;
+}
+
+.placeholder-content h3 {
+  margin: 0 0 var(--space-2) 0;
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+}
+
+.placeholder-content p {
+  margin: 0;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.config-tab {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+

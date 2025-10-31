@@ -9,6 +9,7 @@ export class SaveToKBHandler extends BaseHandler {
   readonly description = 'Saves text content to the Knowledge Base for later use in workflows'
   readonly category = 'storage'
   readonly permissions: string[] = []
+  readonly icon = 'Database'
 
   readonly inputSchema = {
     type: 'object',

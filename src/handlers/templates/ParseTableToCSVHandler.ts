@@ -7,6 +7,7 @@ export class ParseTableToCSVHandler extends BaseHandler {
   readonly description = 'Extract table data from the page and convert it to CSV format'
   readonly category = 'data'
   readonly permissions = ['readDom']
+  readonly icon = 'Table'
   
   readonly inputSchema = {
     type: 'object',

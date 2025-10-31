@@ -7,6 +7,7 @@ export class SummarizerTask extends BaseTask {
   readonly description = 'Generate concise summaries of text using Chrome Summarizer API'
   readonly category = 'text'
   readonly apiType = 'summarizer' as const
+  readonly icon = 'FileText'
   
   readonly inputSchema = {
     type: 'object',

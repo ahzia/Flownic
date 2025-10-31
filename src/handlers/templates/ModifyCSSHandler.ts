@@ -7,6 +7,7 @@ export class ModifyCSSHandler extends BaseHandler {
   readonly description = 'Inject, remove, or toggle CSS styles on the current page'
   readonly category = 'ui'
   readonly permissions = ['writeDom']
+  readonly icon = 'Palette'
   
   readonly inputSchema = {
     type: 'object',

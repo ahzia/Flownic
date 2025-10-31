@@ -7,6 +7,7 @@ export class DownloadFileHandler extends BaseHandler {
   readonly description = 'Download text content as a file with specified filename and MIME type'
   readonly category = 'io'
   readonly permissions = ['downloads']
+  readonly icon = 'Download'
   
   readonly inputSchema = {
     type: 'object',

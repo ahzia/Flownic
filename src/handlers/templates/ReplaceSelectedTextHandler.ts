@@ -7,6 +7,7 @@ export class ReplaceSelectedTextHandler extends BaseHandler {
   readonly description = 'Replaces the current selection in the page (DOM or inputs) with the provided text.'
   readonly category = 'dom'
   readonly permissions: string[] = []
+  readonly icon = 'RefreshCw'
 
   readonly inputSchema = {
     type: 'object',

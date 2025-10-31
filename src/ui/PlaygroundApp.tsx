@@ -7,9 +7,8 @@ import {
 import { Workflow, WorkflowStep, DataPoint, TaskTemplate, HandlerTemplate, WorkflowTrigger } from '@common/types'
 import { migrateWorkflowToTokenNotation, needsMigration } from '@utils/workflowMigration'
 import { ToastContainer, useToast } from './components/Toast'
-import { StepsEditor } from '@ui/components/StepsEditor'
-import { TriggerConfigSection } from '@ui/components/TriggerConfigSection'
-import { DataPointsPanel } from '@ui/components/DataPointsPanel'
+import { DataPointsSidebar } from '@ui/components/DataPointsSidebar'
+import { WorkflowEditorTabs, WorkflowEditorTab } from '@ui/components/WorkflowEditorTabs'
 import { KnowledgeBasePanel } from '@ui/components/KnowledgeBasePanel'
 import { KBEntry } from '@common/types'
 import { getKBEntries } from '@utils/kb'
@@ -32,6 +31,7 @@ export const PlaygroundApp: React.FC = () => {
   const [availableTasks, setAvailableTasks] = useState<TaskTemplate[]>([])
   const [availableHandlers, setAvailableHandlers] = useState<HandlerTemplate[]>([])
   const [showDataPoints, setShowDataPoints] = useState(false)
+  const [activeTab, setActiveTab] = useState<WorkflowEditorTab>('config')
   const [providerMetas, setProviderMetas] = useState<{ id: string; name: string; description: string; outputType: string }[]>([])
   const [kbEntries, setKbEntries] = useState<KBEntry[]>([])
   const [showKBManager, setShowKBManager] = useState(false)
@@ -822,63 +822,45 @@ export const PlaygroundApp: React.FC = () => {
       </div>
 
       <div className="editor-content">
-        <div className="editor-main">
-          {/* Basic Information */}
-          <div className="editor-section">
-            <h3>Basic Information</h3>
-            <div className="form-grid">
-              <div className="form-group">
-                <label>Workflow Name</label>
-                <input
-                  type="text"
-                  value={formData.name}
-                  onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                  placeholder="e.g., Medium Article Summarizer"
-                  className="form-input"
-                />
-              </div>
-              <div className="form-group full-width">
-                <label>Description</label>
-                <textarea
-                  value={formData.description}
-                  onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                  placeholder="Describe what this workflow does..."
-                  className="form-textarea"
-                  rows={3}
-                />
-              </div>
-            </div>
-          </div>
+        {/* Data Points Sidebar */}
+        <DataPointsSidebar
+          isVisible={showDataPoints}
+          dataPoints={dataPoints}
+          providerMetas={providerMetas}
+          onToggle={() => setShowDataPoints(!showDataPoints)}
+          onGatherContextData={gatherContextData}
+          onRemoveDataPoint={removeDataPoint}
+          kbEntries={kbEntries}
+          onAddKBToDataPoints={(entry) => addDataPoint({
+            id: `kb_${entry.id}`,
+            name: `KB: ${entry.name}`,
+            type: 'context',
+            value: { text: entry.content, title: entry.name, source: 'kb' },
+            source: 'kb',
+            timestamp: Date.now()
+          })}
+        />
 
-          {/* Data Points Management */}
-          <DataPointsPanel
-            showDataPoints={showDataPoints}
-            dataPoints={dataPoints}
-            providerMetas={providerMetas}
-            onToggleShow={() => setShowDataPoints(!showDataPoints)}
-            onGatherContextData={gatherContextData}
-            onRemoveDataPoint={removeDataPoint}
-            kbEntries={kbEntries}
-            onAddKBToDataPoints={(entry) => addDataPoint({
-              id: `kb_${entry.id}`,
-              name: `KB: ${entry.name}`,
-              type: 'context',
-              value: { text: entry.content, title: entry.name, source: 'kb' },
-              source: 'kb',
-              timestamp: Date.now()
-            })}
-          />
-
-          {/* Trigger Configuration */}
-          <TriggerConfigSection
-            trigger={formData.trigger}
-            websiteConfig={formData.websiteConfig}
-            onTriggerChange={(trigger) => setFormData(prev => ({ ...prev, trigger }))}
-            onWebsiteConfigChange={(websiteConfig) => setFormData(prev => ({ ...prev, websiteConfig }))}
-          />
-
-          {/* Workflow Steps */}
-          <StepsEditor
+        {/* Main Editor Area */}
+        <div className={`editor-main ${showDataPoints ? 'with-sidebar' : ''}`}>
+          <WorkflowEditorTabs
+            activeTab={activeTab}
+            onTabChange={setActiveTab}
+            config={{
+              name: formData.name,
+              description: formData.description,
+              trigger: formData.trigger,
+              websiteConfig: formData.websiteConfig
+            }}
+            onConfigChange={(updates) => {
+              setFormData(prev => ({
+                ...prev,
+                name: updates.name ?? prev.name,
+                description: updates.description ?? prev.description,
+                trigger: updates.trigger ?? prev.trigger,
+                websiteConfig: updates.websiteConfig ?? prev.websiteConfig
+              }))
+            }}
             steps={formData.steps}
             availableTasks={availableTasks}
             availableHandlers={availableHandlers}
@@ -886,6 +868,7 @@ export const PlaygroundApp: React.FC = () => {
             onAddStep={addStep}
             onRemoveStep={removeStep}
             onUpdateStep={updateStep}
+            onUpdateTrigger={(trigger) => setFormData(prev => ({ ...prev, trigger }))}
           />
         </div>
 

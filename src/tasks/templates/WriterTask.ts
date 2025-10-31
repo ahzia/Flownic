@@ -7,6 +7,7 @@ export class WriterTask extends BaseTask {
   readonly description = 'Generate new content based on context and guidelines using Chrome Writer API'
   readonly category = 'text'
   readonly apiType = 'writer' as const
+  readonly icon = 'PenTool'
   
   readonly inputSchema = {
     type: 'object',

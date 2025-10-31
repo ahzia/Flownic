@@ -7,6 +7,7 @@ export class RewriterTask extends BaseTask {
   readonly description = 'Revise and restructure text according to guidelines using Chrome Rewriter API'
   readonly category = 'text'
   readonly apiType = 'rewriter' as const
+  readonly icon = 'RefreshCw'
   
   readonly inputSchema = {
     type: 'object',

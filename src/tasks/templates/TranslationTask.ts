@@ -7,6 +7,7 @@ export class TranslationTask extends BaseTask {
   readonly description = 'Translate text from one language to another using Chrome Translation API'
   readonly category = 'language'
   readonly apiType = 'translation'
+  readonly icon = 'Languages'
   
   readonly inputSchema = {
     type: 'object',

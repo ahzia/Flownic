@@ -7,6 +7,7 @@ export class ShowModalHandler extends BaseHandler {
   readonly description = 'Display text or HTML content in a modal dialog'
   readonly category = 'ui'
   readonly permissions = ['showModal']
+  readonly icon = 'Maximize2'
   
   readonly inputSchema = {
     type: 'object',

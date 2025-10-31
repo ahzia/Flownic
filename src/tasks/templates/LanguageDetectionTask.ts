@@ -7,6 +7,7 @@ export class LanguageDetectionTask extends BaseTask {
   readonly description = 'Detect the language of the input text using Chrome Language Detector API'
   readonly category = 'language'
   readonly apiType = 'language_detection'
+  readonly icon = 'Globe'
   
   readonly inputSchema = {
     type: 'object',

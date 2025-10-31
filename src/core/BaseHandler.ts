@@ -17,8 +17,17 @@ export abstract class BaseHandler {
   abstract readonly inputSchema: Record<string, unknown>
   abstract readonly permissions: string[]
   
+  // Icon identifier - should match lucide-react icon name (e.g., 'Maximize2', 'Type', etc.)
+  // Can be overridden in child classes for specific icons
+  readonly icon?: string
+  
   abstract execute(input: HandlerInput, helpers: HelpersAPI): Promise<HandlerResult>
   abstract getInputUI(): HandlerInputUI
+  
+  // Get icon identifier - defaults to a generic handler icon if not specified
+  getIcon(): string {
+    return this.icon || 'Settings'
+  }
   
   undo?(lastRunState: unknown, helpers: HelpersAPI): Promise<void>
   
@@ -77,8 +86,9 @@ export abstract class BaseHandler {
       uiConfig: {
         inputFields: this.getInputUI().fields
       },
-      implementation: this.constructor.name
-    }
+      implementation: this.constructor.name,
+      icon: this.getIcon()
+    } as HandlerTemplate & { icon: string }
   }
   
   protected createInputField(config: {

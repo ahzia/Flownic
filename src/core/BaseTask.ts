@@ -18,8 +18,17 @@ export abstract class BaseTask {
   abstract readonly outputSchema: Record<string, unknown>
   abstract readonly apiType: 'prompt' | 'translation' | 'summarizer' | 'proofreader' | 'writer' | 'rewriter' | 'language_detection'
   
+  // Icon identifier - should match lucide-react icon name (e.g., 'Languages', 'Globe', etc.)
+  // Can be overridden in child classes for specific icons
+  readonly icon?: string
+  
   abstract execute(input: TaskInput, context: ExecutionContext): Promise<TaskOutput>
   abstract getInputUI(): TaskInputUI
+  
+  // Get icon identifier - defaults to a generic task icon if not specified
+  getIcon(): string {
+    return this.icon || 'Zap'
+  }
   
   validateInput(input: unknown): ValidationResult {
     const errors: string[] = []
@@ -93,8 +102,9 @@ export abstract class BaseTask {
           fields: Object.keys(this.outputSchema.properties || {})
         }
       },
-      implementation: this.constructor.name
-    }
+      implementation: this.constructor.name,
+      icon: this.getIcon()
+    } as TaskTemplate & { icon: string }
   }
   
   protected createInputField(config: {

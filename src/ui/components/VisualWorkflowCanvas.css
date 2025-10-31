@@ -1,0 +1,70 @@
+.visual-workflow-canvas {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 600px;
+  overflow: auto;
+  background: 
+    linear-gradient(to right, transparent 0%, transparent 49%, var(--color-border-primary) 50%, transparent 51%, transparent 100%),
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 19px,
+      var(--color-border-primary) 20px,
+      var(--color-border-primary) 20px
+    );
+  background-size: 100% 1px, 1px 20px;
+  background-position: center;
+}
+
+.canvas-content {
+  position: relative;
+  width: 100%;
+  min-height: 100%;
+  padding: var(--space-8);
+}
+
+.add-step-buttons {
+  display: flex;
+  gap: var(--space-2);
+  justify-content: center;
+}
+
+.add-step-btn {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--font-size-sm);
+}
+
+.canvas-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  text-align: center;
+  color: var(--color-text-secondary);
+}
+
+.canvas-empty-state p {
+  margin: 0 0 var(--space-4) 0;
+  font-size: var(--font-size-base);
+}
+
+.add-step-buttons-inline {
+  display: flex;
+  gap: var(--space-3);
+}
+
+/* Custom CSS variables for workflow colors */
+:root {
+  --color-workflow-trigger: #3B82F6;
+  --color-workflow-trigger-light: rgba(59, 130, 246, 0.1);
+  --color-workflow-task: #10B981;
+  --color-workflow-task-light: rgba(16, 185, 129, 0.1);
+  --color-workflow-handler: #8B5CF6;
+  --color-workflow-handler-light: rgba(139, 92, 246, 0.1);
+}
+

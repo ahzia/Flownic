@@ -7,6 +7,7 @@ export class SaveCaptureHandler extends BaseHandler {
   readonly description = 'Save structured data as a capture for use in future workflows'
   readonly category = 'data'
   readonly permissions = ['storage']
+  readonly icon = 'Camera'
   
   readonly inputSchema = {
     type: 'object',

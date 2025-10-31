@@ -7,6 +7,7 @@ export class CustomPromptTask extends BaseTask {
   readonly description = 'Execute a custom prompt using the Chrome Prompt API'
   readonly category = 'custom'
   readonly apiType = 'prompt'
+  readonly icon = 'MessageSquare'
   
   readonly inputSchema = {
     type: 'object',
