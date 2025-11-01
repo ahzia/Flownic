@@ -1,7 +1,8 @@
 import React from 'react'
-import { WorkflowStep, TaskTemplate, HandlerTemplate, DataPoint, WorkflowTrigger } from '@common/types'
+import { WorkflowStep, TaskTemplate, HandlerTemplate, DataPoint, WorkflowTrigger, WebsiteConfig } from '@common/types'
 import { Modal } from './common/Modal'
 import { StepInputForm } from './StepInputForm'
+import { TriggerConfigSection } from './TriggerConfigSection'
 import './NodeConfigurationModal.css'
 
 interface NodeConfigurationModalProps {
@@ -10,6 +11,7 @@ interface NodeConfigurationModalProps {
   nodeType: 'trigger' | 'task' | 'handler'
   step?: WorkflowStep
   trigger?: WorkflowTrigger
+  websiteConfig?: WebsiteConfig
   taskTemplate?: TaskTemplate
   handlerTemplate?: HandlerTemplate
   availableTasks: TaskTemplate[]
@@ -17,6 +19,7 @@ interface NodeConfigurationModalProps {
   dataPoints: DataPoint[]
   onUpdateStep?: (updates: Partial<WorkflowStep>) => void
   onUpdateTrigger?: (trigger: WorkflowTrigger) => void
+  onUpdateWebsiteConfig?: (config: WebsiteConfig) => void
 }
 
 export const NodeConfigurationModal: React.FC<NodeConfigurationModalProps> = ({
@@ -25,13 +28,15 @@ export const NodeConfigurationModal: React.FC<NodeConfigurationModalProps> = ({
   nodeType,
   step,
   trigger,
+  websiteConfig,
   taskTemplate,
   handlerTemplate,
   availableTasks,
   availableHandlers,
   dataPoints,
   onUpdateStep,
-  onUpdateTrigger
+  onUpdateTrigger,
+  onUpdateWebsiteConfig
 }) => {
   const getTitle = () => {
     if (nodeType === 'trigger' && trigger) {
@@ -55,15 +60,13 @@ export const NodeConfigurationModal: React.FC<NodeConfigurationModalProps> = ({
       closeOnOutsideClick={true}
     >
       <div className="node-configuration-modal">
-        {nodeType === 'trigger' && trigger && onUpdateTrigger && (
-          <div className="trigger-config">
-            <p className="modal-description">
-              Trigger configuration is managed in the Configuration tab.
-            </p>
-            <p className="modal-description">
-              Current trigger type: <strong>{trigger.type}</strong>
-            </p>
-          </div>
+        {nodeType === 'trigger' && trigger && onUpdateTrigger && onUpdateWebsiteConfig && (
+          <TriggerConfigSection
+            trigger={trigger}
+            websiteConfig={websiteConfig || { type: 'all', patterns: '' }}
+            onTriggerChange={onUpdateTrigger}
+            onWebsiteConfigChange={onUpdateWebsiteConfig}
+          />
         )}
 
         {nodeType === 'task' && step && onUpdateStep && (

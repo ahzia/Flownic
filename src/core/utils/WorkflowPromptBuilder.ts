@@ -33,7 +33,7 @@ export class WorkflowPromptBuilder {
     const handlers = this.handlerRegistry.getAllTemplates()
     const providers = this.getContextProviders()
 
-    return `You are a workflow generator for PromptFlow, a browser automation tool.
+    return `You are a workflow generator for Flownic, a browser automation tool.
 
 USER REQUEST:
 "${userQuery}"
@@ -278,7 +278,14 @@ RESPOND WITH ONLY VALID JSON. No markdown code blocks, no explanations, no text 
    - All required fields must be present
    - taskId/handlerId must match available options exactly
    - Input field names must match schema exactly
-   - Token references must be valid (existing steps or context providers)`
+   - Token references must be valid (existing steps or context providers)
+
+9. LANGUAGE CONSTRAINTS:
+   - CRITICAL: Pay close attention to enum constraints for language fields
+   - custom_prompt.outputLanguage: ONLY supports: en, es, ja
+   - translation tasks: Support broader language ranges (see task schema for exact list)
+   - If the user requests an unsupported language, use a supported alternative or explain the limitation
+   - When no exact match is available, use the closest supported language from the enum`
   }
 
   /**

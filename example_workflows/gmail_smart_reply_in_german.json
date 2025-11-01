@@ -1,0 +1,66 @@
+{
+  "id": "workflow_gmail_smart_reply_german",
+  "name": "Gmail Smart Reply in German",
+  "description": "Generate a professional email reply based on the original email and your instructions, then translate to German and replace selected text",
+  "version": "1.0.0",
+  "enabled": true,
+  "createdAt": 1762000000000,
+  "updatedAt": 1762000000000,
+  "dataPoints": [],
+  "websiteConfig": {
+    "type": "specific",
+    "patterns": "mail.google.com\n*.mail.google.com\n*gmail.com\nmail.google.com/*"
+  },
+  "triggers": [
+    {
+      "type": "manual",
+      "shortcut": "Ctrl+Shift+R"
+    }
+  ],
+  "steps": [
+    {
+      "id": "step_1762000100000_0",
+      "type": "task",
+      "taskId": "custom_prompt",
+      "input": {
+        "context": "${extracted_text.text}",
+        "prompt": "${selected_text.text}"
+      },
+      "condition": "",
+      "delay": 0
+    },
+    {
+      "id": "step_1762000200000_1",
+      "type": "task",
+      "taskId": "language_detection",
+      "input": {
+        "text": "${step_1762000100000_0_output.response}"
+      },
+      "condition": "",
+      "delay": 0
+    },
+    {
+      "id": "step_1762000300000_2",
+      "type": "task",
+      "taskId": "translation",
+      "input": {
+        "text": "${step_1762000100000_0_output.response}",
+        "sourceLanguage": "${step_1762000200000_1_output.languageCode}",
+        "targetLanguage": "de"
+      },
+      "condition": "",
+      "delay": 0
+    },
+    {
+      "id": "step_1762000400000_3",
+      "type": "handler",
+      "handlerId": "replace_selected_text",
+      "input": {
+        "text": "${step_1762000300000_2_output.translatedText}"
+      },
+      "condition": "",
+      "delay": 0
+    }
+  ]
+}
+

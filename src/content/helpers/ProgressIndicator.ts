@@ -1,5 +1,5 @@
 export class ProgressIndicator {
-  private containerId = 'promptflow-progress-indicator'
+  private containerId = 'flownic-progress-indicator'
   private hideTimeout: number | null = null
 
   show(message: string): void {

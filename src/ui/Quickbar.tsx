@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react'
-import { Search, Sparkles, Settings, History, X, Play, Clock, Globe } from 'lucide-react'
+import { Search, Sparkles, Settings, X, Play, Clock, Globe, Code } from 'lucide-react'
 import { Workflow } from '@common/types'
 import { clsx } from 'clsx'
+import { useToast, ToastContainer } from './components/Toast'
 
 interface QuickbarProps {
   isOpen: boolean
@@ -20,9 +21,17 @@ export const Quickbar: React.FC<QuickbarProps> = ({
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [selectedWorkflow, setSelectedWorkflow] = useState<Workflow | null>(null)
+  const [isExecuting, setIsExecuting] = useState(false)
 
   const inputRef = useRef<HTMLInputElement>(null)
   const quickbarRef = useRef<HTMLDivElement>(null)
+  const toast = useToast()
+  
+  // Store toast methods in ref to avoid dependency issues
+  const toastRef = useRef(toast)
+  useEffect(() => {
+    toastRef.current = toast
+  }, [toast])
 
   // Load workflows from storage
   const loadWorkflows = useCallback(async () => {
@@ -38,14 +47,19 @@ export const Quickbar: React.FC<QuickbarProps> = ({
         const enabledWorkflows = loadedWorkflows.filter(w => w.enabled)
         setWorkflows(enabledWorkflows)
         setFilteredWorkflows(enabledWorkflows)
+        setError(null)
       } else {
-        setError('Failed to load workflows')
+        const errorMsg = 'Failed to load workflows'
+        setError(errorMsg)
+        toastRef.current.error(errorMsg)
         setWorkflows([])
         setFilteredWorkflows([])
       }
     } catch (error) {
       console.error('Error loading workflows:', error)
-      setError('Error loading workflows')
+      const errorMsg = 'Error loading workflows'
+      setError(errorMsg)
+      toastRef.current.error(errorMsg)
       setWorkflows([])
       setFilteredWorkflows([])
     } finally {
@@ -108,12 +122,37 @@ export const Quickbar: React.FC<QuickbarProps> = ({
   }
 
   // Handle workflow execution
-  const handleExecuteWorkflow = useCallback((workflow: Workflow) => {
-    if (workflow && onWorkflowExecute) {
-      onWorkflowExecute(workflow)
-      onClose()
+  const handleExecuteWorkflow = useCallback(async (workflow: Workflow) => {
+    if (!workflow || !onWorkflowExecute || isExecuting) return
+    
+    try {
+      setIsExecuting(true)
+      await onWorkflowExecute(workflow)
+      toastRef.current.success(`Executing workflow: ${workflow.name}`)
+      // Close after a short delay to show the success message
+      setTimeout(() => {
+        onClose()
+      }, 300)
+    } catch (error) {
+      console.error('Error executing workflow:', error)
+      toastRef.current.error(`Failed to execute workflow: ${workflow.name}`)
+    } finally {
+      setIsExecuting(false)
     }
-  }, [onWorkflowExecute, onClose])
+  }, [onWorkflowExecute, onClose, isExecuting])
+  
+  // Handle opening playground
+  const handleOpenPlayground = useCallback(() => {
+    chrome.tabs.create({ url: chrome.runtime.getURL('src/ui/playground.html') })
+    onClose()
+  }, [onClose])
+  
+  // Handle opening settings (popup)
+  const handleOpenSettings = useCallback(() => {
+    // Open the extension popup in a new tab
+    chrome.tabs.create({ url: chrome.runtime.getURL('src/ui/index.html') })
+    onClose()
+  }, [onClose])
 
   // Handle keyboard shortcuts
   useEffect(() => {
@@ -155,80 +194,80 @@ export const Quickbar: React.FC<QuickbarProps> = ({
   if (!isOpen) return null
 
   return (
-    <div className="promptflow-quickbar-overlay" onClick={onClose}>
+    <div className="flownic-quickbar-overlay" onClick={onClose}>
       <div 
         ref={quickbarRef}
-        className="promptflow-quickbar"
+        className="flownic-quickbar"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="promptflow-quickbar-header">
-          <div className="promptflow-quickbar-title">
-            <Sparkles className="promptflow-icon" />
-            <span>PromptFlow</span>
+        <div className="flownic-quickbar-header">
+          <div className="flownic-quickbar-title">
+            <Sparkles className="flownic-icon" />
+            <span>Flownic</span>
           </div>
-          <div className="promptflow-quickbar-actions">
+          <div className="flownic-quickbar-actions">
             <button
-              className="promptflow-btn promptflow-btn-ghost"
-              onClick={() => {/* TODO: Open settings */}}
+              className="flownic-btn flownic-btn-ghost"
+              onClick={handleOpenSettings}
               title="Settings"
             >
-              <Settings className="promptflow-icon" />
+              <Settings className="flownic-icon" />
             </button>
             <button
-              className="promptflow-btn promptflow-btn-ghost"
-              onClick={() => {/* TODO: Open history */}}
-              title="History"
+              className="flownic-btn flownic-btn-ghost"
+              onClick={handleOpenPlayground}
+              title="Workflow Playground"
             >
-              <History className="promptflow-icon" />
+              <Code className="flownic-icon" />
             </button>
             <button
-              className="promptflow-btn promptflow-btn-ghost"
+              className="flownic-btn flownic-btn-ghost"
               onClick={onClose}
               title="Close"
             >
-              <X className="promptflow-icon" />
+              <X className="flownic-icon" />
             </button>
           </div>
         </div>
 
         {/* Main Content */}
-        <div className="promptflow-quickbar-content">
+        <div className="flownic-quickbar-content">
           {/* Search Input */}
-          <div className="promptflow-input-group">
-            <Search className="promptflow-input-icon" />
+          <div className="flownic-input-group">
+            <Search className="flownic-input-icon" />
             <input
               ref={inputRef}
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search workflows..."
-              className="promptflow-input"
+              className="flownic-input"
               disabled={isLoading}
             />
           </div>
 
-          {/* Error Display */}
-          {error && (
-            <div className="promptflow-error">
+          {/* Error Display - Only show if not loading and there's an error */}
+          {!isLoading && error && (
+            <div className="flownic-error">
               <span>{error}</span>
             </div>
           )}
 
           {/* Loading State */}
           {isLoading && (
-            <div className="promptflow-loading">
-              <div className="promptflow-spinner" />
+            <div className="flownic-loading">
+              <div className="flownic-spinner" />
               <span>Loading workflows...</span>
             </div>
           )}
 
           {/* Workflows List */}
           {!isLoading && (
-            <div className="promptflow-workflows-list">
+            <div className="flownic-workflows-list">
               {filteredWorkflows.length === 0 ? (
-                <div className="promptflow-empty-state">
-                  <Sparkles className="promptflow-icon" style={{ opacity: 0.5 }} />
+                <div className="flownic-empty-state">
+                  <Sparkles className="flownic-icon" style={{ opacity: 0.5 }} />
                   <p>
                     {searchQuery 
                       ? 'No workflows found matching your search'
@@ -245,48 +284,50 @@ export const Quickbar: React.FC<QuickbarProps> = ({
                     <button
                       key={workflow.id}
                       className={clsx(
-                        'promptflow-workflow-item',
-                        isSelected && 'promptflow-workflow-item-selected'
+                        'flownic-workflow-item',
+                        isSelected && 'flownic-workflow-item-selected',
+                        isExecuting && 'flownic-workflow-item-disabled'
                       )}
                       onClick={() => handleWorkflowClick(workflow)}
-                      onMouseEnter={() => setSelectedWorkflow(workflow)}
+                      onMouseEnter={() => !isExecuting && setSelectedWorkflow(workflow)}
+                      disabled={isExecuting}
                     >
-                      <div className="promptflow-workflow-header">
-                        <div className="promptflow-workflow-info">
-                          <h3 className="promptflow-workflow-name">{workflow.name}</h3>
+                      <div className="flownic-workflow-header">
+                        <div className="flownic-workflow-info">
+                          <h3 className="flownic-workflow-name">{workflow.name}</h3>
                           {workflow.description && (
-                            <p className="promptflow-workflow-description">
+                            <p className="flownic-workflow-description">
                               {workflow.description}
                             </p>
                           )}
                         </div>
-                        <Play className="promptflow-icon promptflow-icon-play" />
+                        <Play className="flownic-icon flownic-icon-play" />
                       </div>
                       
-                      <div className="promptflow-workflow-meta">
+                      <div className="flownic-workflow-meta">
                         {shortcut && (
-                          <span className="promptflow-workflow-shortcut">
-                            <Clock className="promptflow-icon-small" />
+                          <span className="flownic-workflow-shortcut">
+                            <Clock className="flownic-icon-small" />
                             {shortcut}
                           </span>
                         )}
                         {workflow.websiteConfig && workflow.websiteConfig.type !== 'all' && (
-                          <span className="promptflow-workflow-website">
-                            <Globe className="promptflow-icon-small" />
+                          <span className="flownic-workflow-website">
+                            <Globe className="flownic-icon-small" />
                             {workflow.websiteConfig.type === 'specific' ? 'Specific sites' : 'Excluded sites'}
                           </span>
                         )}
                         {workflow.steps && (
-                          <span className="promptflow-workflow-steps">
+                          <span className="flownic-workflow-steps">
                             {workflow.steps.length} step{workflow.steps.length !== 1 ? 's' : ''}
                           </span>
                         )}
                       </div>
 
                       {triggerTypes.length > 0 && (
-                        <div className="promptflow-workflow-triggers">
+                        <div className="flownic-workflow-triggers">
                           {triggerTypes.map((type, idx) => (
-                            <span key={idx} className="promptflow-trigger-tag">
+                            <span key={idx} className="flownic-trigger-tag">
                               {type}
                             </span>
                           ))}
@@ -301,19 +342,22 @@ export const Quickbar: React.FC<QuickbarProps> = ({
         </div>
 
         {/* Footer Info */}
-        <div className="promptflow-quickbar-footer">
-          <div className="promptflow-quickbar-hints">
+        <div className="flownic-quickbar-footer">
+          <div className="flownic-quickbar-hints">
             <span>↑↓ Navigate</span>
             <span>Enter Run</span>
             <span>Esc Close</span>
           </div>
           {filteredWorkflows.length > 0 && (
-            <div className="promptflow-workflow-count">
+            <div className="flownic-workflow-count">
               {filteredWorkflows.length} workflow{filteredWorkflows.length !== 1 ? 's' : ''}
             </div>
           )}
         </div>
       </div>
+      
+      {/* Toast Container */}
+      <ToastContainer toasts={toast.toasts} onRemove={toast.removeToast} />
     </div>
   )
 }

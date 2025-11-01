@@ -1,4 +1,4 @@
-// Core types for PromptFlow extension
+// Core types for Flownic extension
 
 export interface ActionPlan {
   type: 'ACTION_PLAN'

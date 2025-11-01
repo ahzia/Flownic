@@ -47,6 +47,11 @@ export const WorkflowEditorTabs: React.FC<WorkflowEditorTabsProps> = ({
 }) => {
   const tabs: Tab[] = [
     {
+      id: 'visual',
+      label: 'Visual',
+      icon: Workflow as any
+    },
+    {
       id: 'config',
       label: 'Configuration',
       icon: Settings as any
@@ -55,11 +60,6 @@ export const WorkflowEditorTabs: React.FC<WorkflowEditorTabsProps> = ({
       id: 'steps',
       label: 'Steps',
       icon: List as any
-    },
-    {
-      id: 'visual',
-      label: 'Visual',
-      icon: Workflow as any
     }
   ]
 
@@ -95,6 +95,7 @@ export const WorkflowEditorTabs: React.FC<WorkflowEditorTabsProps> = ({
           <VisualWorkflowCanvas
             steps={steps}
             trigger={config.trigger}
+            websiteConfig={config.websiteConfig}
             availableTasks={availableTasks}
             availableHandlers={availableHandlers}
             dataPoints={dataPoints}
@@ -105,6 +106,7 @@ export const WorkflowEditorTabs: React.FC<WorkflowEditorTabsProps> = ({
             onRemoveStep={onRemoveStep}
             onUpdateStep={onUpdateStep}
             onUpdateTrigger={onUpdateTrigger}
+            onUpdateWebsiteConfig={(websiteConfig) => onConfigChange({ websiteConfig })}
           />
         )}
       </div>

@@ -53,7 +53,7 @@ export class ContentScript {
     // Listen for messages from iframe (overlay)
     window.addEventListener('message', (event) => {
       if (event.data && event.data.type === 'CLOSE_OVERLAY') {
-        const wrapper = document.getElementById('promptflow-overlay-wrapper')
+        const wrapper = document.getElementById('flownic-overlay-wrapper')
         if (wrapper) {
           wrapper.style.display = 'none'
         }
@@ -243,7 +243,7 @@ export class ContentScript {
 
   private injectReactOverlay(): void {
     // Check if overlay already exists and just toggle it
-    const existingWrapper = document.getElementById('promptflow-overlay-wrapper')
+    const existingWrapper = document.getElementById('flownic-overlay-wrapper')
     if (existingWrapper) {
       existingWrapper.style.display = 'block'
       const iframe = existingWrapper.querySelector('iframe')
@@ -257,7 +257,7 @@ export class ContentScript {
     // Create wrapper div for isolation
     // This wrapper should be transparent - the Quickbar component handles its own backdrop
     const wrapper = document.createElement('div')
-    wrapper.id = 'promptflow-overlay-wrapper'
+    wrapper.id = 'flownic-overlay-wrapper'
     wrapper.style.cssText = `
       position: fixed;
       top: 0;
@@ -273,7 +273,7 @@ export class ContentScript {
     // Create container for React app
     // This container needs pointer-events to capture clicks for the Quickbar
     const container = document.createElement('div')
-    container.id = 'promptflow-overlay-root'
+    container.id = 'flownic-overlay-root'
     container.style.cssText = 'width: 100%; height: 100%; pointer-events: auto;'
     wrapper.appendChild(container)
     document.body.appendChild(wrapper)
