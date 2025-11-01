@@ -35,7 +35,7 @@ export const PlaygroundApp: React.FC = () => {
   const [availableTasks, setAvailableTasks] = useState<TaskTemplate[]>([])
   const [availableHandlers, setAvailableHandlers] = useState<HandlerTemplate[]>([])
   const [showDataPoints, setShowDataPoints] = useState(false)
-  const [activeTab, setActiveTab] = useState<WorkflowEditorTab>('config')
+  const [activeTab, setActiveTab] = useState<WorkflowEditorTab>('visual')
   const [providerMetas, setProviderMetas] = useState<{ id: string; name: string; description: string; outputType: string }[]>([])
   const [kbEntries, setKbEntries] = useState<KBEntry[]>([])
   const [showKBManager, setShowKBManager] = useState(false)
@@ -584,7 +584,7 @@ export const PlaygroundApp: React.FC = () => {
     })
     setSelectedWorkflow(null)
     setDataPoints([])
-    setActiveTab('config')
+    setActiveTab('visual')
   }
 
   const editWorkflow = (workflow: Workflow) => {
