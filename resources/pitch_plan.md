@@ -9,8 +9,7 @@ here is how it works.
 First screen capture video:
 lets say I want to build a summerizer workflow that will summerize any content from any language to me in german in any website
 
-create a workflow that will be trigered by cmd+shift+s and will get the content of the page from diffrent languages, and genrate a summery of it in German for me.
-it should show the result in a modal
+when I press ctrl+shift+t detect the language of selcted page, and trasnlate it to german, then show it in a modal
 
 so I click on create new workflow, and describe it
 after I click on genrate with ai, it will build the workflow for me, here is what this spesific workflow does:

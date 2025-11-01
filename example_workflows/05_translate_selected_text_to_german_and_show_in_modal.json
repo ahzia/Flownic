@@ -1,0 +1,50 @@
+{
+  "createdAt": 1761962183404,
+  "dataPoints": [],
+  "description": "Detects the language of selected text, translates it to German, and displays it in a modal.",
+  "enabled": true,
+  "id": "workflow_1761962183404",
+  "name": "Translate Selected Text to German and Show in Modal",
+  "steps": [
+    {
+      "id": "step_1761672840000_0",
+      "input": {
+        "text": "${selected_text.text}"
+      },
+      "taskId": "language_detection",
+      "type": "task"
+    },
+    {
+      "id": "step_1761672840100_1",
+      "input": {
+        "sourceLanguage": "${step_1761672840000_0_output.languageCode}",
+        "targetLanguage": "de",
+        "text": "${selected_text.text}"
+      },
+      "taskId": "translation",
+      "type": "task"
+    },
+    {
+      "handlerId": "show_modal",
+      "id": "step_1761672840200_2",
+      "input": {
+        "closable": true,
+        "content": "${step_1761672840100_1_output.translatedText}",
+        "size": "medium",
+        "title": "Translation Result"
+      },
+      "type": "handler"
+    }
+  ],
+  "triggers": [
+    {
+      "type": "onSelection"
+    }
+  ],
+  "updatedAt": 1761962293819,
+  "version": "1.0.0",
+  "websiteConfig": {
+    "patterns": "",
+    "type": "all"
+  }
+}

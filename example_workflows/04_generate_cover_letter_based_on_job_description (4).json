@@ -1,0 +1,46 @@
+{
+  "createdAt": 1761757273711,
+  "dataPoints": [],
+  "description": "This workflow genrate a new cover letter based on a job description",
+  "enabled": true,
+  "id": "workflow_1761757273711",
+  "name": "Generate Cover letter based on job description",
+  "steps": [
+    {
+      "condition": "",
+      "delay": 0,
+      "id": "step_1761756769046",
+      "input": {
+        "context": "${extracted_text.text}",
+        "prompt": "Generate a professional cover letter based on the job description provided in additional context and my information: ${kb_kb_1761853737960}\n"
+      },
+      "taskId": "custom_prompt",
+      "type": "task"
+    },
+    {
+      "condition": "",
+      "delay": 0,
+      "handlerId": "show_modal",
+      "id": "step_1761757135209",
+      "input": {
+        "closable": true,
+        "content": "${step_1761756769046_output.response}",
+        "size": "large",
+        "title": "Cover letter"
+      },
+      "type": "handler"
+    }
+  ],
+  "triggers": [
+    {
+      "shortcut": "ctrl+shift+a",
+      "type": "manual"
+    }
+  ],
+  "updatedAt": 1761963097226,
+  "version": "1.0.0",
+  "websiteConfig": {
+    "patterns": "",
+    "type": "all"
+  }
+}

@@ -45,20 +45,49 @@ export class TranslationTask extends BaseTask {
       throw new Error('Text input is required and must be a string')
     }
     
+    // Helper function to return original text in translation task format
+    const returnOriginalText = (reason: string): TaskOutput => {
+      console.warn(`Translation skipped: ${reason}. Returning original text.`)
+      const sourceLang = (sourceLanguage as string) || ''
+      const targetLang = (targetLanguage as string) || ''
+      
+      return {
+        data: {
+          translatedText: text as string,
+          sourceLanguage: sourceLang,
+          targetLanguage: targetLang,
+          confidence: 1.0 // Full confidence since we're returning original
+        },
+        type: 'structured',
+        metadata: {
+          confidence: 1.0,
+          processingTime: Date.now() - context.startTime,
+          source: 'fallback_no_translation'
+        }
+      }
+    }
+    
+    // If target language is not provided, return original text
     if (!targetLanguage || typeof targetLanguage !== 'string') {
-      throw new Error('Target language is required')
+      return returnOriginalText('Target language is required but not provided')
+    }
+    
+    // Determine source and target languages
+    const sourceLang = (sourceLanguage as string) || ''
+    const targetLang = targetLanguage as string
+    
+    // If source and target languages are the same, return original text
+    if (sourceLang && sourceLang === targetLang) {
+      return returnOriginalText(`Source language (${sourceLang}) and target language (${targetLang}) are the same`)
     }
     
     try {
       // Check if Translator API is available (check both self and global)
       const TranslatorAPI = (self as any).Translator || (window as any).Translator
       if (!TranslatorAPI) {
-        throw new Error('Translator API is not available in this browser')
+        console.error('Translator API is not available in this browser')
+        return returnOriginalText('Translator API is not available')
       }
-      
-      // Determine source and target languages
-      const sourceLang = (sourceLanguage as string) || ''
-      const targetLang = targetLanguage as string
       
       // For auto-detection, we can't check availability without a source language
       // So we'll try to create the translator directly and handle errors
@@ -79,7 +108,8 @@ export class TranslationTask extends BaseTask {
       }
       
       if (availability === 'unavailable') {
-        throw new Error(`Translation model not available for ${sourceLang} -> ${targetLang}`)
+        console.error(`Translation model not available for ${sourceLang || 'auto'} -> ${targetLang}`)
+        return returnOriginalText(`Translation model not available for ${sourceLang || 'auto'} -> ${targetLang}`)
       }
       
       // Create translator with appropriate options
@@ -106,8 +136,8 @@ export class TranslationTask extends BaseTask {
       return {
         data: {
           translatedText,
-          sourceLanguage: sourceLanguage || '',
-          targetLanguage,
+          sourceLanguage: sourceLang || '',
+          targetLanguage: targetLang,
           confidence: 0.95
         },
         type: 'structured',
@@ -118,11 +148,10 @@ export class TranslationTask extends BaseTask {
         }
       }
     } catch (error) {
-      // Chrome Translator API is required - no fallback
+      // Log error but return original text instead of throwing
       console.error('Chrome Translator API failed:', error)
-      throw new Error(
-        `Translation failed: ${error instanceof Error ? error.message : 'Unknown error'}. ` +
-        `Chrome Translator API is required for this task.`
+      return returnOriginalText(
+        `Translation failed: ${error instanceof Error ? error.message : 'Unknown error'}`
       )
     }
   }
