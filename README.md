@@ -34,6 +34,10 @@ Flownic is a Chrome extension that democratizes access to Chrome's built-in AI c
 
 ### Watch Flownic in Action
 
+[![Flownic Demo](https://img.youtube.com/vi/92L0NehLlhE/maxresdefault.jpg)](https://youtu.be/92L0NehLlhE)
+
+**[Watch on YouTube →](https://youtu.be/92L0NehLlhE)**
+
 </div>
 
 ---
